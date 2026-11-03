@@ -18,8 +18,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
 
 /**
- * 模块清单与构建顺序（v2.4 鱼骨主线优先）。
- * 在 v2.1 基础上新增 FishboneView（鱼骨主线首屏）与 FishboneDialogs（分刺/回连弹窗）；
+ * 模块清单与构建顺序（v2.4 项目流程主线优先）。
+ * 在 v2.1 基础上新增 FishboneView（项目流程主线首屏）与 FishboneDialogs（创建分支/回连弹窗）；
  * 依赖顺序：对话框只依赖 constants，视图只依赖 constants，均可安全前置。
  */
 const SOURCES = [
@@ -28,6 +28,7 @@ const SOURCES = [
   'src/core/api.js',
   'src/components/StatusBadge.js',
   'src/components/ContextMenu.js',
+  'src/components/ThemePicker.js',
   'src/components/Header.js',
   'src/components/CommandBar.js',
   'src/components/ProjectBar.js',

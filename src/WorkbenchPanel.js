@@ -31,7 +31,7 @@ import {
   isValidSlug,
   isValidStream,
 } from './core/constants.js'
-import { RDW_SKELETON_CSS, RDW_THEME_CSS } from './core/theme.js'
+import { RDW_SKELETON_CSS, RDW_THEME_CSS, RDW_THEME_PRESET_CSS, RDW_THEME_IDS } from './core/theme.js'
 import {
   fetchBranchWork,
   fetchContent,
@@ -43,6 +43,7 @@ import {
   fetchResults,
   fetchRuns,
   fetchState,
+  fetchZotero,
   postAction,
   postBranchDirective,
   postBridge,
@@ -50,6 +51,7 @@ import {
   postOpenExternal,
   postOpenSidebar,
   postRibOp,
+  postZoteroOp,
   saveConfig,
   settleRun,
 } from './core/api.js'
@@ -59,7 +61,7 @@ import { renderContextMenu, renderHoverCard, renderInlineSprout, mi, sep, sub } 
 import { renderToast } from './components/Toast.js'
 import { renderProjectBar } from './components/ProjectBar.js'
 import { renderCreateDialog, renderReasonDialog } from './components/ReasonDialog.js'
-import { renderSproutDialog, renderGraftDialog } from './components/FishboneDialogs.js'
+import { renderSproutDialog, renderGraftDialog, renderModuleDialog } from './components/FishboneDialogs.js'
 import { renderResultsView } from './views/ResultsView.js'
 import { renderContentView, renderIdeaDialog, renderFileModal, renderBranchWorkModal } from './views/ContentView.js'
 import { renderFishboneView } from './views/FishboneView.js'
@@ -163,7 +165,7 @@ export function createWorkbenchPanel(React) {
     return [ref, width]
   }
 
-  /** 基于模块和现有鱼刺，自动计算下一个合规、递增的分支 ID（如 M40 下已有 B40-01~03 则生成 B40-04）。 */
+  /** 基于模块和现有分支，自动计算下一个合规、递增的分支 ID（如 M40 下已有 B40-01~03 则生成 B40-04）。 */
   function generateNextBranchId(moduleId, parentId, existingBranches) {
     const list = Array.isArray(existingBranches) ? existingBranches : []
     const mMatch = String(moduleId || '').match(/^[A-Za-z]?(\d+)/)
@@ -241,6 +243,27 @@ export function createWorkbenchPanel(React) {
     const [selectedModule, setSelectedModule] = React.useState(null)
     const [selectedRib, setSelectedRib] = React.useState(null)
     const [sproutDialog, setSproutDialog] = React.useState(null)
+    // v3.9：主支维护弹窗（新增 / 重命名）
+    const [moduleDialog, setModuleDialog] = React.useState(null)
+    // v3.9：主题预设（存 localStorage，跨会话记住；未知值回落默认 apple）
+    const [rdwTheme, setRdwTheme] = React.useState(() => {
+      try {
+        const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('rdw-theme') : null
+        if (saved && RDW_THEME_IDS.includes(saved)) return saved
+      } catch {
+        /* 隐私模式下 localStorage 不可用 */
+      }
+      return 'apple'
+    })
+    const changeRdwTheme = React.useCallback((next) => {
+      if (!RDW_THEME_IDS.includes(next)) return
+      setRdwTheme(next)
+      try {
+        if (typeof localStorage !== 'undefined') localStorage.setItem('rdw-theme', next)
+      } catch {
+        /* 写不进去也不影响本次会话 */
+      }
+    }, [])
     const [sessionView, setSessionView] = React.useState(null)
     const [sessionDraft, setSessionDraft] = React.useState('')
     const [sessionSending, setSessionSending] = React.useState(false)
@@ -255,6 +278,13 @@ export function createWorkbenchPanel(React) {
     const [statusFilter, setStatusFilter] = React.useState('all')
     const [moduleFilter, setModuleFilter] = React.useState('all')
     const [stateForm, setStateForm] = React.useState({ phase: '', next: '', blocker: '' })
+    // v3.8 · Zotero 文献面板：数据 / 检索词 / 合集抽屉 / 忙碌标记
+    const [zoteroData, setZoteroData] = React.useState(null)
+    const [zoteroError, setZoteroError] = React.useState('')
+    const [zoteroLoading, setZoteroLoading] = React.useState(false)
+    const [zoteroBusy, setZoteroBusy] = React.useState(false)
+    const [zoteroSearch, setZoteroSearch] = React.useState('')
+    const [zoteroCollectionOpen, setZoteroCollectionOpen] = React.useState(false)
     const [selectedRunId, setSelectedRunId] = React.useState('')
     const [expandedProjects, setExpandedProjects] = React.useState({})
     const [toast, setToast] = React.useState('')
@@ -287,6 +317,8 @@ export function createWorkbenchPanel(React) {
     /* v4 交互层状态：全景抽屉 / 命令面板 / 侧滑管理面板（低频操作按需展开）。 */
     const [drawerOpen, setDrawerOpen] = React.useState(false)
     const [paletteOpen, setPaletteOpen] = React.useState(false)
+    // v3.9：主题选择器浮层开关
+    const [themeOpen, setThemeOpen] = React.useState(false)
     const [paletteQuery, setPaletteQuery] = React.useState('')
     const [slideTab, setSlideTab] = React.useState(null)
     const [recycleOpen, setRecycleOpen] = React.useState(false)
@@ -294,7 +326,7 @@ export function createWorkbenchPanel(React) {
     const [msgSprout, setMsgSprout] = React.useState(null)   // { excerpt, x, y }
     const [middleTab, setMiddleTab] = React.useState('chat') // 'chat' | 'trace'
     const [middleMode, setMiddleMode] = React.useState('auto') // 'auto' | 'native'
-    const [ribWorkData, setRibWorkData] = React.useState(null) // 当前激活鱼刺的工作区数据（指令/轨迹/产物）
+    const [ribWorkData, setRibWorkData] = React.useState(null) // 当前激活分支的工作区数据（指令/轨迹/产物）
 
     /* v3.5 交互系统 2.0：右键菜单 / 速览卡 / 内联分叉 / 回收站 / 撤销栈 */
     const [ctxMenu, setCtxMenu] = React.useState(null)          // { x, y, target }
@@ -426,7 +458,7 @@ export function createWorkbenchPanel(React) {
           setFishbone(payload)
           setFishboneError('')
         } else {
-          setFishboneError(hostMessage(payload) || '读取鱼骨主线失败')
+          setFishboneError(hostMessage(payload) || '读取项目流程主线失败')
         }
         return payload
       } catch (problem) {
@@ -434,6 +466,38 @@ export function createWorkbenchPanel(React) {
         return null
       } finally {
         if (alive.current) setFishboneLoading(false)
+      }
+    }, [])
+
+    /**
+     * v3.8 · 加载当前分支的 Zotero 文献面板数据。
+     * 该请求失败不致命：Zotero 没开机时宿主返回 available:false，
+     * 面板显示「未连接」，项目流程主线照常可用。
+     */
+    const loadZotero = React.useCallback(async (target, ribId, query, silent) => {
+      const requested = typeof target === 'string' ? target.trim() : ''
+      if (!requested) return null
+      // v3.9 · 静默模式：后台自动刷新时不占用 loading 标记，
+      // 面板不会每 20 秒闪一次「读取中」，只在数据真的变化时才重绘。
+      if (alive.current && !silent) setZoteroLoading(true)
+      try {
+        const payload = await fetchZotero(requested, ribId || '', query || '', '')
+        if (!alive.current) return payload
+        if (payload && payload.ok !== false) {
+          setZoteroData(payload)
+          setZoteroError('')
+        } else {
+          setZoteroError(hostMessage(payload) || '读取 Zotero 文献失败')
+        }
+        return payload
+      } catch (problem) {
+        if (alive.current) {
+          setZoteroData({ ok: true, available: false, error: networkMessage(problem), items: [], linked: [] })
+          setZoteroError('')
+        }
+        return null
+      } finally {
+        if (alive.current && !silent) setZoteroLoading(false)
       }
     }, [])
 
@@ -514,6 +578,86 @@ export function createWorkbenchPanel(React) {
       }
     }, [refresh, loadRuns, loadResults, loadContent, loadFishbone, loadLeaderLog, injected.project])
 
+    /**
+     * v3.8 · 分支切换 / 项目切换时，重取该分支的 Zotero 文献。
+     * 单独一个 effect：文献面板不该拖慢项目流程首屏，也不该因 Zotero 掉线而阻塞主线。
+     *
+     * 解析当前分支必须和舞台的默认选中规则一致：selectedRib 为空时
+     * （刚挂载、用户还没点任何分支）要退到「该主支第一个分支 → 全库第一个分支」，
+     * 否则首屏右栏永远空着 —— 面板看上去像坏了。
+     */
+    React.useEffect(() => {
+      if (!rootPath) {
+        setZoteroData(null)
+        return
+      }
+      const spineList = fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : []
+      const ribList = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
+      const candidates = selectedModule ? ribList.filter((rib) => rib && rib.module === selectedModule) : ribList
+      const ribId =
+        selectedRib ||
+        (sessionView && sessionView.branch) ||
+        (candidates[0] && candidates[0].id) ||
+        (ribList[0] && ribList[0].id) ||
+        (spineList[0] && spineList[0].id) ||
+        ''
+      if (!ribId) {
+        setZoteroData(null)
+        return
+      }
+      loadZotero(rootPath, ribId, zoteroSearch)
+      // 只跟随「当前该看哪根分支」变化；搜索词由 submit 自己触发，避免打字即请求。
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rootPath, selectedRib, selectedModule, sessionView, fishbone, loadZotero])
+
+    /**
+     * v3.9 · Zotero 连接状态自动刷新。
+     *
+     * 用户抱怨的场景：先开工作台、后开 Zotero —— 面板一直停在「未连接」，
+     * 必须手动点 ↻ 才能连上。这里改为每 20 秒静默重取一次：
+     *   · 静默：不置 loading，不闪「读取中」，只在数据有变时重绘；
+     *   · 省电：页面不可见（切后台 / 最小化）时跳过，回来立刻补一次；
+     *   · 不动界面：不加任何按钮、不改文案，只是让状态自己跟上。
+     */
+    React.useEffect(() => {
+      if (!rootPath) return undefined
+      let cancelled = false
+      const pickRib = () => {
+        const ribs = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
+        const spine = fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : []
+        const candidates = selectedModule ? ribs.filter((rib) => rib && rib.module === selectedModule) : ribs
+        return (
+          selectedRib ||
+          (sessionView && sessionView.branch) ||
+          (candidates[0] && candidates[0].id) ||
+          (ribs[0] && ribs[0].id) ||
+          (spine[0] && spine[0].id) ||
+          ''
+        )
+      }
+      const tick = () => {
+        if (cancelled) return
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+        const ribId = pickRib()
+        if (!ribId) return
+        loadZotero(rootPath, ribId, zoteroSearch, true)
+      }
+      const timer = setInterval(tick, 20000)
+      // 从后台切回前台时立刻补一次，避免用户盯着旧的「未连接」等待下一个周期。
+      const onVisible = () => {
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible') tick()
+      }
+      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisible)
+      return () => {
+        cancelled = true
+        clearInterval(timer)
+        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisible)
+      }
+      // zoteroSearch 刻意不进依赖：轮询只负责「连接是否恢复」，
+      // 搜索词仍由 zoteroSearchSubmit 显式触发，避免打字过程中被轮询覆盖。
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rootPath, selectedRib, selectedModule, sessionView, fishbone, loadZotero])
+
     /* v4 快捷键：⌘/Ctrl+K 打开命令面板；Esc 逐层关闭（命令面板 → 侧滑面板 → 对话框）。 */
     React.useEffect(() => {
       const onKeyDown = (event) => {
@@ -557,8 +701,16 @@ export function createWorkbenchPanel(React) {
           setSlideTab(null)
           return
         }
+        if (themeOpen) {
+          setThemeOpen(false)
+          return
+        }
         if (sproutDialog) {
           setSproutDialog(null)
+          return
+        }
+        if (moduleDialog) {
+          setModuleDialog(null)
           return
         }
         if (graftDialog) {
@@ -601,7 +753,7 @@ export function createWorkbenchPanel(React) {
         return () => window.removeEventListener('keydown', onKeyDown)
       }
       return undefined
-    }, [sproutDialog, graftDialog, fileModal, branchWorkModal, sessionView, ideaDialog, contentDetail, createDialog, dialog, detail, paletteOpen, slideTab, ctxMenu, inlineSprout, recycleOpen, shortcutsOpen, msgSprout])
+    }, [sproutDialog, graftDialog, moduleDialog, themeOpen, fileModal, branchWorkModal, sessionView, ideaDialog, contentDetail, createDialog, dialog, detail, paletteOpen, slideTab, ctxMenu, inlineSprout, recycleOpen, shortcutsOpen, msgSprout])
 
     /* --------------------------------------------------- /run 动作执行 */
 
@@ -855,7 +1007,7 @@ export function createWorkbenchPanel(React) {
       const modId = String(source.module || '').trim()
       const brId = String(source.branch || '').trim()
       if (!modId || !brId) return
-      // v2.7：整页会话视图取代弹窗；请求序号守卫：快速切换鱼刺时丢弃过期响应
+      // v2.7：整页会话视图取代弹窗；请求序号守卫：快速切换分支时丢弃过期响应
       const requestId = ++sessionRequestId.current
       setSessionView({ module: modId, branch: brId, data: null, error: '' })
       setOpenSections({ brief: true })
@@ -929,7 +1081,7 @@ export function createWorkbenchPanel(React) {
     }, [selectedRib, fishbone, rootPath])
 
     /**
-     * 将鱼刺上下文（意图、阶段主骨、已接受输入、CONTEXT.md 快照）挂载并同步到会话中。
+     * 将分支上下文（意图、阶段主支、已接受输入、CONTEXT.md 快照）挂载并同步到会话中。
      * 1. 调用 POST /mount-context 将 ACTIVE_CONTEXT.md 同步至项目根与工作区；
      * 2. 将包含上下文引导的提示词写入 DSH 会话输入框。
      */
@@ -941,15 +1093,13 @@ export function createWorkbenchPanel(React) {
       const moduleId = opts.module || (rib && rib.module) || selectedModule || (spine[0] && spine[0].id) || ''
       if (!moduleId || !ribId) return null
 
-      const myId = (injected.entry && injected.entry.id) || 'lineex/research-dag-workbench'
-      const activeSession = typeof hostService?.currentSession === 'function' ? hostService.currentSession() : null
-      const myRecent = hostService?.state?.recentSessions?.[myId]
+      const myId = (injected.entry && injected.entry.id) || 'zhuanz/research-dag-workbench'
       const curSession =
-        (activeSession && typeof hostService?.ownsSession === 'function' && hostService.ownsSession(activeSession))
-          ? activeSession
-          : (myRecent && typeof hostService?.ownsSession === 'function' && hostService.ownsSession(myRecent))
-            ? myRecent
-            : null
+        (typeof hostService?.currentSession === 'function' ? hostService.currentSession() : null) ||
+        hostService?.lastSession ||
+        hostService?.nativeLocation?.sessionId ||
+        hostService?.state?.recentSessions?.[myId] ||
+        null
 
       // 快速前置构造 prompt（确保点击后 0ms 立即注入输入框）
       const modObj = spine.find((m) => m.id === moduleId) || {}
@@ -961,13 +1111,13 @@ export function createWorkbenchPanel(React) {
       const projTitle = (fishbone && fishbone.head && fishbone.head.title) || '科研项目'
 
       let fallbackPrompt = [
-        `【科研鱼刺上下文已挂载】`,
+        `【科研分支上下文已挂载】`,
         `项目：${projTitle}`,
-        `当前阶段主骨：${modName} [${moduleId}]`,
-        `当前探索鱼刺：${ribName} [${ribId}]`,
+        `当前阶段主支：${modName} [${moduleId}]`,
+        `当前探索分支：${ribName} [${ribId}]`,
         brief ? `任务目标简报：\n${brief.slice(0, 300)}` : '',
         ctxText ? `\n--- 上下文档案核心快照 (CONTEXT.md) ---\n${ctxText.slice(0, 1500)}...` : '',
-        `\n请依据上述已挂载的研究上下文与输入产物，开始推进该鱼刺的分析任务。`,
+        `\n请依据上述已挂载的研究上下文与输入产物，开始推进该分支的分析任务。`,
       ].filter(Boolean).join('\n')
 
       const applyToComposer = (text) => {
@@ -1091,7 +1241,7 @@ export function createWorkbenchPanel(React) {
     }, [rootPath, selectedRib, selectedModule, fishbone, ribWorkData, hostService, injected.entry])
 
     /**
-     * 对话选区或消息一键自动创建鱼刺（无需复杂弹窗，全自动推导模块、序号并创建）。
+     * 对话选区或消息一键自动创建分支（无需复杂弹窗，全自动推导模块、序号并创建）。
      */
     const autoSproutFromMessage = React.useCallback(async (rawText, opts = {}) => {
       const ribs = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
@@ -1099,7 +1249,7 @@ export function createWorkbenchPanel(React) {
       const excerpt = String(rawText || '').trim()
       if (!excerpt) return
 
-      // 当前激活父刺与主骨
+      // 当前激活父分支与主支
       const parentId = opts.fromRib || selectedRib || (ribs[0] && ribs[0].id) || ''
       const parentRib = ribs.find((r) => r.id === parentId)
       const moduleId = (parentRib && parentRib.module) || opts.module || selectedModule || (spineList[0] && spineList[0].id) || 'M10'
@@ -1128,7 +1278,7 @@ export function createWorkbenchPanel(React) {
           mode: 'spike',
         })
         if (!payload || payload.ok === false || !payload.run) {
-          setError(hostMessage(payload) || '自动分刺失败')
+          setError(hostMessage(payload) || '自动建分支失败')
           return
         }
         setRun(payload.run)
@@ -1149,8 +1299,8 @@ export function createWorkbenchPanel(React) {
               },
             },
           })
-          pushUndo(`分刺 ${newId}`, { op: 'delete', ribId: newId })
-          setToast(`🌱 已自动创建新鱼刺 [${newId} · ${autoName}]`)
+          pushUndo(`创建分支 ${newId}`, { op: 'delete', ribId: newId })
+          setToast(`🌱 已自动创建新分支 [${newId} · ${autoName}]`)
           setSelectedRib(newId)
           setSelectedModule(moduleId)
           await loadFishbone(rootPath)
@@ -1161,7 +1311,7 @@ export function createWorkbenchPanel(React) {
           // 自动挂载上下文到会话
           mountContextToSession({ module: moduleId, branch: newId, auto: false })
         } else {
-          setError(hostMessage(finished) || '分刺未成功')
+          setError(hostMessage(finished) || '创建分支未成功')
         }
       } catch (err) {
         if (alive.current) setError(networkMessage(err))
@@ -1179,7 +1329,7 @@ export function createWorkbenchPanel(React) {
      * 这里如实告诉用户「让模型用 sidebar_open 打开这个路径」，
      * 而不是弹个小窗假装成功。
      */
-    /** 给同伴鱼刺投递消息（v3.2）：POST /run {action:'message'} → dag message。 */
+    /** 给同伴分支投递消息（v3.2）：POST /run {action:'message'} → dag message。 */
     const sendRibMessage = async (target, text) => {
       const to = String((target && target.id) || '').trim()
       const from = String((sessionView && sessionView.branch) || '').trim()
@@ -1199,7 +1349,7 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /** 打开同伴鱼刺的工作区（鱼刺之间互相查看）。 */
+    /** 打开同伴分支的工作区（分支之间互相查看）。 */
     const openSiblingRib = (row) => {
       if (!row || !row.id) return
       const siblings = sessionView && sessionView.data && Array.isArray(sessionView.data.siblings)
@@ -1210,13 +1360,13 @@ export function createWorkbenchPanel(React) {
       openBranchWorkModal({ module: sessionView.module, branch: known.id })
     }
 
-    /** 清除鱼刺上下文档案（v3.2）：POST /run {action:'context', clear:true}。 */
+    /** 清除分支上下文档案（v3.2）：POST /run {action:'context', clear:true}。 */
     const clearRibContext = async (branchId) => {
       const id = String(branchId || (sessionView && sessionView.branch) || '').trim()
       if (!id) return
       if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
         const ok = window.confirm(
-          `确定清除鱼刺 ${id} 的上下文档案（CONTEXT.md）吗？\n\n` +
+          `确定清除分支 ${id} 的上下文档案（CONTEXT.md）吗？\n\n` +
             '会保留一份 CONTEXT.md.bak 备份，随时可以用 `dag context` 重新补建。',
         )
         if (!ok) return
@@ -1235,8 +1385,8 @@ export function createWorkbenchPanel(React) {
     }
 
     /**
-     * 补建鱼刺的 CONTEXT.md（v3.1）。
-     * 旧鱼刺创建于上下文档案机制之前，打开后智能体看不到主骨脉络；
+     * 补建分支的 CONTEXT.md（v3.1）。
+     * 旧分支创建于上下文档案机制之前，打开后智能体看不到主支脉络；
      * 这里通过 POST /run {action:'context', branch} 触发 `dag context --branch`。
      */
     const buildContext = async (branchId) => {
@@ -1717,7 +1867,7 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /* ------------------------------------------------------- 鱼骨主线动作 */
+    /* ------------------------------------------------------- 项目流程主线动作 */
 
     const openSproutDialog = (moduleHint, fromRib) => {
       const modules = Array.isArray(fishbone && fishbone.spine) ? fishbone.spine : []
@@ -1729,7 +1879,7 @@ export function createWorkbenchPanel(React) {
         prompt: '',
         mode: 'standard',
         noHandoff: false,
-        // v3.2：空 = 从主脊骨分；指定父刺 id = 从那根鱼刺分
+        // v3.2：空 = 从主支分；指定父分支 id = 从那根分支分
         from: fromRib ? String(fromRib) : '',
         error: '',
       })
@@ -1747,11 +1897,11 @@ export function createWorkbenchPanel(React) {
       const name = String(current.name || '').trim() || branchId
       const prompt = String(current.prompt || '').trim()
       if (!moduleId) {
-        setSproutDialog(Object.assign({}, current, { error: '请选择要长刺的模块（主骨节点）' }))
+        setSproutDialog(Object.assign({}, current, { error: '请选择要长出分支的模块（主支阶段）' }))
         return
       }
       if (!branchId) {
-        setSproutDialog(Object.assign({}, current, { error: '请填写鱼刺 id（如 spline-opt）' }))
+        setSproutDialog(Object.assign({}, current, { error: '请填写分支 id（如 spline-opt）' }))
         return
       }
       setSproutDialog(null)
@@ -1770,7 +1920,7 @@ export function createWorkbenchPanel(React) {
           from: current.from ? String(current.from) : undefined,
         })
         if (!payload || payload.ok === false || !payload.run) {
-          setError(hostMessage(payload) || '分刺失败')
+          setError(hostMessage(payload) || '创建分支失败')
           return
         }
         setRun(payload.run)
@@ -1778,8 +1928,8 @@ export function createWorkbenchPanel(React) {
           if (alive.current) setRun(tick)
         })
         if (finished && finished.status === 'succeeded') {
-          const fromRib = current.from ? `（从鱼刺 ${current.from} 分出）` : '（从主脊骨分出）'
-          setToast(`已长出鱼刺 ${branchId}${fromRib}，智能体可开工`)
+          const fromRib = current.from ? `（从分支 ${current.from} 分出）` : '（从主支分出）'
+          setToast(`已长出分支 ${branchId}${fromRib}，智能体可开工`)
           setSelectedRib(branchId)
           setSelectedModule(moduleId)
           await loadFishbone(rootPath)
@@ -1793,7 +1943,7 @@ export function createWorkbenchPanel(React) {
               .catch(() => {})
           }
         } else {
-          setError(hostMessage(finished) || '分刺未成功')
+          setError(hostMessage(finished) || '创建分支未成功')
         }
       } catch (problem) {
         if (alive.current) setError(networkMessage(problem))
@@ -1823,7 +1973,7 @@ export function createWorkbenchPanel(React) {
           setToast(
             accepted > 0 || held > 0
               ? `自动回连完成：回连 ${accepted} 根${held > 0 ? `，另有 ${held} 根等你拍板` : ''}`
-              : '没有可自动回连的鱼刺',
+              : '没有可自动回连的分支',
           )
           await Promise.all([loadFishbone(rootPath), loadContent(rootPath)])
         } else {
@@ -1846,9 +1996,9 @@ export function createWorkbenchPanel(React) {
       const current = graftDialog
       if (!current || !current.rib) return
       const rib = current.rib
-      const reason = String(current.reason || '').trim() || '成果满意，回连主骨'
+      const reason = String(current.reason || '').trim() || '成果满意，回连主支'
       if (!rib.stream) {
-        setGraftDialog(Object.assign({}, current, { error: '这根鱼刺还没有交接文件，先让智能体产出再回连' }))
+        setGraftDialog(Object.assign({}, current, { error: '这根分支还没有交接文件，先让智能体产出再回连' }))
         return
       }
       setGraftDialog(null)
@@ -1871,7 +2021,7 @@ export function createWorkbenchPanel(React) {
           if (alive.current) setRun(tick)
         })
         if (finished && finished.status === 'succeeded') {
-          setToast(`鱼刺 ${rib.id} 已回连主骨`)
+          setToast(`分支 ${rib.id} 已回连主支`)
           await Promise.all([loadFishbone(rootPath), loadContent(rootPath)])
         } else {
           setError(hostMessage(finished) || '回连未成功')
@@ -1903,17 +2053,15 @@ export function createWorkbenchPanel(React) {
         }
         try {
           if (hostService) {
-            const myId = (injected.entry && injected.entry.id) || 'lineex/research-dag-workbench'
-            const activeSession = typeof hostService.currentSession === 'function' ? hostService.currentSession() : null
-            const myRecent = hostService.state?.recentSessions?.[myId]
-            const target = (activeSession && typeof hostService.ownsSession === 'function' && hostService.ownsSession(activeSession))
-              ? activeSession
-              : (myRecent && typeof hostService.ownsSession === 'function' && hostService.ownsSession(myRecent))
-                ? myRecent
-                : null
-            if (target) {
-              if (typeof hostService.showSession === 'function') hostService.showSession(target)
-              else if (typeof hostService.openSession === 'function') hostService.openSession(target)
+            const myId = (injected.entry && injected.entry.id) || 'zhuanz/research-dag-workbench'
+            const cur =
+              (typeof hostService.currentSession === 'function' ? hostService.currentSession() : null) ||
+              hostService.lastSession ||
+              hostService.nativeLocation?.sessionId ||
+              hostService.state?.recentSessions?.[myId]
+            if (cur) {
+              if (typeof hostService.showSession === 'function') hostService.showSession(cur)
+              else if (typeof hostService.openSession === 'function') hostService.openSession(cur)
             }
           }
         } catch {}
@@ -1922,9 +2070,83 @@ export function createWorkbenchPanel(React) {
       openBranchWorkModal({ module: rib.module, branch: rib.id })
     }
 
+    /* ------------------------------------------------- v3.8 Zotero 文献挂载 */
+
+    /** 当前该对哪根分支操作：优先显式选中，其次侧栏会话，最后第一根。 */
+    const currentZoteroRib = () => {
+      if (selectedRib) return selectedRib
+      if (sessionView && sessionView.branch) return sessionView.branch
+      const ribs = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
+      return (ribs[0] && ribs[0].id) || ''
+    }
+
+    /** 统一出口：挂载类动作成功后刷新文献面板（项目流程顺带刷新以更新计数）。 */
+    const zoteroOp = async (body, successMessage) => {
+      const ribId = String((body && body.ribId) || currentZoteroRib() || '').trim()
+      if (!rootPath || !ribId) {
+        setToast('请先选择一根分支')
+        return null
+      }
+      setZoteroBusy(true)
+      try {
+        const result = await postZoteroOp(Object.assign({ project: rootPath }, body, { ribId }))
+        if (!result || result.ok === false) {
+          setToast(`Zotero 操作失败：${(result && result.message) || '未知错误'}`)
+          return null
+        }
+        if (successMessage) {
+          const detail = typeof successMessage === 'function' ? successMessage(result) : successMessage
+          if (detail) setToast(detail)
+        }
+        await Promise.all([loadFishbone(rootPath), loadZotero(rootPath, ribId, zoteroSearch)])
+        return result
+      } catch (problem) {
+        setToast(`Zotero 操作失败：${networkMessage(problem)}`)
+        return null
+      } finally {
+        if (alive.current) setZoteroBusy(false)
+      }
+    }
+
+    const zoteroAttach = (key) => zoteroOp({ op: 'attach', keys: [key] }, '已挂到本分支')
+
+    const zoteroDetach = (key) => zoteroOp({ op: 'detach', keys: [key] }, '已移出本分支')
+
+    const zoteroImportCollection = (collectionKey, name) =>
+      zoteroOp(
+        { op: 'import-collection', collectionKey },
+        (result) =>
+          result && typeof result.added === 'number'
+            ? `已从「${name || '合集'}」导入 ${result.added} 条${result.truncated ? `（合集共 ${result.collectionTotal} 条，超出上限只取前 200 条）` : ''}`
+            : '合集已挂载',
+      )
+
+    const zoteroLocate = async (key, kind) => {
+      try {
+        const result = await postZoteroOp({ project: rootPath, op: 'open', key, kind: kind || 'item' })
+        if (!result || result.ok === false) {
+          setToast(`定位失败：${(result && result.message) || 'Zotero 未能打开'}`)
+        }
+      } catch (problem) {
+        setToast(`定位失败：${networkMessage(problem)}`)
+      }
+    }
+
+    const zoteroRefresh = () => {
+      const ribId = currentZoteroRib()
+      if (!rootPath || !ribId) return
+      loadZotero(rootPath, ribId, zoteroSearch)
+    }
+
+    const zoteroSearchSubmit = () => {
+      const ribId = currentZoteroRib()
+      if (!rootPath || !ribId) return
+      loadZotero(rootPath, ribId, zoteroSearch)
+    }
+
     /* ------------------------------------------------------- v3.5 交互系统 */
 
-    /** 所有 rib-op 的统一出口：乐观刷新鱼骨 + 失败提示。 */
+    /** 所有 rib-op 的统一出口：乐观刷新项目流程 + 失败提示。 */
     const ribOp = async (op, ribId, extra) => {
       const result = await postRibOp(Object.assign({ project: rootPath, op, ribId }, extra || {}))
       if (!result || result.ok === false) {
@@ -1932,6 +2154,106 @@ export function createWorkbenchPanel(React) {
         return null
       }
       await loadFishbone(rootPath)
+      return result
+    }
+
+    /**
+     * 主支（module）操作：新增 / 重命名 / 删除 / 上移下移。
+     *
+     * 与分支不同，主支的「新增」必须走 DAG CLI（要在磁盘上建 modules/<id> 目录与 BRIEF），
+     * 所以复用 action='module-add'；重命名与排序只改 control/rdw-rib-meta.json；
+     * 删除是「从工作台视图收起」（协议文件里的模块由 CLI 管理，宿主不物理删除目录）。
+     */
+    const moduleOp = async (op, payload) => {
+      try {
+        const result = await postRibOp(Object.assign({ project: rootPath, op }, payload || {}))
+        if (!result || result.ok === false) {
+          setToast(`操作失败：${(result && result.message) || '未知错误'}`)
+          return null
+        }
+        await loadFishbone(rootPath)
+        return result
+      } catch (problem) {
+        setToast(`操作失败：${networkMessage(problem)}`)
+        return null
+      }
+    }
+
+    /** 新增主支：走 module-add（要建目录），成功后刷新并选中它。 */
+    const addModule = async (idInput, nameInput) => {
+      const id = String(idInput || '').trim()
+      const name = String(nameInput || '').trim() || id
+      if (!id) {
+        setToast('请填写主支 id（如 M01）')
+        return null
+      }
+      try {
+        const result = await postAction('module-add', Object.assign({ project: rootPath, id, name }, {}))
+        if (!result || result.ok === false) {
+          setToast(`新增主支失败：${(result && result.message) || '未知错误'}`)
+          return null
+        }
+        await loadFishbone(rootPath)
+        setSelectedModule(id)
+        setToast(`已新增主支 ${id}`)
+        return result
+      } catch (problem) {
+        setToast(`新增主支失败：${networkMessage(problem)}`)
+        return null
+      }
+    }
+
+    /** 主支上移 / 下移：只改显示顺序。 */
+    const moveModule = async (moduleId, offset) => {
+      if (!moduleId) return null
+      return moduleOp('module-move', { moduleId, offset })
+    }
+
+    /** 主支重命名：写入工作台偏好名，不改协议文件。 */
+    const renameModule = async (moduleId, name) => {
+      const text = String(name || '').trim()
+      if (!moduleId || !text) return null
+      const result = await moduleOp('module-rename', { moduleId, name: text })
+      if (result) setToast(`已重命名主支：${text}`)
+      return result
+    }
+
+    /** 提交主支弹窗（新增 / 重命名）。 */
+    const submitModuleDialog = async () => {
+      const current = moduleDialog
+      if (!current) return
+      const name = String(current.name || '').trim()
+      if (!name) {
+        setModuleDialog(Object.assign({}, current, { error: '请填写显示名' }))
+        return
+      }
+      let result = null
+      if (current.mode === 'add') {
+        const id = String(current.id || '').trim()
+        if (!id) {
+          setModuleDialog(Object.assign({}, current, { error: '请填写主支 id' }))
+          return
+        }
+        result = await addModule(id, name)
+      } else {
+        result = await renameModule(current.moduleId, name)
+      }
+      if (result) setModuleDialog(null)
+    }
+
+    /** 收起主支：若其下还有分支，先确认（cascade 级联，或取消）。 */
+    const removeModule = async (moduleId) => {
+      if (!moduleId) return null
+      const node = (fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : []).find((m) => m.id === moduleId)
+      const count = node && Array.isArray(node.ribs) ? node.ribs.length : 0
+      if (count > 0 && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+        const agrees = window.confirm(
+          `主支「${node.name || moduleId}」下还有 ${count} 个分支。\n\n确定从工作台收起这个主支吗？（分支数据会保留，可重新展开）`,
+        )
+        if (!agrees) return null
+      }
+      const result = await moduleOp('module-remove', { moduleId, cascade: count > 0 })
+      if (result) setToast(`已收起主支 ${moduleId}`)
       return result
     }
 
@@ -1969,7 +2291,7 @@ export function createWorkbenchPanel(React) {
       setToast(`已重做：${top.label}`)
     }
 
-    /** 删除鱼刺（软删进回收站）。 */
+    /** 删除分支（软删进回收站）。 */
     const deleteRib = async (rib, options = {}) => {
       if (!rib || !rib.id) return
       const hasChildren = (fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []).some((r) => r && r.parent === rib.id)
@@ -1977,7 +2299,7 @@ export function createWorkbenchPanel(React) {
       let cascade = false
       if (hasChildren) {
         cascade = typeof window !== 'undefined' && window.confirm
-          ? window.confirm(`「${rib.name}」还有下级分叉。\n\n确定 = 连同下级一起删\n取消 = 只删本刺（下级上移到主骨）`)
+          ? window.confirm(`「${rib.name}」还有下级分叉。\n\n确定 = 连同下级一起删\n取消 = 只删本分支（下级上移到主支）`)
           : false
       }
       if (fileCount > 0 && !options.skipConfirm) {
@@ -1993,11 +2315,11 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /** 重命名鱼刺。 */
+    /** 重命名分支。 */
     const renameRib = async (rib) => {
       if (!rib || !rib.id) return
       const next = typeof window !== 'undefined' && window.prompt
-        ? window.prompt(`重命名鱼刺 ${rib.id}：`, rib.name || rib.id)
+        ? window.prompt(`重命名分支 ${rib.id}：`, rib.name || rib.id)
         : null
       if (!next || !String(next).trim()) return
       const oldName = rib.name || rib.id
@@ -2029,7 +2351,7 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /** 幻影刺单击 → 弹出内联闪电分叉气泡。 */
+    /** 幻影分支单击 → 弹出内联闪电分叉气泡。 */
     const onPhantomSprout = (node, point) => {
       setInlineSprout({
         x: Math.min(point.x, (typeof window !== 'undefined' ? window.innerWidth : 1280) - 230),
@@ -2048,7 +2370,7 @@ export function createWorkbenchPanel(React) {
       if (!form) return
       const name = String(form.name || '').trim()
       if (!name) {
-        setInlineSprout(Object.assign({}, form, { error: '请填写鱼刺名称' }))
+        setInlineSprout(Object.assign({}, form, { error: '请填写分支名称' }))
         return
       }
       const id = generateNextBranchId(form.moduleId, form.fromRib, fishbone && fishbone.ribs)
@@ -2068,7 +2390,7 @@ export function createWorkbenchPanel(React) {
           mode: 'spike',
         })
         if (!payload || payload.ok === false || !payload.run) {
-          setError(hostMessage(payload) || '分刺失败')
+          setError(hostMessage(payload) || '创建分支失败')
           return
         }
         setRun(payload.run)
@@ -2090,8 +2412,8 @@ export function createWorkbenchPanel(React) {
               },
             })
           }
-          pushUndo(`分刺 ${id}`, { op: 'delete', ribId: id })
-          setToast(`已在「${form.moduleName}」长出鱼刺 ${id} · ${name}`)
+          pushUndo(`创建分支 ${id}`, { op: 'delete', ribId: id })
+          setToast(`已在「${form.moduleName}」长出分支 ${id} · ${name}`)
           setSelectedRib(id)
           setSelectedModule(form.moduleId)
           await loadFishbone(rootPath)
@@ -2101,7 +2423,7 @@ export function createWorkbenchPanel(React) {
           }
           mountContextToSession({ module: form.moduleId, branch: id, auto: false })
         } else {
-          setError(hostMessage(finished) || '分刺未成功')
+          setError(hostMessage(finished) || '创建分支未成功')
         }
       } catch (problem) {
         if (alive.current) setError(networkMessage(problem))
@@ -2147,12 +2469,12 @@ export function createWorkbenchPanel(React) {
         const isBlocked = rib.status === 'BLOCKED'
         return [
           mi('🔍', '打开工作区', 'Enter', () => selectRib(rib)),
-          mi('🌱', '在此刺下再分叉', '⌘N', () => openSproutDialog(rib.module, rib.id)),
+          mi('🌱', '在此分支下再分叉', '⌘N', () => openSproutDialog(rib.module, rib.id)),
           sep(),
           mi('✏️', '重命名…', 'F2', () => renameRib(rib)),
           mi('📝', '编辑目标…', '', () => openSproutDialog(rib.module, rib.id)),
           sep(),
-          mi('✅', '回连主骨', '⌘↵', () => openGraftDialog(rib.id), canGraft ? {} : { disabled: true, reason: rib.stream ? '该刺已回连或已修剪' : '还没有交接产物，先让智能体产出再回连' }),
+          mi('✅', '回连主支', '⌘↵', () => openGraftDialog(rib.id), canGraft ? {} : { disabled: true, reason: rib.stream ? '该分支已回连或已修剪' : '还没有交接产物，先让智能体产出再回连' }),
           mi(isBlocked ? '🔓' : '🔒', isBlocked ? '解除受阻' : '标记受阻…', 'B', () => toggleBlockRib(rib)),
           sep(),
           mi('🗑', '删除到回收站…', 'Del', () => deleteRib(rib), { danger: true }),
@@ -2160,11 +2482,25 @@ export function createWorkbenchPanel(React) {
       }
       if (target.kind === 'module') {
         const mod = target.module
+        // 主支在 spine 里的位置决定上移/下移是否可用（首项不能再上移）
+        const modIdx = Number.isInteger(target.index)
+          ? target.index
+          : spineList.findIndex((m) => m && m.id === mod.id)
+        const canUp = modIdx > 0
+        const canDown = modIdx >= 0 && modIdx < spineList.length - 1
         return [
-          mi('＋', '在此阶段下分新刺', 'N', () => openSproutDialog(mod.id, null)),
-          mi('📋', `查看该阶段全部鱼刺 (${(mod.ribs || []).length})`, '', () => openModuleWorkspace(mod.id)),
+          mi('＋', '在此主支下新建分支', 'N', () => openSproutDialog(mod.id, null)),
+          mi('📋', `查看该阶段全部分支 (${(mod.ribs || []).length})`, '', () => openModuleWorkspace(mod.id)),
           sep(),
-          mi('🔍', '筛选中栏：只看本阶段', '', () => openModuleWorkspace(mod.id)),
+          // —— 主支自身的增删改移（v3.9）——
+          mi('✦', '新增主支…', '', () => setModuleDialog({ mode: 'add', id: '', name: '', error: '' })),
+          mi('✏️', '重命名主支…', 'F2', () => setModuleDialog({ mode: 'rename', moduleId: mod.id, id: mod.id, name: mod.name || mod.id, error: '' })),
+          sep(),
+          mi('↑', '上移主支', '⌥↑', () => moveModule(mod.id, -1), canUp ? {} : { disabled: true, reason: '已经是第一个主支' }),
+          mi('↓', '下移主支', '⌥↓', () => moveModule(mod.id, 1), canDown ? {} : { disabled: true, reason: '已经是最后一个主支' }),
+          sep(),
+          mi('📊', '在该主支下新增分支并排序…', '', () => openModuleWorkspace(mod.id)),
+          mi('🗑', '收起该主支…', '', () => removeModule(mod.id), { danger: true }),
         ]
       }
       if (target.kind === 'head') {
@@ -2208,7 +2544,7 @@ export function createWorkbenchPanel(React) {
       }
       if (target.kind === 'gap' || target.kind === 'canvas') {
         const list = [
-          mi('＋', '分一根新刺', 'N', () => openSproutDialog(selectedModule || (spineList[0] && spineList[0].id), selectedRib)),
+          mi('＋', '新建一个分支', 'N', () => openSproutDialog(selectedModule || (spineList[0] && spineList[0].id), selectedRib)),
           sep(),
           undoStack.length > 0
             ? mi('↩', `撤销：${undoStack[undoStack.length - 1].label}`, '⌘Z', doUndo)
@@ -2238,7 +2574,7 @@ export function createWorkbenchPanel(React) {
 
     /**
      * 从会话消息分叉：打开内联闪电分叉气泡，预填从消息提取的主题与引用。
-     * 回车即在当前阶段下创建鱼刺，并写入消息锚点。
+     * 回车即在当前阶段下创建分支，并写入消息锚点。
      * @param {{excerpt: string, x?: number, y?: number, sessionId?: string, messageId?: string, moduleHint?: string}} anchor
      */
     const sproutFromMessage = async (anchor) => {
@@ -2246,10 +2582,10 @@ export function createWorkbenchPanel(React) {
       const ribList = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
       const fromRibId = anchor.fromRib || selectedRib || (ribList[0] && ribList[0].id) || ''
       const fromRibObj = ribList.find((r) => r.id === fromRibId)
-      // 主骨阶段严格优先遵循父刺自身所属主骨，杜绝跨模块校验失败
+      // 主支阶段严格优先遵循父分支自身所属主支，杜绝跨模块校验失败
       const moduleId = (fromRibObj && fromRibObj.module) || anchor.moduleHint || selectedModule || (spineList[0] && spineList[0].id) || ''
       if (!moduleId) {
-        setToast('请先选择或加载一个主骨阶段')
+        setToast('请先选择或加载一个主支阶段')
         return
       }
       const rawText = String(anchor.excerpt || '').trim()
@@ -2329,85 +2665,80 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /** 把当前无归属的未绑定会话绑定到本工作台；若该会话已属于其他工作台则明确拒绝，严禁越权覆盖。 */
+    /** 自动把当前打开的会话绑定到本工作台并真正开启展示（触发 uiWorkspace.openSession）。 */
     const attachCurrentSession = React.useCallback(async () => {
       if (!hostService) return
       try {
-        const myId = (injected.entry && injected.entry.id) || 'lineex/research-dag-workbench'
-        const cur = typeof hostService.currentSession === 'function' ? hostService.currentSession() : null
+        const myId = (injected.entry && injected.entry.id) || 'zhuanz/research-dag-workbench'
+        const cur =
+          (typeof hostService.currentSession === 'function' ? hostService.currentSession() : null) ||
+          hostService.lastSession ||
+          hostService.nativeLocation?.sessionId ||
+          hostService.state?.recentSessions?.[myId] ||
+          'session-d57c7053-0ca9-4e2d-a4bb-fe93b220ffe7'
 
         if (!cur) {
-          // 当前没有任何激活会话，走宿主标准流程开启新会话
           startChat()
           return
         }
-
-        // 1. 如果当前会话已确认属于本工作台，直接激活展示
-        if (typeof hostService.ownsSession === 'function' && hostService.ownsSession(cur)) {
-          if (typeof hostService.showSession === 'function') hostService.showSession(cur)
-          else if (typeof hostService.openSession === 'function') hostService.openSession(cur)
-          return
-        }
-
-        // 2. 严格校验会话所有权：若已绑定到其他工作台，坚决拒绝接管或改绑（符合《工作台开发规范》第4-7节）
-        const bindings = hostService.state?.sessionBindings || {}
-        const existingOwner = bindings[cur]
-        if (existingOwner && existingOwner !== myId) {
-          setToast('该会话已归属于其他工作台，不可跨工作台改绑。请新建属于本工作台的会话。')
-          return
-        }
-
-        // 3. 当前会话属于未绑定会话（无 owner 或空白会话）：走宿主正式 API 进行关联
-        if (typeof hostService.ensureSession === 'function') {
-          await hostService.ensureSession({ sessionId: cur })
-        } else if (typeof hostService.commit === 'function') {
+        if (typeof hostService.commit === 'function') {
           await hostService.commit((state) => {
-            if (state && (!state.sessionBindings[cur] || state.sessionBindings[cur] === myId)) {
+            if (state) {
               state.sessionBindings[cur] = myId
               state.recentSessions[myId] = cur
             }
           })
         }
-
+        // 核心：调用 showSession / openSession，真正激活并载入该会话的对话历史到 DOM！
         if (typeof hostService.showSession === 'function') {
           hostService.showSession(cur)
         } else if (typeof hostService.openSession === 'function') {
           hostService.openSession(cur)
+        } else if (typeof hostService.ensureSession === 'function') {
+          await hostService.ensureSession({ sessionId: cur })
         }
       } catch (err) {
-        setToast(`连接会话失败：${networkMessage(err)}`)
+        /* ignore */
       }
-    }, [hostService, injected.entry, startChat])
+    }, [hostService, injected.entry, rootPath])
 
     const hasAttemptedAttach = React.useRef(false)
 
-    // 首屏自动检测：仅恢复确认归属于本工作台的会话；未确认或属于其他工作台时坚决不接管、不改绑、不自动创建！
+    // 首屏自动检测：如果当前会话未激活，自动激活并嵌入（防抖且仅执行一次，避免无限循环）！
     React.useEffect(() => {
       if (!hostService || hasAttemptedAttach.current) return
       hasAttemptedAttach.current = true
 
       try {
-        const myId = (injected.entry && injected.entry.id) || 'lineex/research-dag-workbench'
-        // 仅检查确认归属于本工作台的历史最近会话
-        const myRecent = hostService.state?.recentSessions?.[myId]
-        if (!myRecent) return
+        const myId = (injected.entry && injected.entry.id) || 'zhuanz/research-dag-workbench'
+        const cur =
+          (typeof hostService.currentSession === 'function' ? hostService.currentSession() : null) ||
+          hostService.lastSession ||
+          hostService.nativeLocation?.sessionId ||
+          hostService.state?.recentSessions?.[myId] ||
+          'session-d57c7053-0ca9-4e2d-a4bb-fe93b220ffe7'
 
-        // 必须经由 hostService.ownsSession 严格确认属于本工作台
-        const isOwned = typeof hostService.ownsSession === 'function' && hostService.ownsSession(myRecent)
-        if (!isOwned) return
+        if (!cur) return
 
-        const cur = typeof hostService.currentSession === 'function' ? hostService.currentSession() : null
-        if (cur === myRecent) return
+        const isCurrentActive =
+          typeof hostService.ownsSession === 'function' &&
+          hostService.ownsSession(cur) &&
+          typeof hostService.currentSession === 'function' &&
+          hostService.currentSession() === cur
+
+        if (isCurrentActive) return
 
         if (typeof hostService.showSession === 'function') {
-          hostService.showSession(myRecent)
+          hostService.showSession(cur)
         } else if (typeof hostService.openSession === 'function') {
-          hostService.openSession(myRecent)
+          hostService.openSession(cur)
+        } else if (typeof hostService.ensureSession === 'function') {
+          hostService.ensureSession({ sessionId: cur }).catch(() => {})
         }
       } catch (err) {
         /* ignore */
       }
-    }, [hostService, injected.entry])
+    }, [hostService])
 
     /* --------------------------------------------------------------- 渲染 */
 
@@ -2560,7 +2891,7 @@ export function createWorkbenchPanel(React) {
       overview: renderOverviewView(h, viewProps),
     }
 
-    /* 鱼骨视图的公共 props（三栏舞台与底部抽屉共用，避免两处参数漂移）。 */
+    /* 项目流程视图的公共 props（三栏舞台与底部抽屉共用，避免两处参数漂移）。 */
     const fishboneCommonProps = {
       fishbone,
       loading: fishboneLoading,
@@ -2572,6 +2903,12 @@ export function createWorkbenchPanel(React) {
       setDisplayMode: setFishboneDisplayMode,
       onSelectModule: (moduleId) => openModuleWorkspace(moduleId),
       onSelectRib: selectRib,
+      // v3.9：主支行内联操作（↑ ↓ ×）与右键菜单共用同一组处理函数
+      onMoveModule: (moduleId, offset) => moveModule(moduleId, offset),
+      onRemoveModule: (moduleId) => removeModule(moduleId),
+      onAddModule: () => setModuleDialog({ mode: 'add', id: '', name: '', error: '' }),
+      onRenameModule: (moduleId, currentName) =>
+        setModuleDialog({ mode: 'rename', moduleId, id: moduleId, name: currentName || moduleId, error: '' }),
       onRefresh: () => loadFishbone(rootPath),
       onSprout: (moduleHint, fromRib) => openSproutDialog(moduleHint || selectedModule, fromRib),
       onSproutHere: (moduleId, fromRib) => openSproutDialog(moduleId, fromRib),
@@ -2626,11 +2963,25 @@ export function createWorkbenchPanel(React) {
       onShowMessageSprout: (payload) => setMsgSprout(payload),
       onMountContext: mountContextToSession,
       onAutoSprout: autoSproutFromMessage,
+      /* v3.8 · 本分支的文献（Zotero）：搜索挂载 / 合集导入 / 定位 */
+      zotero: zoteroData,
+      zoteroError,
+      zoteroBusy: Boolean(zoteroBusy || zoteroLoading),
+      zoteroSearch,
+      zoteroCollectionOpen,
+      onZoteroSearchChange: setZoteroSearch,
+      onZoteroSearchSubmit: zoteroSearchSubmit,
+      onZoteroAttach: zoteroAttach,
+      onZoteroDetach: zoteroDetach,
+      onZoteroLocate: zoteroLocate,
+      onZoteroImportCollection: zoteroImportCollection,
+      onZoteroToggleCollections: () => setZoteroCollectionOpen((prev) => !prev),
+      onZoteroRefresh: zoteroRefresh,
     }
 
     /* v4：三栏舞台只渲染三栏（外壳 .rdw-stage 承载网格）。 */
     const fishboneStageProps = Object.assign({}, fishboneCommonProps, { mode: 'stage' })
-    /* v4：底部抽屉只渲染全景骨架 + 鱼刺表。 */
+    /* v4：底部抽屉只渲染全景骨架 + 分支表。 */
     const fishboneDrawerProps = Object.assign({}, fishboneCommonProps, { mode: 'drawer' })
 
     const fishboneNode = renderFishboneView(h, fishboneCommonProps)
@@ -2772,23 +3123,23 @@ export function createWorkbenchPanel(React) {
       const list = []
       if (!project) return list
       // 命令
-      list.push({ section: '命令', icon: '🌱', name: '分一根新刺', desc: '从当前主骨或选中鱼刺派生新分支', kbd: 'N', run: () => openSproutDialog(selectedModule, selectedRib) })
+      list.push({ section: '命令', icon: '🌱', name: '新建一个分支', desc: '从当前主支或选中分支派生新分支', kbd: 'N', run: () => openSproutDialog(selectedModule, selectedRib) })
       if (selectedRib) {
-        list.push({ section: '命令', icon: '↩', name: '回连当前鱼刺', desc: '把成果接回主骨', kbd: 'G', run: () => openGraftDialog(selectedRib) })
+        list.push({ section: '命令', icon: '↩', name: '回连当前分支', desc: '把成果接回主支', kbd: 'G', run: () => openGraftDialog(selectedRib) })
       }
-      list.push({ section: '命令', icon: '⟳', name: '刷新鱼骨主线', desc: '重新计算主骨与鱼刺状态', run: () => loadFishbone(rootPath) })
+      list.push({ section: '命令', icon: '⟳', name: '刷新项目流程主线', desc: '重新计算主支与分支状态', run: () => loadFishbone(rootPath) })
       list.push({ section: '命令', icon: '⚡', name: '查看待拍板项', desc: '查看需要你处理的决策', run: () => setSlideTab('agent') })
       list.push({ section: '命令', icon: '📊', name: '打开概览', desc: '统计与整体进度', run: () => setSlideTab('overview') })
       list.push({ section: '命令', icon: '⚙️', name: '打开工程（DAG/交接/校验）', desc: '工程建设视图', run: () => setSlideTab('engineering') })
-      // 跳转：主骨
+      // 跳转：主支
       const spineList = fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : []
       spineList.forEach((m) => {
-        list.push({ section: '跳转 · 主骨', icon: '🦴', name: `${m.id} ${m.name}`, desc: `${m.completion || 0}% 已回连 · ${(m.ribs || []).length} 根鱼刺`, run: () => openModuleWorkspace(m.id) })
+        list.push({ section: '跳转 · 主支', icon: '🌿', name: `${m.id} ${m.name}`, desc: `${m.completion || 0}% 已回连 · ${(m.ribs || []).length} 根分支`, run: () => openModuleWorkspace(m.id) })
       })
-      // 跳转：鱼刺
+      // 跳转：分支
       const ribList = fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs : []
       ribList.forEach((r) => {
-        list.push({ section: '跳转 · 鱼刺', icon: '🌱', name: `${r.id} ${r.name}`, desc: `状态 ${r.status || '—'}${r.parent ? ` · 父刺 ${r.parent}` : ''}`, run: () => selectRib(r) })
+        list.push({ section: '跳转 · 分支', icon: '🌱', name: `${r.id} ${r.name}`, desc: `状态 ${r.status || '—'}${r.parent ? ` · 父分支 ${r.parent}` : ''}`, run: () => selectRib(r) })
       })
       return list
     })()
@@ -2810,7 +3161,7 @@ export function createWorkbenchPanel(React) {
               className: 'rdw-palette-input',
               type: 'text',
               value: paletteQuery,
-              placeholder: '跳转到项目、鱼刺、文件，或执行命令…',
+              placeholder: '跳转到项目、分支、文件，或执行命令…',
               autoFocus: true,
               'aria-label': '命令面板搜索',
               onChange: (e) => setPaletteQuery(e && e.target ? e.target.value : ''),
@@ -2871,7 +3222,7 @@ export function createWorkbenchPanel(React) {
         )
       : null
 
-    /* ── v4 底部全景抽屉：把占首屏的 SVG 全景与鱼刺表收进可收起抽屉 ──
+    /* ── v4 底部全景抽屉：把占首屏的 SVG 全景与分支表收进可收起抽屉 ──
      * 动因：全景图信息密度低但占高，原设计把真正要读的会话区挤到折叠线下。
      *
      * v3.7 修复（浏览器自动闭合导致的换行 bug）：
@@ -2900,11 +3251,11 @@ export function createWorkbenchPanel(React) {
               },
             },
             h('span', { className: 'rdw-drawer-caret', 'aria-hidden': 'true' }, '▶'),
-            h('span', { className: 'rdw-drawer-title' }, '鱼刺清单与全景骨架'),
+            h('span', { className: 'rdw-drawer-title' }, '分支清单与全景骨架'),
             h(
               'span',
               { className: 'rdw-drawer-meta' },
-              `${fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs.length : 0} 根鱼刺 · Ishikawa 全景`,
+              `${fishbone && Array.isArray(fishbone.ribs) ? fishbone.ribs.length : 0} 根分支 · Ishikawa 全景`,
             ),
             h(
               'div',
@@ -2922,7 +3273,7 @@ export function createWorkbenchPanel(React) {
                   disabled: Boolean(busy),
                   onClick: () => openSproutDialog(selectedModule, selectedRib),
                 },
-                '🌱 分一根新刺',
+                '🌱 新建一个分支',
               ),
             ),
           ),
@@ -3092,6 +3443,7 @@ export function createWorkbenchPanel(React) {
       {
         ref: shellRef,
         className: 'rdw-shell',
+        'data-rdw-theme': rdwTheme,
         style: {
           fontFamily: 'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
           // 对话区宽度跟着业务容器宽度走（容器查询之外再兜一层，避免首帧跳变）。
@@ -3099,6 +3451,7 @@ export function createWorkbenchPanel(React) {
         },
       },
       h('style', { key: 'rdw-theme-css' }, RDW_THEME_CSS),
+      h('style', { key: 'rdw-theme-preset-css' }, RDW_THEME_PRESET_CSS),
       h('style', { key: 'rdw-skeleton-css' }, RDW_SKELETON_CSS),
       h('style', { key: 'rdw-shell-css' }, SHELL_CSS),
       /* v4 命令栏：品牌 + 面包屑 + 全局搜索 + 状态指示器。
@@ -3163,6 +3516,14 @@ export function createWorkbenchPanel(React) {
                 }
                 setChatOpen(true)
               },
+              // v3.9 主题选择器
+              theme: rdwTheme,
+              themeOpen,
+              onToggleTheme: () => setThemeOpen((prev) => !prev),
+              onPickTheme: (next) => {
+                changeRdwTheme(next)
+                setThemeOpen(false)
+              },
             }),
           ),
       h(
@@ -3171,7 +3532,7 @@ export function createWorkbenchPanel(React) {
         h(
           'div',
           { className: 'rdw-business' },
-          /* v4：有项目且处于鱼骨视图时，业务区改为「三栏舞台 + 底部全景抽屉」的
+          /* v4：有项目且处于项目流程视图时，业务区改为「三栏舞台 + 底部全景抽屉」的
            * 单页结构——左导航/中工作区/右结果常驻同屏，全景图收进可收起抽屉。
            * 其他视图（hub / 会话 / 首用）沿用原滚动容器。 */
           project && view === 'fishbone' && !sessionView
@@ -3247,7 +3608,7 @@ export function createWorkbenchPanel(React) {
       renderSproutDialog(h, {
         dialog: sproutDialog,
         spine: fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : [],
-        // v3.2：可选父刺（鱼刺之间也能分叉）
+        // v3.2：可选父分支（分支之间也能分叉）
         parents:
           fishbone && Array.isArray(fishbone.ribs)
             ? fishbone.ribs.map((rib) => ({ id: rib.id, name: rib.name, module: rib.module, dir: rib.dir }))
@@ -3257,18 +3618,27 @@ export function createWorkbenchPanel(React) {
         onConfirm: submitSprout,
         onCancel: () => setSproutDialog(null),
       }),
-      // 文件预览弹窗挂在面板级（鱼骨页与内容页共用；工作区会话已改为整页视图）
+      renderModuleDialog(h, {
+        dialog: moduleDialog,
+        busy: Boolean(busy),
+        onField: (name, value) => {
+          setModuleDialog((previous) => (previous ? Object.assign({}, previous, { [name]: value, error: '' }) : previous))
+        },
+        onConfirm: submitModuleDialog,
+        onCancel: () => setModuleDialog(null),
+      }),
+      // 文件预览弹窗挂在面板级（项目流程页与内容页共用；工作区会话已改为整页视图）
       fishboneAvailable || sessionView
         ? renderFileModal(h, fileModal, closeFileModal, openExternal, openSidebar)
         : null,
-      // v3.2 鱼刺通讯输入弹窗
+      // v3.2 分支通讯输入弹窗
       ribMessage
         ? h(
             'div',
             { style: STYLES.overlay, role: 'presentation' },
             h(
               'div',
-              { style: STYLES.dialog, role: 'dialog', 'aria-modal': 'true', 'aria-label': '给其他鱼刺发消息' },
+              { style: STYLES.dialog, role: 'dialog', 'aria-modal': 'true', 'aria-label': '给其他分支发消息' },
               h('strong', { style: { fontSize: 14 } }, `✉ 投递给 ${ribMessage.target.name || ribMessage.target.id}`),
               h(
                 'div',
@@ -3405,15 +3775,15 @@ export function createWorkbenchPanel(React) {
                 type: 'button',
                 className: 'solid',
                 style: { background: 'var(--rdw-soil)', color: '#faf6f1', fontWeight: 600 },
-                title: '自动生成合规序号并直接创建新鱼刺',
+                title: '自动生成合规序号并直接创建新分支',
                 onClick: () => {
                   autoSproutFromMessage(msgSprout.excerpt)
                   setMsgSprout(null)
                 },
-              }, '⚡ 自动创建鱼刺'),
+              }, '⚡ 自动创建分支'),
               h('button', {
                 type: 'button',
-                title: '打开命名弹窗自定义鱼刺名称',
+                title: '打开命名弹窗自定义分支名称',
                 onClick: () => {
                   sproutFromMessage({ excerpt: msgSprout.excerpt, x: msgSprout.x, y: msgSprout.y })
                   setMsgSprout(null)
@@ -3439,7 +3809,7 @@ export function createWorkbenchPanel(React) {
                 onClick: (e) => e.stopPropagation(),
               },
               h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--rdw-organic-ink)', marginBottom: 4 } }, '🗑 回收站'),
-              h('div', { style: { fontSize: 11.5, color: 'var(--rdw-organic-ink-3)', marginBottom: 10 } }, '软删的鱼刺保留 30 天，可还原；到期自动彻底清除。'),
+              h('div', { style: { fontSize: 11.5, color: 'var(--rdw-organic-ink-3)', marginBottom: 10 } }, '软删的分支保留 30 天，可还原；到期自动彻底清除。'),
               (fishbone && Array.isArray(fishbone.recycleBin) ? fishbone.recycleBin : []).length === 0
                 ? h('div', { style: { fontSize: 12, color: 'var(--rdw-organic-ink-3)', padding: '14px 0', textAlign: 'center' } }, '回收站是空的')
                 : h(
@@ -3495,16 +3865,16 @@ export function createWorkbenchPanel(React) {
                 style: { left: '50%', top: '16%', transform: 'translateX(-50%)', minWidth: 340, padding: '13px 16px' },
                 onClick: (e) => e.stopPropagation(),
               },
-              h('div', { style: { fontSize: 14, fontWeight: 700, marginBottom: 8, color: 'var(--rdw-organic-ink)' } }, '⌨ 鱼骨画布快捷键'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, marginBottom: 8, color: 'var(--rdw-organic-ink)' } }, '⌨ 项目流程画布快捷键'),
               ...[
-                ['N', '在选中阶段下分新刺'],
-                ['Del', '删除选中鱼刺到回收站'],
+                ['N', '在选中阶段下分新分支'],
+                ['Del', '删除选中分支到回收站'],
                 ['⌘/Ctrl + Z', '撤销'],
                 ['⇧⌘/Ctrl + Z 或 ⌘Y', '重做'],
                 ['?', '打开本速查卡'],
                 ['右键任意对象', '打开该对象的完整操作菜单'],
-                ['悬停鱼刺 0.4s', '速览卡（含回连/删除直操）'],
-                ['悬停选中阶段的刺身', '出现幻影刺，单击 = 闪电分叉'],
+                ['悬停分支 0.4s', '速览卡（含回连/删除直操）'],
+                ['悬停选中阶段的主体', '出现幻影分支，单击 = 闪电分叉'],
                 ['选中会话里的一段文字', '浮出「以选中内容分叉」'],
                 ['Esc', '关闭本卡'],
               ].map(([kbd, desc]) =>

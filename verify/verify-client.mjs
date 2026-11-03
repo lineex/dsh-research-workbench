@@ -489,9 +489,68 @@ const ROUTE_PATHS = {
   run: `${ROUTE}/run`,
   runs: `${ROUTE}/runs`,
   bridge: `${ROUTE}/bridge`,
+  zotero: `${ROUTE}/zotero`,
+  zoteroOp: `${ROUTE}/zotero-op`,
 }
 
-/** v2.4 鱼骨视图 fixture）fishbone 响应））*/
+/** v3.8 Zotero 文献面板 fixture（/zotero 响应）。 */
+const zoteroFixture = {
+  ok: true,
+  base: 'http://127.0.0.1:23119',
+  available: true,
+  error: '',
+  ribId: 'B40-03',
+  linked: ['3QFYZA46'],
+  linkedCollection: null,
+  items: [
+    {
+      key: '3QFYZA46',
+      itemType: 'journalArticle',
+      title: 'Aeroallergen hypersensitivity: Comparing patients with nasal polyps',
+      creators: 'Janine A Van Lancker 等',
+      year: 2005,
+      publication: 'Allergy and asthma proceedings',
+      doi: '',
+      url: '',
+      tags: ['/unread'],
+      collections: ['ZKJZPKTF'],
+      hasAbstract: true,
+      abstractSnippet: 'Immunoglobulin E-mediated allergy',
+    },
+  ],
+  missing: [],
+  search: {
+    query: 'iptw',
+    items: [
+      { key: 'WH669MPE', itemType: 'journalArticle', title: 'Local allergic rhinitis: concept and approach', creators: 'Rondón 等', year: 2010, publication: 'J Investig Allergol Clin Immunol', doi: '', url: '', tags: [], collections: [], hasAbstract: true, abstractSnippet: '' },
+      { key: '3QFYZA46', itemType: 'journalArticle', title: 'Aeroallergen hypersensitivity', creators: 'Van Lancker 等', year: 2005, publication: 'Allergy', doi: '', url: '', tags: [], collections: [], hasAbstract: true, abstractSnippet: '' },
+    ],
+    total: 2,
+    error: '',
+  },
+  collections: [
+    { key: '3XTNE5IV', name: '病例书写', items: 4, depth: 0 },
+    { key: '8DMF3B72', name: '顶刊论文', items: 13, depth: 0 },
+    { key: 'GLFZACHZ', name: 'CCM/ICM', items: 27, depth: 1 },
+  ],
+}
+
+/** Zotero 未连接 fixture：面板必须显示「未连接」而不是假数据。 */
+const zoteroOfflineFixture = {
+  ok: true,
+  base: 'http://127.0.0.1:23119',
+  available: false,
+  error: 'Zotero 未运行',
+  ribId: 'B40-03',
+  linked: ['3QFYZA46'],
+  linkedCollection: null,
+  items: [],
+  missing: ['3QFYZA46'],
+  search: null,
+  collections: null,
+}
+
+/** v2.4 项目流程视图 fixture）fishbone 响应））*/
 /** v2.5 主智能体记录 fixture（/leader-log 响应）。 */
 const leaderLogFixture = {
   ok: true,
@@ -626,8 +685,12 @@ const fishboneFixture = {
 function makeFetchMock(healthFixture) {
   const log = []
   let healthPayload = healthFixture || healthNew
+  let offlineZotero = false
   const setHealth = (next) => {
     healthPayload = next || healthNew
+  }
+  const setZoteroOffline = (next) => {
+    offlineZotero = Boolean(next)
   }
   const fetch = async (url, options) => {
     const method = (options && options.method ? options.method : 'GET').toUpperCase()
@@ -656,6 +719,10 @@ function makeFetchMock(healthFixture) {
       payload = fishboneFixture
     } else if (pathname === ROUTE_PATHS.leaderLog) {
       payload = clone(leaderLogFixture)
+    } else if (pathname === ROUTE_PATHS.zotero) {
+      payload = clone(offlineZotero ? zoteroOfflineFixture : zoteroFixture)
+    } else if (pathname === ROUTE_PATHS.zoteroOp && method === 'POST') {
+      payload = { ok: true, ribId: 'B40-03', itemKeys: ['3QFYZA46'], collectionKey: null, added: 1, removed: 0 }
     } else if (pathname === ROUTE_PATHS.branchWork) {
       payload = {
         ok: true,
@@ -664,7 +731,7 @@ function makeFetchMock(healthFixture) {
         brief: '构建 IPTW 权重并完成诊断。',
         sessionNotes: '## 尝试 1\n未稳定化权重最大达 84.3，评估者要求加入稳定化。\n',
         directives: '### 2026-10-18T16:45:00Z · 主项目追问\n为什么乳）SMD 偏高？\n',
-        context: '# 鱼刺上下文档案\n\n主骨当前意图：完成 IPTW 诊断。\n',
+        context: '# 分支上下文档案\n\n主支当前意图：完成 IPTW 诊断。\n',
         parent: 'B20-01',
         siblings: [
           { id: 'B20-01', name: '协变量取舍', dir: 'modules/M40-statistics/branches/B20-01-covariate', isParent: true },
@@ -730,7 +797,7 @@ function makeFetchMock(healthFixture) {
       json: async () => clone(payload),
     }
   }
-  return { fetch, log, setHealth }
+  return { fetch, log, setHealth, setZoteroOffline }
 }
 
 /* ------------------------------------------------------------- React shim */
@@ -1103,7 +1170,7 @@ async function main() {
       : mainRegistration.options.inject()
 
   console.log('')
-  console.log('B) 默认「鱼骨」页（新宿主 fixture）)')
+  console.log('B) 默认「项目流程」页（新宿主 fixture）)')
   let tree = null
   try {
     tree = await harness.mount(businessComponent, injectedProps)
@@ -1150,54 +1217,175 @@ async function main() {
   }
   const text = textOf(tree)
   assert(countRequests(newFetch.log, ROUTE_PATHS.content) >= 1, '挂载）GET /content 被调）)')
-  assert(countRequests(newFetch.log, ROUTE_PATHS.fishbone) >= 1, '挂载）GET /fishbone 被调用（鱼骨主线）)')
+  assert(countRequests(newFetch.log, ROUTE_PATHS.fishbone) >= 1, '挂载）GET /fishbone 被调用（项目流程主线）)')
   assert(countRequests(newFetch.log, ROUTE_PATHS.state) >= 1, '挂载）GET /state 被调用（工程页数据）')
   assert(countRequests(newFetch.log, ROUTE_PATHS.results) >= 1, '挂载）GET /results 被调用（旧视）降级数据）)')
   assert(countRequests(newFetch.log, ROUTE_PATHS.runs) >= 1, '挂载）GET /runs 被调）)')
 
-  // ---- 鱼骨首屏：鱼）/ 主脊）/ 鱼刺 / 关注）
+  // ---- 项目流程首屏：鱼）/ 主脊）/ 分支 / 关注）
   const fishWanted = [
-    ['鱼头 · 研究目标', '鱼头标题'],
+    ['项目目标 · 研究目标', '项目目标标题'],
     ['重症低磷血症患者早期补磷', '研究标题'],
-    ['主脊骨 · 研究主线', '主脊骨标题'],
-    ['研究问题与方案', '主骨节点 M10'],
-    ['统计分析', '主骨节点 M40'],
-    ['审稿修订', '主骨节点 M60'],
-    ['研究方案', '鱼刺 B10-01'],
-    ['IPTW 诊断', '鱼刺 B40-03'],
-    ['主分析', '鱼刺 B40-02'],
-    ['已回连', '鱼刺状态：已回连'],
-    ['探路中', '鱼刺状态：探路中'],
+    ['主支 · 研究主线', '主支标题'],
+    ['研究问题与方案', '主支节点 M10'],
+    ['统计分析', '主支节点 M40'],
+    ['审稿修订', '主支节点 M60'],
+    ['研究方案', '分支 B10-01'],
+    ['IPTW 诊断', '分支 B40-03'],
+    ['主分析', '分支 B40-02'],
+    ['已回连', '分支状态：已回连'],
+    ['探路中', '分支状态：探路中'],
     ['需要你拍板或处理', '关注区'],
     ['过期', '过期标记'],
-    ['分一根新刺', '分刺按钮'],
+    ['新建一个分支', '创建分支按钮'],
     ['自动回连', '自动回连按钮'],
-    ['鱼刺清单', '鱼刺清单表'],
-    ['主骨下一步', '下一步区'],
+    ['分支清单', '分支清单表'],
+    ['主支下一步', '下一步区'],
     ['阻塞信号', '阻塞区'],
   ]
   for (const [needle, label] of fishWanted) {
-    assert(text.includes(needle), `鱼骨首屏渲染 ${label}（${needle}）`)
+    assert(text.includes(needle), `项目流程首屏渲染 ${label}（${needle}）`)
   }
-  assert(text.includes('🐟'), '页签/标题带鱼骨标）)')
-  assert(!text.includes('undefined'), '鱼骨页文本无 undefined')
-  assert(!text.includes('[object Object]'), '鱼骨页文本无 [object Object]')
-  assert(countNodes(tree) > 80, `鱼骨页元素树节点）= ${countNodes(tree)} > 80`)
+  assert(text.includes('📋'), '页签/标题带项目流程标）)')
+  assert(!text.includes('undefined'), '项目流程页文本无 undefined')
+  assert(!text.includes('[object Object]'), '项目流程页文本无 [object Object]')
+  assert(countNodes(tree) > 80, `项目流程页元素树节点）= ${countNodes(tree)} > 80`)
   const fishTabs = collectButtons(tree)
   /* v4：平级页签已被单页三栏舞台取代。
    * 检查项从「页签存在」升级为「导航能力存在」：
    *   平级页签消失（不再打断上下文）+ 命令栏承载面包屑/面板入口/全局跳转。 */
   const barText = textOf(tree)
-  assert(fishTabs.filter((item) => item.text === '🐟 鱼骨').length === 0, '平级「鱼骨」页签已移除（三栏常驻）')
+  assert(fishTabs.filter((item) => item.text === '📋 项目流程').length === 0, '平级「项目流程」页签已移除（三栏常驻）')
   assert(fishTabs.filter((item) => item.text === '🧠 主智能体').length === 1, '命令栏保留「主智能体」面板入口')
-  assert(barText.includes('跳转项目 / 鱼刺 / 文件'), '命令栏提供全局跳转入口（⌘K）')
+  assert(barText.includes('跳转项目 / 分支 / 文件'), '命令栏提供全局跳转入口（⌘K）')
   assert(barText.includes('early-phosphate'), '面包屑显示当前项目')
   assert(countRequests(newFetch.log, ROUTE_PATHS.leaderLog) >= 1, '挂载时 GET /leader-log 被调用')
 
-  // 鱼刺清单：待回连鱼刺有「回连」按钮，已回连鱼刺没有
+  /* ---- v3.8 本分支的文献（Zotero 接入） ---- */
+  tree = await harness.settle()
+  const zotText = textOf(tree)
+  if (process.env.RDW_DEBUG_ZOTERO) {
+    const idx = zotText.indexOf('本分支的文献')
+    console.log('---- zotero pane dump ----')
+    console.log(zotText.slice(Math.max(0, idx - 40), idx + 500))
+    console.log('---- end dump ----')
+  }
+  assert(
+    countRequests(newFetch.log, ROUTE_PATHS.zotero) >= 1,
+    '挂载时 GET /zotero 被调用（文献面板数据）',
+  )
+  assert(zotText.includes('本分支的文献'), '右栏显示「本分支的文献」面板')
+  assert(
+    zotText.includes('Aeroallergen hypersensitivity'),
+    '文献面板列出口袋里的 Zotero 条目标题',
+  )
+  assert(zotText.includes('2005'), '文献卡片显示年份')
+  assert(zotText.includes('从合集导入'), '文献面板提供「从合集导入」入口')
+  {
+    // 搜索框存在，且能触发检索（Enter → 重新请求 /zotero?q=）
+    // 注意：harness 每次 settle 会重建整棵树，按钮/输入节点引用会失效，
+    // 所以每次交互前都要按当前 tree 重新定位。
+    const findSearchInput = () =>
+      collectByType(tree, 'input').find(
+        (node) => node.props && node.props['aria-label'] === '在 Zotero 库中搜索文献',
+      ) || null
+    assert(Boolean(findSearchInput()), '文献面板有 Zotero 搜索输入框')
+    const before = countRequests(newFetch.log, ROUTE_PATHS.zotero)
+    const typed = findSearchInput()
+    if (typed) {
+      typed.props.onChange({ target: { value: 'iptw' } })
+      tree = await harness.settle()
+    }
+    const pressed = findSearchInput()
+    if (pressed && typeof pressed.props.onKeyDown === 'function') {
+      pressed.props.onKeyDown({ key: 'Enter', preventDefault() {} })
+      tree = await harness.settle()
+    }
+    assert(
+      countRequests(newFetch.log, ROUTE_PATHS.zotero) > before,
+      '搜索提交后重新请求 /zotero（带 q=）',
+    )
+    const searched = newFetch.log.filter(
+      (entry) => entry.pathname === ROUTE_PATHS.zotero && entry.url.includes('q=iptw'),
+    )
+    assert(searched.length >= 1, '搜索请求携带 q=iptw 参数')
+  }
+  {
+    // 命中条目里有「✚」挂载动作 → POST /zotero-op attach
+    const before = countRequests(newFetch.log, ROUTE_PATHS.zoteroOp)
+    const attachBtn = findButton(tree, '✚')
+    assert(Boolean(attachBtn), '搜索结果提供「✚」挂载按钮')
+    if (attachBtn) {
+      attachBtn.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
+      tree = await harness.settle()
+    }
+    assert(
+      countRequests(newFetch.log, ROUTE_PATHS.zoteroOp) > before,
+      '点「✚」后向 POST /zotero-op 发起挂载',
+    )
+    const lastOp = newFetch.log.filter((entry) => entry.pathname === ROUTE_PATHS.zoteroOp).pop()
+    assert(
+      Boolean(lastOp && lastOp.body && lastOp.body.op === 'attach' && Array.isArray(lastOp.body.keys)),
+      '挂载请求体形如 { op: "attach", keys: [...] }',
+    )
+  }
+  {
+    // 合集抽屉：默认收起，点开后列出合集；点合集 → import-collection
+    const before = countRequests(newFetch.log, ROUTE_PATHS.zoteroOp)
+    const toggle = collectButtons(tree).find(
+      (item) => item.text && item.text.includes('从合集导入'),
+    ) || null
+    assert(Boolean(toggle), '文献面板有合集抽屉展开按钮')
+    if (toggle) {
+      toggle.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
+      tree = await harness.settle()
+    }
+    const colText = textOf(tree)
+    assert(colText.includes('顶刊论文'), '展开后列出 Zotero 合集')
+    assert(colText.includes('病例书写'), '合集列表含多个合集')
+    // 点「顶刊论文」这一行触发 import-collection
+    const colRow = findFirstNode(
+      tree,
+      (node) =>
+        node.props &&
+        typeof node.props.title === 'string' &&
+        node.props.title.includes('顶刊论文') &&
+        typeof node.props.onClick === 'function',
+    )
+    if (colRow) {
+      colRow.props.onClick({ stopPropagation() {}, preventDefault() {} })
+      tree = await harness.settle()
+    }
+    assert(
+      countRequests(newFetch.log, ROUTE_PATHS.zoteroOp) > before,
+      '点合集行后向 POST /zotero-op 发起导入',
+    )
+    const importOp = newFetch.log.filter((entry) => entry.pathname === ROUTE_PATHS.zoteroOp).pop()
+    assert(
+      Boolean(importOp && importOp.body && importOp.body.op === 'import-collection' && importOp.body.collectionKey),
+      '合集导入请求体含 op=import-collection 与 collectionKey',
+    )
+  }
+  {
+    // Zotero 掉线：面板显示「未连接」且不渲染假条目
+    newFetch.setZoteroOffline(true)
+    const refreshBtn = collectButtons(tree).find((item) => item.text === '↻') || null
+    assert(Boolean(refreshBtn), '文献面板有「↻」刷新按钮')
+    if (refreshBtn) {
+      refreshBtn.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
+      tree = await harness.settle()
+    }
+    const offlineText = textOf(tree)
+    assert(offlineText.includes('未连接 Zotero'), 'Zotero 掉线时显示「未连接 Zotero」')
+    assert(offlineText.includes('Zotero 未运行'), '未连接时展示宿主给出的原因')
+    newFetch.setZoteroOffline(false)
+    tree = await harness.settle()
+  }
+
+  // 分支清单：待回连分支有「回连」按钮，已回连分支没有
   {
     const tableButtons = (collectButtons(tree) || []).map((item) => item.text || '')
-    assert(tableButtons.includes('回连'), '待回连鱼刺行有「回连」按钮')
+    assert(tableButtons.includes('回连'), '待回连分支行有「回连」按钮')
     assert(tableButtons.filter((text) => text === '回连').length >= 1, '回连按钮至少出现一次')
   }
 
@@ -1220,11 +1408,11 @@ async function main() {
       assert(filteredLeader.includes('接受研究方案 v1'), '筛选「裁决」后仍含裁决')
       assert(!filteredLeader.includes('建议把 IPTW 权重 99% 截尾作为主分析'), '筛选「裁决」后过滤掉想法')
     }
-    // 切回鱼骨页
-    // v4：鱼骨三栏常驻，无需切换页签
+    // 切回项目流程页
+    // v4：项目流程三栏常驻，无需切换页签
   }
 
-  // 点主骨节点（统计分析）→ 打开主骨档案工作区
+  // 点主支节点（统计分析）→ 打开主支档案工作区
   const spineGroups = collectByType(tree, 'g').filter(
     (node) => node.props && node.props.role === 'button' && typeof node.props.onClick === 'function',
   )
@@ -1233,20 +1421,20 @@ async function main() {
     spineNode.props.onClick({ stopPropagation() {}, preventDefault() {} })
     tree = await harness.settle()
     const moduleText = textOf(tree)
-    assert(moduleText.includes('主骨档案'), '点主骨节点后打开主骨档案')
-    assert(moduleText.includes('本主骨下的鱼刺'), '主骨档案展示所属鱼刺')
-    const moduleBack = findButton(tree, '← 鱼骨')
-    assert(Boolean(moduleBack), '主骨档案有返回鱼骨按钮')
+    assert(moduleText.includes('主支档案'), '点主支节点后打开主支档案')
+    assert(moduleText.includes('本主支下的分支'), '主支档案展示所属分支')
+    const moduleBack = findButton(tree, '← 项目流程')
+    assert(Boolean(moduleBack), '主支档案有返回项目流程按钮')
     if (moduleBack) {
       moduleBack.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
       tree = await harness.settle()
-      assert(textOf(tree).includes('鱼刺清单'), '主骨档案返回后恢复鱼骨视图')
+      assert(textOf(tree).includes('分支清单'), '主支档案返回后恢复项目流程视图')
     }
   } else {
-    bad('主骨节点「统计分析」不可点击')
+    bad('主支节点「统计分析」不可点击')
   }
 
-  // 点鱼刺（IPTW 诊断）→ 打开智能体工作区（SVG <g> 元素，role=button）
+  // 点分支（IPTW 诊断）→ 打开智能体工作区（SVG <g> 元素，role=button）
   const ribGroups = collectByType(tree, 'g').filter(
     (node) => node.props && node.props.role === 'button' && typeof node.props.onClick === 'function',
   )
@@ -1256,34 +1444,34 @@ async function main() {
     tree = await harness.settle()
     tree = await harness.settle()
     const sessionText = textOf(tree)
-    assert(sessionText.includes('IPTW 诊断'), '点鱼刺后打开工作区标题')
-    assert(sessionText.includes('主骨上下文档案'), '工作区展示 CONTEXT 上下文入口')
+    assert(sessionText.includes('IPTW 诊断'), '点分支后打开工作区标题')
+    assert(sessionText.includes('主支上下文档案'), '工作区展示 CONTEXT 上下文入口')
     assert(sessionText.includes('与该工作区智能体的往来指令'), '工作区展示会话区')
     assert(sessionText.includes('为什么乳）SMD 偏高？'), '工作区展示人类指令')
     assert(sessionText.includes('已检查高值区并提出稳定化建议。'), '工作区展示智能体回复')
     assert(sessionText.includes('工作区文件'), '工作区展示文件区')
-    // v3.2：鱼刺溯源 / 同伴通讯 / 收件箱
-    assert(sessionText.includes('这根刺从哪来'), '会话展示父刺溯源')
-    assert(sessionText.includes('B20-01'), '会话展示父刺 id')
-    assert(sessionText.includes('同一主骨下的其他鱼刺'), '会话展示同伴鱼刺列表')
-    assert(sessionText.includes('基线表'), '会话列出同伴鱼刺名称')
-    assert(sessionText.includes('收件箱'), '会话展示来自其他鱼刺的收件箱')
+    // v3.2：分支溯源 / 同伴通讯 / 收件箱
+    assert(sessionText.includes('这个分支从哪来'), '会话展示父分支溯源')
+    assert(sessionText.includes('B20-01'), '会话展示父分支 id')
+    assert(sessionText.includes('同一主支下的其他分支'), '会话展示同伴分支列表')
+    assert(sessionText.includes('基线表'), '会话列出同伴分支名称')
+    assert(sessionText.includes('收件箱'), '会话展示来自其他分支的收件箱')
     assert(
       (collectButtons(tree) || []).some((item) => (item.text || '').includes('通讯')),
-      '同伴鱼刺行有「通讯」按钮',
+      '同伴分支行有「通讯」按钮',
     )
     assert(
       (collectButtons(tree) || []).some((item) => (item.text || '').includes('清除上下文')),
       '会话顶栏有「清除上下文」按钮',
     )
     assert(
-      (collectButtons(tree) || []).some((item) => (item.text || '').includes('从父刺再分一根子刺')),
-      '有「从父刺再分一根子刺」入口',
+      (collectButtons(tree) || []).some((item) => (item.text || '').includes('从父分支再分一根子分支')),
+      '有「从父分支再分一根子分支」入口',
     )
     const graftButtonText = (collectButtons(tree) || []).map((item) => item.text || '').filter((text) => text.includes('回连'))
-    assert(!graftButtonText.some((text) => text.includes('回连主骨')), '已回连鱼刺的会话页没有回连按钮')
-    const backButton = findButton(tree, '← 鱼骨')
-    assert(Boolean(backButton), '工作区有返回鱼骨按钮')
+    assert(!graftButtonText.some((text) => text.includes('回连主支')), '已回连分支的会话页没有回连按钮')
+    const backButton = findButton(tree, '← 项目流程')
+    assert(Boolean(backButton), '工作区有返回项目流程按钮')
     // v3.1：工作区文件行优先在 DSH 侧边栏打开（而不是挤在面板小弹窗）
     // 文件区默认折叠 → 先展开「工作区文件」再断言行内动作
     {
@@ -1309,27 +1497,27 @@ async function main() {
       )
     }
     // 会话页回连按钮：B20-01（PROVISIONAL）应显示，B40-03（ACCEPTED）不显示
-    const sessionGraftButtons = (collectButtons(tree) || []).filter((item) => (item.text || '').includes('回连主骨'))
-    assert(sessionGraftButtons.length === 0, '已回连鱼刺（B40-03）会话页无回连按钮')
+    const sessionGraftButtons = (collectButtons(tree) || []).filter((item) => (item.text || '').includes('回连主支'))
+    assert(sessionGraftButtons.length === 0, '已回连分支（B40-03）会话页无回连按钮')
     if (backButton) {
       backButton.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
       tree = await harness.settle()
-      assert(textOf(tree).includes('鱼刺清单'), '返回后恢复鱼骨视图')
+      assert(textOf(tree).includes('分支清单'), '返回后恢复项目流程视图')
     }
   } else {
-    bad('鱼刺节点「IPTW 诊断」不可点击')
+    bad('分支节点「IPTW 诊断」不可点击')
   }
 
-  // 点「分一根新刺」→ 弹窗
-      if (await click('🌱 分一根新刺')) {
+  // 点「新建一个分支」→ 弹窗
+      if (await click('🌱 新建一个分支')) {
     const sproutText = textOf(tree)
-        assert(sproutText.includes('分一根新刺'), '分刺弹窗打开')
-        assert(sproutText.includes('挂在主骨哪一段'), '分刺弹窗含模块选择')
-    assert(sproutText.includes('探索'), '分刺弹窗含模式选择')
-    // v3.2：默认从主脊骨分，也可从已有鱼刺分
-    assert(sproutText.includes('从哪里分出来'), '分刺弹窗含「从哪里分出来」')
-    assert(sproutText.includes('从主脊骨分'), '分刺弹窗默认从主脊骨分（带主骨完整上下文）')
-    assert(sproutText.includes('继承父刺上下文'), '分刺弹窗提供从鱼刺分（继承父刺上下文）')
+        assert(sproutText.includes('新建一个分支'), '创建分支弹窗打开')
+        assert(sproutText.includes('挂在主支哪一段'), '创建分支弹窗含模块选择')
+    assert(sproutText.includes('探索'), '创建分支弹窗含模式选择')
+    // v3.2：默认从主支分，也可从已有分支分
+    assert(sproutText.includes('从哪里分出来'), '创建分支弹窗含「从哪里分出来」')
+    assert(sproutText.includes('从主支分'), '创建分支弹窗默认从主支分（带主支完整上下文）')
+    assert(sproutText.includes('继承父分支上下文'), '创建分支弹窗提供从分支分（继承父分支上下文）')
     const cancel = findButton(tree, '取消')
     if (cancel) {
       cancel.node.props.onClick({ stopPropagation() {}, preventDefault() {} })
@@ -1541,7 +1729,7 @@ async function main() {
       }
       if (legacyTree) {
         const legacyMarkup = textOf(legacyTree)
-        assert(legacyMarkup.includes('鱼骨'), '回退路径仍渲染鱼骨主线')
+        assert(legacyMarkup.includes('项目流程'), '回退路径仍渲染项目流程主线')
         assert(countRequests(legacyFetch.log, ROUTE_PATHS.fishbone) >= 1, '回退路径仍请求 /fishbone')
         assert(!legacyMarkup.includes('undefined'), '回退路径无 undefined')
       }
@@ -1562,8 +1750,8 @@ async function main() {
     }
     if (oldTree) {
       const oldMarkup = textOf(oldTree)
-      // v2.4：鱼骨是默认页；旧宿主没）/fishbone 也不崩，降级显示提示并自动引导到内容页
-assert(oldMarkup.includes('鱼骨') && oldMarkup.includes('内容'), '旧宿主仍渲染页签结构')
+      // v2.4：项目流程是默认页；旧宿主没）/fishbone 也不崩，降级显示提示并自动引导到内容页
+assert(oldMarkup.includes('项目流程') && oldMarkup.includes('内容'), '旧宿主仍渲染页签结构')
       assert(!oldMarkup.includes('undefined'), '旧宿主内容页）undefined')
       assert(countRequests(oldFetch.log, ROUTE_PATHS.content) === 0, '旧宿主不请求 /content（避）404 噪音）)')
 

@@ -59,8 +59,8 @@ export function renderProjectsHubView(h, props) {
   // 顶部全局 KPI 卡片（对齐 projectHub 的 4 大核心指标卡）
   const globalKpis = [
     { label: '登记课题', value: totalProjects, icon: '📁', color: 'var(--rdw-accent)', sub: '多项目并行总览' },
-    { label: '主骨总阶段', value: totalModules, icon: '🦴', color: 'var(--rdw-accent-dark)', sub: '关键推进节点' },
-    { label: '活跃鱼刺', value: totalRibs, icon: '🌱', color: 'var(--rdw-text)', sub: '探索分支智能体' },
+    { label: '主支总阶段', value: totalModules, icon: '🌿', color: 'var(--rdw-accent-dark)', sub: '关键推进节点' },
+    { label: '活跃分支', value: totalRibs, icon: '🌱', color: 'var(--rdw-text)', sub: '探索分支智能体' },
     { label: '已沉淀成果', value: totalAccepted, icon: '✅', color: 'var(--rdw-st-accepted)', sub: '已汇合交付产物' },
     { label: '需拍板事项', value: totalAttention, icon: '⚡', color: totalAttention > 0 ? 'var(--rdw-warn)' : 'var(--rdw-text-3)', sub: '待决策/风险信号' },
   ]
@@ -316,7 +316,7 @@ export function renderProjectsHubView(h, props) {
           h(
             'div',
             { style: { fontSize: 11.5, color: 'var(--rdw-text-2)', lineHeight: 1.6 } },
-            '集中管理所有并行课题：点击卡片直接进入专属工作台（鱼骨主线、智能体工作区、内容交接、工程底座），各课题之间分析模型与交接成果实时共享互通。',
+            '集中管理所有并行课题：点击卡片直接进入专属工作台（项目流程主线、智能体工作区、内容交接、工程底座），各课题之间分析模型与交接成果实时共享互通。',
           ),
         ),
       ),
@@ -541,7 +541,7 @@ export function renderProjectsHubView(h, props) {
                 h(
                   'div',
                   { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 } },
-                  h('span', { style: { color: 'var(--rdw-text-3)' } }, `主骨 ${p.modulesCount || 6} 段 · 鱼刺 ${p.ribsCount || 0} · 回连 ${p.acceptedCount || 0}`),
+                  h('span', { style: { color: 'var(--rdw-text-3)' } }, `主支 ${p.modulesCount || 6} 段 · 分支 ${p.ribsCount || 0} · 回连 ${p.acceptedCount || 0}`),
                   h('span', { style: { fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: pct === 100 ? 'var(--rdw-ok)' : 'var(--rdw-accent)' } }, `${pct}%`),
                 ),
                 h(
@@ -590,7 +590,7 @@ export function renderProjectsHubView(h, props) {
         ),
         renderDonutChart(h, {
           total: totalRibs,
-          title: '鱼刺',
+          title: '分支',
           sub: '总探索数',
           segments: [
             { label: '已回连', value: totalAccepted, color: 'var(--rdw-st-accepted)' },

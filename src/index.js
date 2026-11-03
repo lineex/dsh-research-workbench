@@ -46,11 +46,11 @@ export function WorkbenchIcon(React) {
 const PANEL_KEY = 'research-dag-workbench'
 
 /** 工作台身份：规范 GitHub URL（小写 owner/repo）。 */
-const REPOSITORY = 'https://github.com/lineex/research-dag-workbench'
+const REPOSITORY = 'https://github.com/zhuanz/research-dag-workbench'
 
 const TITLE = '研究项目 DAG 工作台'
 const DESCRIPTION =
-  '鱼骨式研究项目工作台：鱼头=研究目标，主脊骨=研究阶段，鱼刺=按需手动分出的探索智能体（默认带主骨完整上下文，可从其他鱼刺分叉，鱼刺之间可通讯）；成果满意后一键回连主骨。'
+  '项目流程式研究项目工作台：项目目标=研究目标，主支=研究阶段，分支=按需手动分出的探索智能体（默认带主支完整上下文，可从其他分支分叉，分支之间可通讯）；成果满意后一键回连主支。'
 
 /** 创建 Cordis 客户端插件描述。 */
 export function createClientPlugin(React) {

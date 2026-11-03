@@ -11,7 +11,7 @@ export const ROUTE = '/research-dag-workbench'
 /** v3.6 顶级页签：总控看板放在最前面！ */
 export const VIEWS = [
   ['hub', '总控看板'],
-  ['fishbone', '鱼骨'],
+  ['fishbone', '项目流程'],
   ['leader', '主智能体'],
   ['content', '内容'],
   ['network', '网络'],
@@ -111,7 +111,7 @@ export const ACTION_LABELS = {
   compare: '方案对比',
   'sync-accepted': '重建投影',
   'review-compile': '编译审稿信',
-  sprout: '分刺',
+  sprout: '创建分支',
   graft: '回连',
 }
 
@@ -959,10 +959,14 @@ export const SHELL_CSS = `
 .rdw-business{flex:1 1 0;width:100%;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;background:var(--rdw-organic-bg)}
 .rdw-business-scroll{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 18px 28px;box-sizing:border-box}
 .rdw-foot{flex:none;border-top:1px solid var(--rdw-warm-line-2);padding:8px 18px;background:var(--rdw-glass-strong);backdrop-filter:saturate(180%) blur(22px);-webkit-backdrop-filter:saturate(180%) blur(22px)}
-.rdw-chat{flex:none;display:flex;flex-direction:column;min-height:0;min-width:0;width:var(--rdw-chat-width,420px);max-width:46%;border-left:1px solid var(--rdw-warm-line);box-sizing:border-box;background:var(--rdw-glass)}
+/* 会话窗 = 全界面第一重心。
+ * 原先是「玻璃底 + 一条竖分割线」贴在右侧，读起来像附属面板。
+ * 现在抬成实体面：纯净底色 + 左侧一道柔和投影把它托起来，
+ * 与左侧三栏的灰底形成明确的前后关系。 */
+.rdw-chat{flex:none;display:flex;flex-direction:column;min-height:0;min-width:0;width:var(--rdw-chat-width,420px);max-width:46%;border-left:1px solid var(--rdw-focus-line);box-sizing:border-box;background:var(--rdw-focus-surface);box-shadow:-10px 0 30px -18px rgba(0,0,0,.18)}
 /* 收起：只是视觉隐藏，宿主会话节点保持挂载（展开后不丢状态）。 */
 .rdw-chat.rdw-chat-collapsed{display:none!important}
-.rdw-chat-head{flex:none;display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--rdw-warm-line-2);font-size:12.5px;font-weight:600;color:var(--rdw-organic-ink);background:var(--rdw-glass-strong);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.rdw-chat-head{flex:none;display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--rdw-warm-line-2);font-size:12.5px;font-weight:600;color:var(--rdw-organic-ink);background:var(--rdw-focus-surface);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .rdw-chat-slot{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
 .rdw-welcome{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:12px}
 
@@ -1045,7 +1049,7 @@ export const SHELL_CSS = `
   .rdw-tabs{gap:4px}
   .rdw-toolbar-brand{width:24px;height:24px;font-size:13px}
 }
-/* 鱼骨图：窄容器下降低最小可读尺寸，避免「压成一条细带」式空白；
+/* 项目流程图：窄容器下降低最小可读尺寸，避免「压成一条细带」式空白；
    横向滚动由包裹层负责，图本身不参与整页横向溢出。 */
 @container rdw (max-width: 900px){
   .rdw-fish-svg{min-width:480px!important;min-height:230px!important}
@@ -1057,11 +1061,11 @@ export const SHELL_CSS = `
  * v4 交互层：命令栏 / 三栏舞台 / 全景抽屉 / 命令面板 / 侧滑面板
  *
  * 设计动因（原设计的三个结构性问题）：
- *   1. 6 个平级页签（总控/鱼骨/主智能体/内容/网络/工程）把「高频导航（鱼骨）」
+ *   1. 6 个平级页签（总控/项目流程/主智能体/内容/网络/工程）把「高频导航（项目流程）」
  *      与「低频管理（工程/网络）」放在同一层，用户每切一次都要重建心理地图；
- *   2. 管理动作（回连/分刺/拍板）散落在页签与其他页签之间，
+ *   2. 管理动作（回连/创建分支/拍板）散落在页签与其他页签之间，
  *      用户必须离开当前上下文才能完成一次决策；
- *   3. 鱼骨全景 SVG 占用首屏大块纵向空间，把真正要读的会话区挤到折叠线以下。
+ *   3. 项目流程全景 SVG 占用首屏大块纵向空间，把真正要读的会话区挤到折叠线以下。
  *
  * 解决：单页三栏舞台（导航 | 工作区 | 结果）+ 底部可收起全景抽屉 +
  *      低频管理收进 ⌘K 与右侧侧滑面板——高频常驻、低频按需。
@@ -1081,14 +1085,40 @@ export const SHELL_CSS = `
 .rdw-search:hover{border-color:color-mix(in srgb,var(--rdw-sage) 34%,var(--rdw-warm-line));color:var(--rdw-organic-ink-2)}
 .rdw-kbd{font-family:var(--rdw-font-mono);font-size:11px;padding:1px 5px;border-radius:5px;background:color-mix(in srgb,var(--rdw-mist) 52%,transparent);color:var(--rdw-organic-ink-3);border:1px solid var(--rdw-warm-line-2);flex:0 0 auto}
 .rdw-status{display:flex;align-items:center;gap:6px;margin-left:auto;flex:0 0 auto}
-.rdw-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--rdw-r-pebble-sm);font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap;cursor:pointer;font:inherit;transition:transform .16s var(--rdw-ease-organic),box-shadow .16s var(--rdw-ease-organic)}
+.rdw-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--rdw-r-pebble-sm);font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap;cursor:pointer;font:inherit;transition:transform .16s var(--rdw-ease-organic),box-shadow .16s var(--rdw-ease-organic),background .16s var(--rdw-ease-organic),border-color .16s var(--rdw-ease-organic)}
 .rdw-pill:hover{transform:translateY(-1px);box-shadow:var(--rdw-shadow-organic-1)}
 .rdw-pill .num{font-family:var(--rdw-font-mono);font-size:11.5px}
-.rdw-pill.warn{color:var(--rdw-tan-ink);background:color-mix(in srgb,var(--rdw-tan) 19%,transparent);border-color:color-mix(in srgb,var(--rdw-tan) 40%,transparent)}
-.rdw-pill.blk{color:var(--rdw-st-rejected);background:color-mix(in srgb,var(--rdw-st-rejected) 12%,transparent);border-color:color-mix(in srgb,var(--rdw-st-rejected) 32%,transparent)}
-.rdw-pill.ok{color:var(--rdw-sage);background:color-mix(in srgb,var(--rdw-sage-tint) 16%,transparent);border-color:color-mix(in srgb,var(--rdw-sage-tint) 34%,transparent)}
-.rdw-pill.ghost{color:var(--rdw-organic-ink-2);background:transparent;border-color:var(--rdw-warm-line)}
+/* 顶部状态胶囊：默认用中性描边，只在悬停时浮出语义色。
+ * 四个彩色胶囊常驻会让顶栏比中栏还闹，注意力被拽到顶上。
+ * 语义只留在左侧图标（::before 变色的地方），文字和数字走中性。 */
+.rdw-pill.warn{color:var(--rdw-organic-ink-2);background:transparent;border-color:var(--rdw-warm-line-2)}
+.rdw-pill.warn>span:first-child{color:var(--rdw-tan-ink)}
+.rdw-pill.warn .num{color:var(--rdw-tan-ink)}
+.rdw-pill.warn:hover{background:color-mix(in srgb,var(--rdw-tan) 13%,transparent);border-color:color-mix(in srgb,var(--rdw-tan) 32%,transparent)}
+.rdw-pill.blk{color:var(--rdw-organic-ink-2);background:transparent;border-color:var(--rdw-warm-line-2)}
+.rdw-pill.blk>span:first-child{color:var(--rdw-st-rejected)}
+.rdw-pill.blk .num{color:var(--rdw-st-rejected)}
+.rdw-pill.blk:hover{background:color-mix(in srgb,var(--rdw-st-rejected) 11%,transparent);border-color:color-mix(in srgb,var(--rdw-st-rejected) 30%,transparent)}
+.rdw-pill.ok{color:var(--rdw-organic-ink-2);background:transparent;border-color:var(--rdw-warm-line-2)}
+.rdw-pill.ok>span:first-child{color:var(--rdw-sage)}
+.rdw-pill.ok:hover{background:color-mix(in srgb,var(--rdw-sage-tint) 13%,transparent);border-color:color-mix(in srgb,var(--rdw-sage-tint) 30%,transparent)}
+.rdw-pill.ghost{color:var(--rdw-organic-ink-2);background:transparent;border-color:var(--rdw-warm-line-2)}
+.rdw-pill.ghost:hover{border-color:var(--rdw-warm-line);color:var(--rdw-organic-ink)}
 .rdw-avatar-me{width:25px;height:25px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#faf6f1;background:var(--rdw-soil);border-radius:var(--rdw-r-dot);flex:0 0 auto}
+
+/* ── v3.9 主题选择器 ── */
+.rdw-theme-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:var(--rdw-r-pebble-sm);border:1px solid var(--rdw-warm-line);background:transparent;color:var(--rdw-organic-ink-2);font:inherit;font-size:11px;cursor:pointer;flex:0 0 auto;transition:background .16s var(--rdw-ease-organic),border-color .16s var(--rdw-ease-organic)}
+.rdw-theme-btn:hover{background:var(--rdw-organic-hover);border-color:var(--rdw-warm-line)}
+.rdw-theme-mask{position:fixed;inset:0;z-index:1200;background:transparent}
+.rdw-theme-pop{position:absolute;top:calc(100% + 6px);right:0;z-index:1201;width:262px;padding:6px;display:flex;flex-direction:column;gap:2px;border-radius:var(--rdw-r-pebble);background:var(--rdw-glass-strong);border:1px solid var(--rdw-warm-line);box-shadow:var(--rdw-shadow-organic-3);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.rdw-theme-pop-title{padding:4px 8px 5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--rdw-organic-ink-3)}
+.rdw-theme-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border:none;border-radius:var(--rdw-r-pebble-sm);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background .16s var(--rdw-ease-organic)}
+.rdw-theme-item:hover{background:var(--rdw-organic-hover)}
+.rdw-theme-item.is-active{background:color-mix(in srgb,var(--rdw-sage-tint) 15%,transparent)}
+.rdw-theme-item-name{font-size:12px;font-weight:600;color:var(--rdw-organic-ink);line-height:1.25}
+.rdw-theme-item-hint{font-size:11px;color:var(--rdw-organic-ink-3);line-height:1.35}
+.rdw-theme-check{margin-left:auto;flex:0 0 auto;font-size:12px;font-weight:700;color:var(--rdw-sage)}
+@media (prefers-reduced-motion:reduce){.rdw-theme-item,.rdw-theme-btn{transition:none}}
 
 /* ── 三栏舞台 ──
  * 高度链关键：舞台必须能**收缩**（min-height:0）且撑满父级（height:100%），
@@ -1096,15 +1126,18 @@ export const SHELL_CSS = `
  * 330px 只作为极端窄屏下的可读下限，用 min-height 的 media 查询兜底，
  * 不放在主规则里阻止收缩。 */
 .rdw-stage{flex:1 1 auto;height:100%;min-height:0;display:grid;grid-template-columns:minmax(210px,252px) minmax(0,1fr) minmax(200px,244px);gap:10px;padding:10px 12px;overflow:hidden}
-.rdw-pane{min-height:0;height:100%;display:flex;flex-direction:column;background:var(--rdw-organic-surface);border:1px solid var(--rdw-warm-line-2);border-radius:var(--rdw-r-blob);overflow:hidden}
+/* 三栏分三级：侧栏 = 底板（灰面、无投影），中栏 = 工作台面（纯白、有投影）。
+ * 眼睛先落在中栏，再按需移到两侧。 */
+.rdw-pane{min-height:0;height:100%;display:flex;flex-direction:column;background:var(--rdw-side-surface);border:1px solid var(--rdw-side-line);border-radius:var(--rdw-r-blob);overflow:hidden}
 .rdw-pane.paper{background:var(--rdw-organic-bg);background-image:var(--rdw-organic-grain)}
-.rdw-pane-head{flex:0 0 auto;padding:9px 12px 7px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rdw-warm-line-2)}
+.rdw-pane-focus{background:var(--rdw-focus-surface);border-color:var(--rdw-focus-line);box-shadow:var(--rdw-focus-shadow)}
+.rdw-pane-head{flex:0 0 auto;padding:9px 12px 7px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rdw-side-line)}
 .rdw-pane-title{font-family:var(--rdw-font-serif);font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--rdw-organic-ink)}
 .rdw-pane-sub{font-size:11.5px;color:var(--rdw-organic-ink-3);margin-top:1px}
 .rdw-pane-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:8px 10px 10px}
 .rdw-pane-foot{flex:0 0 auto;display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--rdw-warm-line-2);background:color-mix(in srgb,var(--rdw-organic-surface) 74%,transparent)}
 
-/* ── 鱼头 / 主骨 / 鱼刺导航行 ── */
+/* ── 项目目标 / 主支 / 分支导航行 ── */
 .rdw-fishhead{padding:9px 11px;border-radius:var(--rdw-r-pebble);margin-bottom:8px;background:color-mix(in srgb,var(--rdw-sage-tint) 13%,var(--rdw-organic-surface));border:1px solid color-mix(in srgb,var(--rdw-sage-tint) 34%,transparent);border-left:3px solid var(--rdw-sage)}
 .rdw-fishhead-label{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:var(--rdw-tan-ink);margin-bottom:3px}
 .rdw-fishhead-title{font-family:var(--rdw-font-serif);font-size:12.5px;font-weight:600;line-height:1.35;color:var(--rdw-organic-ink)}
@@ -1131,6 +1164,18 @@ export const SHELL_CSS = `
 .rdw-rib-act{opacity:0;flex:0 0 auto;width:18px;height:18px;display:grid;place-items:center;font-size:11.5px;border-radius:5px;border:none;background:none;cursor:pointer;transition:opacity .16s var(--rdw-ease-organic),background .16s var(--rdw-ease-organic)}
 .rdw-rib-row:hover .rdw-rib-act{opacity:1}
 .rdw-rib-act:hover{background:color-mix(in srgb,var(--rdw-sage-tint) 24%,transparent)}
+
+/* ── 主支行内联操作（v3.9：↑ ↓ × 悬停显现，主支不必只能右键）── */
+.rdw-mod-actions{opacity:0;transition:opacity .16s var(--rdw-ease-organic)}
+.rdw-organic-row:hover .rdw-mod-actions,.rdw-mod-actions:focus-within{opacity:1}
+.rdw-mod-act{width:16px;height:16px;display:grid;place-items:center;font-size:11px;line-height:1;border-radius:4px;border:none;background:none;color:var(--rdw-organic-ink-3);cursor:pointer;transition:background .16s var(--rdw-ease-organic),color .16s var(--rdw-ease-organic)}
+.rdw-mod-act:hover:not(:disabled){background:color-mix(in srgb,var(--rdw-sage-tint) 24%,transparent);color:var(--rdw-organic-ink)}
+.rdw-mod-act-danger:hover{background:color-mix(in srgb,var(--rdw-danger) 16%,transparent);color:var(--rdw-danger)}
+@media (prefers-reduced-motion:reduce){.rdw-mod-actions{transition:none}}
+
+/* 「＋ 主支」新增入口：低干扰胶囊，悬停转为鼠尾草实底 */
+.rdw-add-module{flex:0 0 auto;padding:2px 7px;border-radius:var(--rdw-r-pebble-sm);border:1px solid color-mix(in srgb,var(--rdw-sage-tint) 30%,transparent);background:color-mix(in srgb,var(--rdw-sage-tint) 10%,transparent);color:var(--rdw-sage);font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;cursor:pointer;transition:background .16s var(--rdw-ease-organic),color .16s var(--rdw-ease-organic),border-color .16s var(--rdw-ease-organic)}
+.rdw-add-module:hover{background:var(--rdw-sage);border-color:var(--rdw-sage);color:var(--rdw-on-brand)}
 
 /* ── 中栏：任务工作区 ── */
 .rdw-ws-head{padding:10px 13px 8px;border-bottom:1px solid var(--rdw-warm-line-2)}
@@ -1305,7 +1350,7 @@ export const SHELL_CSS = `
   .rdw-shell *,.rdw-shell *::before,.rdw-shell *::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
 
-/* ── v3.5 交互系统 2.0：右键菜单 / 速览卡 / 幻影刺 / 回收站 ── */
+/* ── v3.5 交互系统 2.0：右键菜单 / 速览卡 / 幻影分支 / 回收站 ── */
 .rdw-ctxmask{position:fixed;inset:0;z-index:400}
 .rdw-ctxmenu{position:fixed;z-index:401;min-width:220px;max-width:300px;padding:5px;background:var(--rdw-glass);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--rdw-warm-line);border-radius:var(--rdw-r-pebble);box-shadow:0 8px 28px rgba(35,31,25,.16),0 2px 6px rgba(35,31,25,.08);animation:rdw-ctx-in .12s var(--rdw-ease-organic)}
 @keyframes rdw-ctx-in{from{opacity:0;transform:scale(.96) translateY(-3px)}to{opacity:1;transform:none}}
@@ -1345,7 +1390,7 @@ export const SHELL_CSS = `
 .rdw-fishbone-stage:focus{outline:none}
 .rdw-kbd-focus{outline:2px solid var(--rdw-sys-blue);outline-offset:1px;border-radius:var(--rdw-r-pebble-sm)}
 
-/* ── v3.7 鱼刺会话与推理轨迹视图（对标 DSH 原生三图设计） ── */
+/* ── v3.7 分支会话与推理轨迹视图（对标 DSH 原生三图设计） ── */
 .rdw-chat-tabs-bar{display:flex;align-items:center;justify-content:space-between;padding:0 4px;border-bottom:1px solid var(--rdw-warm-line-2);margin-bottom:6px;flex:0 0 auto}
 .rdw-chat-tabs{display:flex;align-items:center;gap:18px}
 .rdw-chat-tab{padding:8px 2px;background:none;border:none;font:inherit;font-size:12.5px;color:var(--rdw-organic-ink-3);cursor:pointer;position:relative;transition:color .12s}
@@ -1378,13 +1423,13 @@ export const SHELL_CSS = `
 
 /** 首用/无项目引导文案（业务页自己负责，不使用宿主通用引导）。 */
 export const WELCOME_COPY = {
-  title: '把研究项目画成一条鱼骨',
-  subtitle: '这条鱼骨是你的研究主线：鱼头是研究目标，脊骨是研究阶段，鱼刺是从任意位置长出的探索智能体。',
+  title: '把研究项目画成一条项目流程',
+  subtitle: '这条项目流程是你的研究主线：项目目标是研究目标，主支是研究阶段，分支是从任意位置长出的探索智能体。',
   points: [
-    ['🐟 鱼头', '研究目标与当前阶段：你要回答的那个问题就写在这里。'],
-    ['🦴 主脊骨', '主任务沿脊骨推进，默认只有一条主线，不会事先分叉。'],
-    ['🌱 鱼刺', '只有当某个子问题真的复杂到值得独立探索时，才由你手动分出一根。'],
-    ['↩ 回连', '鱼刺的成果你满意后一键接回主骨，主线继续往前走。'],
+    ['📋 项目目标', '研究目标与当前阶段：你要回答的那个问题就写在这里。'],
+    ['🌿 主支', '主任务沿主支推进，默认只有一条主线，不会事先分叉。'],
+    ['🌱 分支', '只有当某个子问题真的复杂到值得独立探索时，才由你手动分出一根。'],
+    ['↩ 回连', '分支的成果你满意后一键接回主支，主线继续往前走。'],
   ],
   stepLoad: '已经有一个研究项目？填入项目绝对路径后点「加载」。',
   stepExample: '还没有项目？先加载示例项目，看整条主线是怎么组织的。',

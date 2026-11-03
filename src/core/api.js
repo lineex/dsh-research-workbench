@@ -66,7 +66,7 @@ export async function fetchLeaderLog(project) {
 }
 
 /**
- * GET /fishbone?project=... —— v2.4 鱼骨视图数据（鱼头 + 主脊骨 + 鱼刺 + 关注项）。
+ * GET /fishbone?project=... —— v2.4 项目流程视图数据（项目目标 + 主支 + 分支 + 关注项）。
  * 旧宿主没有该路由时返回 {ok:false,...}，由面板降级到内容页。
  */
 export async function fetchFishbone(project) {
@@ -108,7 +108,7 @@ export async function postAction(body) {
 }
 
 /**
- * POST /rib-op —— v3.5 鱼刺元操作（软删回收站/受阻/重命名/锚点）。
+ * POST /rib-op —— v3.5 分支元操作（软删回收站/受阻/重命名/锚点）。
  * 不走 DAG CLI，只改 control/rdw-rib-meta.json，立即返回（无 run 轮询）。
  * body: { project, op: 'delete'|'restore'|'purge'|'empty-bin'|'block'|'unblock'|'rename'|'anchor', ribId?, ... }
  */
@@ -147,7 +147,7 @@ export async function postBranchDirective(project, moduleId, branchId, text, by)
   })
 }
 
-/** POST /mount-context —— 将鱼刺的上下文档案（CONTEXT.md 等）挂载并同步到工作区，生成结构化对话提示词。 */
+/** POST /mount-context —— 将分支的上下文档案（CONTEXT.md 等）挂载并同步到工作区，生成结构化对话提示词。 */
 export async function postMountContext(project, moduleId, branchId, workspace) {
   return requestJson(`${ROUTE}/mount-context`, {
     method: 'POST',
@@ -175,6 +175,36 @@ export async function postOpenSidebar(project, path, sessionId) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
+  })
+}
+
+/**
+ * GET /zotero?project=...&rib=...&q=...&collection=...
+ * v3.8 Zotero 文献面板：一次取回「本分支已挂文献 + 关键词命中 + 合集树」。
+ * Zotero 没开机时返回 { ok:true, available:false, error:'…' }，面板据此显示「未连接」。
+ */
+export async function fetchZotero(project, ribId, query, collectionKey) {
+  const target = typeof project === 'string' ? project.trim() : ''
+  const params = [`project=${encodeURIComponent(target)}`]
+  if (typeof ribId === 'string' && ribId.trim()) params.push(`rib=${encodeURIComponent(ribId.trim())}`)
+  if (typeof query === 'string' && query.trim()) params.push(`q=${encodeURIComponent(query.trim())}`)
+  if (typeof collectionKey === 'string' && collectionKey.trim()) {
+    params.push(`collection=${encodeURIComponent(collectionKey.trim())}`)
+  }
+  return requestJson(`${ROUTE}/zotero?${params.join('&')}`)
+}
+
+/**
+ * POST /zotero-op —— v3.8 分支文献挂载动作（只改 control/rdw-rib-meta.json）。
+ * body: { project, ribId, op, keys?, collectionKey?, key?, kind? }
+ *   op ∈ attach | detach | clear | import-collection | open
+ */
+export async function postZoteroOp(body) {
+  const payload = body && typeof body === 'object' ? body : {}
+  return requestJson(`${ROUTE}/zotero-op`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
   })
 }
 

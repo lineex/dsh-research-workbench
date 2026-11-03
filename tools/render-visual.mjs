@@ -357,7 +357,7 @@ function registerComponent(plugin) {
 }
 
 const VIEWS = [
-  { id: 'fishbone', label: '鱼骨主线', width: 1440, height: 1180 },
+  { id: 'fishbone', label: '项目流程主线', width: 1440, height: 1180 },
   { id: 'content', label: '内容', width: 1440, height: 1180 },
   { id: 'network', label: '项目网络', width: 1440, height: 900 },
 ]
@@ -384,8 +384,8 @@ for (const view of VIEWS) {
     if (typeof children === 'object' && children.props) return flatText(children.props.children)
     return ''
   }
-  // 页签文案带图标前缀（如「🐟 鱼骨」），所以用 endsWith 而不是全等。
-  const TARGETS = { fishbone: '鱼骨', content: '内容', network: '网络' }
+  // 页签文案带图标前缀（如「📋 项目流程」），所以用 endsWith 而不是全等。
+  const TARGETS = { fishbone: '项目流程', content: '内容', network: '网络' }
   const target = buttons.find((b) => {
     const text = flatText(b.props && b.props.children).trim()
     return text === TARGETS[view.id] || text.endsWith(TARGETS[view.id])

@@ -1,10 +1,10 @@
-# 研究项目 DAG 工作台（workbench v3.7）
+# 研究项目 DAG 工作台（workbench v3.9）
 
-DSH 侧栏工作台插件：把一个 research-dag 协议项目变成**业务整页优先**的鱼骨工作台。
-默认整页展示研究主线（鱼头/主脊骨/鱼刺）；中栏按鱼刺的生命阶段切换三种形态
+DSH 侧栏工作台插件：把一个 research-dag 协议项目变成**业务整页优先**的项目流程工作台。
+默认整页展示研究主线（项目目标/主支/分支）；中栏按分支的生命阶段切换三种形态
 （空白探索 / 上下文承袭 / 已有记录），需要 AI 协助时切到宿主原生会话窗口。
 
-- 版本：`3.7.0`（`package.json`）
+- 版本：`3.9.0`（`package.json`）
 - 插件包名：`dsh-research-dag-workbench`
 - 路由前缀：`/research-dag-workbench`
 - 宿主入口：`lib/host.js`（Cordis 插件，`inject: ['webServer']`，不导出 `Config`）
@@ -29,7 +29,7 @@ workbench/
 ├── lib/
 │   ├── host.js             # 宿主半侧：HTTP 路由 + 白名单子进程 + run 注册表
 │   └── client.js           # 浏览器构建产物（build-client.mjs 生成）
-├── src/                    # 浏览器源码（鱼骨/主智能体/内容/网络/工程 页签）
+├── src/                    # 浏览器源码（项目流程/主智能体/内容/网络/工程 页签）
 ├── tools/
 │   ├── build-client.mjs    # src → lib/client.js
 │   └── preview-layout.mjs  # 生成真实浏览器布局自检页（人工视觉验收用）
@@ -64,7 +64,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 1. 用 `pnpm pack`（或 `npm pack`）生成 tarball；
 2. 在 DSH Desktop 插件管理中安装该 tarball（或 `dsh plugin --profile web add <tgz>`）；
 3. **手动完整退出并重开 DSH Desktop**（插件行只在启动时加载）；
-4. 左侧工作台切换器出现「研究项目 DAG 工作台」；打开即整页鱼骨主线。
+4. 左侧工作台切换器出现「研究项目 DAG 工作台」；打开即整页项目流程主线。
 
 
 ## 3. 宿主 HTTP 接口
@@ -76,13 +76,13 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/health` | 包名/版本/路由/动作白名单/桥可用性/kitRoot/配置路径/示例项目 |
-| GET | `/fishbone?project=<abs>` | **v3.x 主接口**：鱼骨全量数据（head/spine/ribs/recycleBin/attention/markers/totals），已合并工作台元数据 |
-| POST | `/rib-op` | **v3.5**：鱼刺元数据操作。`op` ∈ `delete` / `restore` / `purge` / `empty-bin` / `block` / `unblock` / `rename` / `anchor` |
-| GET | `/branch-work?project=&module=&branch=` | **v2.7/v3.7**：单刺工作区。返回 `brief` / `context` / `sessionNotes` / `directives` + 解析好的 `directivesParsed` / `sessionParsed` / `workFiles` / `outputFiles` / `parent` / `siblings` / `inbox` |
-| POST | `/branch-directive` | **v2.7**：向鱼刺工作区下达指令，追加写入 `work/DIRECTIVES.md` |
-| GET | `/detail?project=<abs>&branch=<id>` | 单刺详情 |
-| POST | `/auto` | 批量接受全部 `PROVISIONAL` 刺（自动回连） |
-| POST | `/graft` | 回连主骨（写 handoff） |
+| GET | `/fishbone?project=<abs>` | **v3.x 主接口**：项目流程全量数据（head/spine/ribs/recycleBin/attention/markers/totals），已合并工作台元数据 |
+| POST | `/rib-op` | **v3.5**：分支元数据操作。`op` ∈ `delete` / `restore` / `purge` / `empty-bin` / `block` / `unblock` / `rename` / `anchor` |
+| GET | `/branch-work?project=&module=&branch=` | **v2.7/v3.7**：单分支工作区。返回 `brief` / `context` / `sessionNotes` / `directives` + 解析好的 `directivesParsed` / `sessionParsed` / `workFiles` / `outputFiles` / `parent` / `siblings` / `inbox` |
+| POST | `/branch-directive` | **v2.7**：向分支工作区下达指令，追加写入 `work/DIRECTIVES.md` |
+| GET | `/detail?project=<abs>&branch=<id>` | 单分支详情 |
+| POST | `/auto` | 批量接受全部 `PROVISIONAL` 分支（自动回连） |
+| POST | `/graft` | 回连主支（写 handoff） |
 | POST | `/open-sidebar` | 请求宿主在侧边栏打开文件（无该能力时 501 + 绝对路径） |
 | GET | `/state?project=<abs>` | 合并 `status --json`、`verify --json` 与 `PROJECT_STATE.json`（旧工程视图） |
 | GET | `/handoff?project=<abs>&path=<rel>` | 读取单个交接文件全文（frontmatter/body/content/size） |
@@ -102,7 +102,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 {
   "ok": true,
   "name": "dsh-research-dag-workbench",
-  "version": "3.7.0",
+  "version": "3.9.0",
   "route": "/research-dag-workbench",
   "actions": ["status","verify","list","check","submit","accept","reject","block","unblock",
               "report","state-set","results","auto","init","module-add","branch-add",
@@ -118,7 +118,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 - `actions` 是 `/run` 的 DAG 动作白名单；v2.1 末尾追加只读 `content`（`/run` 不接受它）。
 - `bridgeActions` 是 `/bridge` 白名单；`networkAvailable` = kit 内
   `integrations/teammcp/teammcp.mjs` 是否存在。
-- `version` 直接读 `package.json`（当前 `3.7.0`）。
+- `version` 直接读 `package.json`（当前 `3.9.0`）。
 
 ### 3.2 `GET /content?project=<abs>`
 
@@ -152,7 +152,46 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 }
 ```
 
-### 3.3 `POST /bridge`（v2.1）
+### 3.4 `GET /zotero` / `POST /zotero-op`（v3.8 文献接入）
+
+把本机 Zotero 的两块能力接进右栏「本分支的文献」：**按条目挂载**与**按合集导入**。
+数据源是本机 Zotero 的只读本地 API（默认 `http://127.0.0.1:23119`，可用
+`RDW_ZOTERO_BASE` 覆盖端口，便于调试）。**除「在 Zotero 中定位」外全部是 GET**，
+不写 Zotero 文库。
+
+`GET /zotero?project=<abs>&rib=<B…>&q=<关键词>&collection=<key>`
+
+- `project` 校验同 `/content`（绝对路径 + `control/ledger.json`），非法 → 400 `E_PROJECT`。
+- 返回 `{ ok, base, available, error, ribId, linked, items, missing, search, collections }`。
+- **Zotero 没开机不算错误**：`ok:true` + `available:false` + `error` 中文原因，
+  已挂的 key 仍在 `linked` 里回传（面板显示「未连接」，不伪造数据）。
+- `items`：`linked` 里各条目的摘要（标题/作者/年份/DOI/标签/摘要片段）。
+- `search`：`q` 非空时才有，`{ query, items, total, error }`。
+- `collections`：合集树扁平化为 `[{ key, name, items, depth }]`，前端按 `depth` 缩进。
+
+`POST /zotero-op`　body `{ project, ribId, op, … }`：
+
+| `op` | 参数 | 行为 |
+| --- | --- | --- |
+| `attach` | `keys: string[]` | 追加挂载到该分支（去重，上限 200） |
+| `detach` | `keys: string[]` | 解挂指定条目 |
+| `clear` | — | 清空该分支全部挂载 |
+| `import-collection` | `collectionKey` | 把整个合集的顶层条目挂上来（分页取完，上限 200） |
+| `open` | `kind: item\|collection`, `key` | 用 `zotero://select/library/…` 在客户端中定位（不需要 `ribId`） |
+
+落盘位置是项目 `control/rdw-rib-meta.json` 的 `ribs[<ribId>].itemKeys / collectionKey`，
+与 DAG 协议、handoff 正文完全解耦：不联网也能渲染，Zotero 关掉只是读不到摘要。
+写操作走 tmp + rename 原子替换（Windows 下先删后改名）。
+参数非法 → 400 `E_PARAM`；分支不存在 → 404 `E_NOT_FOUND`；
+Zotero 不可用时 `import-collection` → 503 `E_ZOTERO`（明确失败，不静默成功）；
+读取合集失败 → 502 `E_ZOTERO`。
+
+`/fishbone` 里每根分支都会带 `zotero`（`{ itemKeys, collectionKey }`），
+另有顶层 `zotero.linkedRibs / linkedItems` 汇总。`/health.capabilities.zotero = true`
+表示宿主支持该面板；**真实可用性只由 `/zotero` 探活**（health 保持同步，
+不为外部依赖付超时代价）。
+
+### 3.5 `POST /bridge`（v2.1）
 
 请求：`{ action, project, stream?, version?, module?, satisfied?, note?, text?, tag? }`
 
@@ -193,7 +232,19 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 `process.execPath`、绝不 `shell:true`、argv 末尾追加 `--root <project>`、输出各截断 200k、
 `/state` 同步等待 `/run` 异步 + 轮询；run 记录不含 child 句柄。
 
-## 5. 与 TeamMCP 项目网络层的关系
+## 5. 与本机 Zotero 的关系（v3.8）
+
+- 右栏「本分支的文献」直接对本机 Zotero 的**只读**本地 API（`127.0.0.1:23119`），
+  不经过 TeamMCP、不读 Zotero 的 SQLite。只发 GET；唯一的外部动作是
+  `zotero://select/library/…`（只切客户端焦点，不改文库）。
+- 挂载关系（条目 key / 合集 key）落在项目 `control/rdw-rib-meta.json`，
+  与 DAG 协议、handoff 正文、ledger 完全无关：协议侧看不到文献，文献侧也不改协议。
+- Zotero 不可用是**非致命**的：面板显示「未连接 Zotero」+ 原因 + 手动重试，
+  项目流程主线、产物、合并状态全部照常。
+- 为什么不做「写回 Zotero」：本地 API 对写入有额外的版本/权限约束，
+  且写文库属于用户的文献管理决定；工作台只负责「这个分支用了哪些文献」这一层。
+
+## 6. 与 TeamMCP 项目网络层的关系
 
 - `/content` 的 `network` 字段来自 `integrations/teammcp/teammcp.mjs digest --json`
   （见 `integrations/teammcp/NETWORK.md`）：项目进度/完成度/结果/想法/复核/待你复核。
@@ -202,7 +253,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
   网络页显示连接失败卡片与启动提示。
 - 宿主不直接写 TeamMCP 数据库；令牌/网络状态由桥 CLI 管理（令牌库 `~/.dsh/teammcp/agents.json`）。
 
-## 6. 布局（v3.3）
+## 7. 布局（v3.3）
 
 对照官方开发规范第 4 节，工作台采用**业务整页优先**：
 
@@ -212,7 +263,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 | 顶部栏 | `headerLayout: 'compact'` + 页面内**恰好一个** `data-dsh-workbench-toolbar` | §4.3 |
 | 对话 | 默认收起；点「💬 打开对话」才展开右侧对话区，宿主原生会话节点由工作台自安置 | §4.2 / §4.3 |
 | 不自动建会话 | 首屏不调用 `newSession` / `newWorkspaceSession`；用户点「开始对话」才建 | §4.2 |
-| 首用状态 | 无项目时展示工作台自己的鱼骨引导 + 加载示例/新建项目入口 | §4.2 |
+| 首用状态 | 无项目时展示工作台自己的项目流程引导 + 加载示例/新建项目入口 | §4.2 |
 | 宽度重排 | 断点绑在业务容器（`@container rdw`：1080/860/620/420px），不只看窗口 | §4.1 |
 | macOS 拖拽 | 交互控件标 `data-dsh-no-drag`，不占用宿主拖拽区 | §4.3 |
 
@@ -221,7 +272,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 - 对话区宽度跟随业务容器宽度（CSS 变量 `--rdw-chat-width`），窄容器下改为上下排布。
 - 旧槽位回退路径（宿主无 `desktopWorkbenches`）仍保留，此时不显示对话入口。
 
-## 7. 验收
+## 8. 验收
 
 - `node verify/verify-host.mjs` 全 OK、exit 0；覆盖：
   - 模块外形 / `/health`（版本 2.1.0、actions 含 content、bridgeActions、networkAvailable）；
@@ -231,8 +282,17 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
   - **v2.1**：`/content` 正常 + networkError 分支 + results 失败兜底 + 非法项目；
     `/bridge` 白名单/参数/项目校验；free-form 临时副本 `pull` succeeded 且生成
     `control/INBOX.md`；健康字段齐全。
-- `node verify/verify-client.mjs` 覆盖浏览器半侧（内容/网络/工程页签、满意/记想法、旧宿主回退）。
-- `node verify/verify-layout.mjs` 覆盖整页布局（62 项）：注册字段、紧凑工具栏唯一性、
+  - **v3.8 文献接入**（`Q)` 段，21 项）：`/health.capabilities.zotero`；`/zotero`
+    返回 `available` 布尔（Zotero 关着也必须 200 + 中文原因）；合集树字段；
+    非法项目/非法 key/未知分支/未知 op 四类拒绝；attach → `/fishbone.zotero` →
+    detach → clear 全链路（**只写临时副本**，并用字节比对断言示例本体未被改动）；
+    Zotero 在线时真导一次合集、真读一次条目摘要；离线时 `import-collection`
+    必须 503 `E_ZOTERO` 而不是静默成功；`open` 非法 key 不触发协议。
+    Zotero 未运行时相关分支自动降级断言（保持 CI 可跑）。
+- `node verify/verify-client.mjs` 覆盖浏览器半侧（内容/网络/工程页签、满意/记想法、旧宿主回退），
+  以及 **v3.8 文献面板**：挂载即请求 `/zotero`、渲染条目与年份、搜索框回车带 `q=`、
+  「✚」发 `attach`、「从合集导入」抽屉展开与 `import-collection`、掉线显示「未连接」。
+- `node verify/verify-layout.mjs` 覆盖整页布局（70 项）：注册字段、紧凑工具栏唯一性、
   首屏业务优先、不自动建会话、会话节点安置与收起不卸载、首用引导、容器查询断点、产物同步。
 - `node tools/build-client.mjs` 幂等；`node --check lib/client.js`。
 - 人工视觉验收：`node tools/preview-layout.mjs` 生成 `.preview/workbench-layout.html`
@@ -241,7 +301,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 > 说明：`/content` 的 `results/status` 依赖示例项目当前状态；若示例被主项目推进会
 > （如 pending 已全部 accepted），验收按当前 ledger 动态断言字段结构，而不是写死旧数量。
 
-## 8. 故障排查
+## 9. 故障排查
 
 | 现象 | 处理 |
 |---|---|
@@ -251,3 +311,6 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 | `/bridge` 400 `E_PROJECT` | project 必须是绝对路径且为 DAG 项目（有 `control/ledger.json`） |
 | 旧 `/state` 正常但新页空白 | 浏览器客户端未更新：先 `node tools/build-client.mjs`，再重启 DSH |
 | `/run` 超时 | 单条 CLI 默认 120s；`/bridge` 60s；长任务拆分或避开 |
+| 文献面板显示「未连接 Zotero」 | 先启动 Zotero 桌面版；本机本地 API 默认 `127.0.0.1:23119`。端口被改过则设 `RDW_ZOTERO_BASE` |
+| 文献面板「未连接」但 Zotero 明明开着 | Zotero 7 需在 设置 → 高级 里允许本机 API（默认开启）；用 `curl http://127.0.0.1:23119/connector/ping` 快速自检 |
+| 合集导入数量少于合集显示数 | 只取**顶层条目**（子合集不展开），且上限 200 条；`truncated:true` 时按需分次挂 |

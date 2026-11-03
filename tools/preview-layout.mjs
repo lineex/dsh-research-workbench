@@ -193,7 +193,7 @@ const html = `<!doctype html>
 <script>${MINI_DOM}</script>
 <script>
   // ---- 假宿主服务 ----
-  const state = { sessionBindings: {}, active: 'lineex/research-dag-workbench', added: ['lineex/research-dag-workbench'] }
+  const state = { sessionBindings: {}, active: 'zhuanz/dsh-research-dag-workbench', added: ['zhuanz/dsh-research-dag-workbench'] }
   let current = null
   const listeners = new Set()
   const service = {
@@ -318,7 +318,7 @@ const html = `<!doctype html>
   const conversationNode = window.React.createElement('div', { className: 'fake-chat' },
     window.React.createElement('div', { className: 'fake-chat-head' }, '原生会话 · 研究项目 DAG 工作台'),
     window.React.createElement('div', { className: 'fake-chat-body' },
-      window.React.createElement('div', { className: 'fake-bubble ai' }, '主脊骨已经推进到「统计分析」。需要我先核对 IPTW 诊断的平衡性结果吗？'),
+      window.React.createElement('div', { className: 'fake-bubble ai' }, '主支已经推进到「统计分析」。需要我先核对 IPTW 诊断的平衡性结果吗？'),
       window.React.createElement('div', { className: 'fake-bubble me' }, '先看一下 B40-02 主分析的模型设定。'),
       window.React.createElement('div', { className: 'fake-bubble ai' }, 'B40-02 主分析用的是加权 Cox；权重截尾 99% 写在 B40-03 的 outputs 里。'),
     ),

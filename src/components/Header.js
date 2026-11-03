@@ -9,13 +9,15 @@
  * （淡色底 + 同色描边），色弱用户也能分辨当前页签。
  */
 import { STYLES, VIEWS, WELCOME_COPY, phaseLabel } from '../core/constants.js'
+import { renderThemePicker } from './ThemePicker.js'
 
 /**
  * @param {object} h React.createElement
  * @param {{health?: object, project?: object, view?: string, setView?: Function,
  *          busy?: string, busyLabel?: string, contentAvailable?: boolean,
  *          fishboneAvailable?: boolean, chatOpen?: boolean, canStartChat?: boolean,
- *          onToggleChat?: Function, scope?: string}} props
+ *          onToggleChat?: Function, scope?: string,
+ *          theme?: string, themeOpen?: boolean, onToggleTheme?: Function, onPickTheme?: Function}} props
  */
 export function renderHeader(h, props) {
   const options = props && typeof props === 'object' ? props : {}
@@ -59,7 +61,7 @@ export function renderHeader(h, props) {
     health && health.version ? h('span', { style: chip }, `宿主 v${health.version}`) : null
   const fishboneChip =
     options.fishboneAvailable
-      ? toneChip('鱼骨主线已启用', 'var(--rdw-ok)')
+      ? toneChip('项目流程主线已启用', 'var(--rdw-ok)')
       : toneChip('旧宿主', 'var(--rdw-warn)')
   const busyChip = busy ? toneChip(`执行中：${busyLabel}`, 'var(--rdw-warn)') : null
 
@@ -90,7 +92,7 @@ export function renderHeader(h, props) {
       h(
         'h2',
         { className: 'rdw-toolbar-title' },
-        h('span', { className: 'rdw-toolbar-brand', 'aria-hidden': 'true' }, '🐟'),
+        h('span', { className: 'rdw-toolbar-brand', 'aria-hidden': 'true' }, '📋'),
         '研究项目工作台',
         h(
           'a',
@@ -129,6 +131,13 @@ export function renderHeader(h, props) {
         phaseChip,
         projectChip,
         chatButton,
+        // v3.9 主题选择器（放在最右，避免打散状态胶囊的阅读顺序）
+        renderThemePicker(h, {
+          open: options.themeOpen === true,
+          theme: options.theme || 'apple',
+          onToggle: options.onToggleTheme,
+          onPick: options.onPickTheme,
+        }),
       ),
     ),
     h(
@@ -136,7 +145,7 @@ export function renderHeader(h, props) {
       { className: 'rdw-subtitle' },
       view === 'hub'
         ? '多项目总览总控看板：集中管理你的全部科研项目，点击卡片直接进入，支持跨项目共享分析成果、队列定义与研究想法。'
-        : '鱼骨主线：鱼头是研究目标，主脊骨是研究阶段，鱼刺是手动分出的探索智能体，满意后回连主骨。',
+        : '项目流程主线：项目目标是研究目标，主支是研究阶段，分支是手动分出的探索智能体，满意后回连主支。',
     ),
     h(
       'div',
@@ -154,7 +163,7 @@ export function renderHeader(h, props) {
               if (typeof options.setView === 'function') options.setView(id)
             },
           },
-          id === 'fishbone' ? `🐟 ${label}` : id === 'hub' ? `🗂️ ${label}` : id === 'leader' ? `🧠 ${label}` : label,
+          id === 'fishbone' ? `📋 ${label}` : id === 'hub' ? `🗂️ ${label}` : id === 'leader' ? `🧠 ${label}` : label,
         ),
       ),
       scopeText ? h('span', { className: 'rdw-scope' }, scopeText) : null,

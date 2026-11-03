@@ -1,8 +1,8 @@
 {
   "name": "dsh-research-dag-workbench",
-  "version": "3.7.0",
+  "version": "3.9.0",
   "type": "module",
-  "description": "鱼骨式研究项目工作台：鱼头规划目标，主脊骨推进阶段，鱼刺探索并无缝融合 DSH 原生交互式会话；成果满意后一键回连主骨。",
+  "description": "项目流程式研究项目工作台：项目目标=研究目标，主支=研究阶段，分支=从任意位置长出的探索/修正智能体；成果满意后一键回连主支。",
   "license": "MIT",
   "author": "lineex (https://github.com/lineex)",
   "icon": "./icon.svg",
@@ -28,20 +28,16 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "WorkbenchPanel.js",
     "lib/",
     "src/",
-    "tools/dag.mjs",
-    "tools/dag-core.mjs",
-    "tools/spur-context.mjs",
     "tools/build-client.mjs",
+    "tools/preview-layout.mjs",
     "integrations/",
     "docs/images/",
     "cordis.patch.yml",
     "icon.svg",
     "README.md",
-    "LICENSE",
-    "DESIGN-workbench.md"
+    "LICENSE"
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=0.1.5-rc.2 <0.2.0-0"

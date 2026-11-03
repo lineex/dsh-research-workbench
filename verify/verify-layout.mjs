@@ -363,7 +363,7 @@ function makeService() {
   const bindings = {}
   let id = 0
   const service = {
-    state: { active: 'lineex/research-dag-workbench', added: ['lineex/research-dag-workbench'], sessionBindings: bindings },
+    state: { active: 'zhuanz/dsh-research-dag-workbench', added: ['zhuanz/dsh-research-dag-workbench'], sessionBindings: bindings },
     blocked: false,
     pending: 0,
     currentSession: () => current,
@@ -490,7 +490,7 @@ async function main() {
    *   3) 状态指示器承担「要处理什么」；
    *   4) 全局搜索承担「怎么跳」。 */
   const tabButtons = collectByType(boot.tree, 'button').map((node) => textOf(node.props.children))
-  check(tabButtons.filter((label) => label === '🐟 鱼骨').length === 0, '平级「鱼骨」页签已移除（改为常驻三栏）')
+  check(tabButtons.filter((label) => label === '📋 项目流程').length === 0, '平级「项目流程」页签已移除（改为常驻三栏）')
   /* 「主智能体」不再是页签，而是命令栏上的面板入口（pill 样式）。
    * 判据：同名按钮存在，且它不带 role="tab"——即不再是平级页签。 */
   const roleTabLabels = collectByType(boot.tree, 'button')
@@ -498,7 +498,7 @@ async function main() {
     .map((node) => textOf(node.props.children))
   check(roleTabLabels.length === 0, `页面内已无平级页签（role=tab 按钮数 = ${roleTabLabels.length}）`)
   check(toolbarText.includes('主智能体'), '命令栏保留「主智能体」面板入口')
-  check(toolbarText.includes('跳转项目 / 鱼刺 / 文件'), '命令栏提供全局跳转入口（⌘K）')
+  check(toolbarText.includes('跳转项目 / 分支 / 文件'), '命令栏提供全局跳转入口（⌘K）')
   check(toolbarText.includes('early-phosphate'), '面包屑显示当前项目（我在哪）')
   check(
     toolbarText.includes('待拍板') || toolbarText.includes('阻塞'),
@@ -516,16 +516,16 @@ async function main() {
   check(stageNodes.length === 1, `三栏舞台恰好 1 个（实际 ${stageNodes.length}）`)
   // 抽屉在业务区（body 内），不在命令栏里
   const fullMarkup = textOf(boot.tree)
-  check(fullMarkup.includes('鱼刺清单'), '底部全景抽屉入口常驻（鱼刺清单可随时展开）')
+  check(fullMarkup.includes('分支清单'), '底部全景抽屉入口常驻（分支清单可随时展开）')
   check(fullMarkup.includes('Ishikawa 全景'), '抽屉标注全景骨架规模')
 
   /* -------- C. 业务整页：首屏不出现宿主通用引导 -------- */
   console.log('')
   console.log('C) 业务整页与首屏引导')
   const markup = textOf(boot.tree)
-  check(markup.includes('鱼头 · 研究目标'), '首屏直接呈现研究目标（业务优先）')
-  check(markup.includes('主脊骨 · 研究主线'), '首屏呈现主脊骨')
-  check(markup.includes('鱼刺清单'), '首屏呈现鱼刺清单')
+  check(markup.includes('项目目标 · 研究目标'), '首屏直接呈现研究目标（业务优先）')
+  check(markup.includes('主支 · 研究主线'), '首屏呈现主支')
+  check(markup.includes('分支清单'), '首屏呈现分支清单')
   check(!markup.includes('需要 AI 协助时，开始对话'), '不出现宿主通用「先建会话」引导')
   check(!markup.includes('undefined'), '页面文本无 undefined')
   check(countNodes(boot.tree) > 80, `首屏结构完整（${countNodes(boot.tree)} 节点 > 80）`)
@@ -579,8 +579,8 @@ async function main() {
   console.log('F) 无项目首用引导（§4.2）')
   const bootF = await bootWith(stateNoProject)
   const welcome = textOf(bootF.tree)
-  check(welcome.includes('把研究项目画成一条鱼骨'), '无项目时显示工作台自己的首用引导')
-  check(welcome.includes('鱼头') && welcome.includes('主脊骨') && welcome.includes('鱼刺'), '首用引导解释鱼骨模型')
+  check(welcome.includes('把研究项目画成一条项目流程'), '无项目时显示工作台自己的首用引导')
+  check(welcome.includes('项目目标') && welcome.includes('主支') && welcome.includes('分支'), '首用引导解释项目流程模型')
   check(welcome.includes('加载示例项目'), '首用引导提供「加载示例项目」')
   check(welcome.includes('新建项目'), '首用引导提供「新建项目」')
   check(welcome.includes('打开对话'), '首用引导说明对话按需打开')
@@ -599,7 +599,7 @@ async function main() {
   check(/@container rdw \(max-width: 420px\)/.test(constantsSource), '极窄容器断点（420px）')
   check(constantsSource.includes('.rdw-body{flex-direction:column}'), '中等容器以下对话区改为上下排布')
   check(constantsSource.includes('.rdw-chat.rdw-chat-collapsed{display:none!important}'), '收起只隐藏、不卸载（display 而非条件渲染）')
-  check(constantsSource.includes('.rdw-fish-svg{min-width:480px!important'), '窄容器下降级鱼骨图最小尺寸（避免压成细带/空白）')
+  check(constantsSource.includes('.rdw-fish-svg{min-width:480px!important'), '窄容器下降级项目流程图最小尺寸（避免压成细带/空白）')
   const panelSource = read('src/WorkbenchPanel.js')
   const headerSource = read('src/components/Header.js')
   const projectBarSource = read('src/components/ProjectBar.js')

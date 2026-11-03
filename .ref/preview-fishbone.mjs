@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * 鱼骨图离线预览：把 src/views/FishboneView.js 的 SVG 用真实项目数据渲染成独立 HTML。
+ * 项目流程图离线预览：把 src/views/FishboneView.js 的 SVG 用真实项目数据渲染成独立 HTML。
  *
- * 目的：把「脊骨看不到」这类视觉问题变成可截图核对的产物，而不是靠猜。
+ * 目的：把「主支看不到」这类视觉问题变成可截图核对的产物，而不是靠猜。
  * 用法：node tools/preview-fishbone.mjs [项目根路径]
  * 产出：workbench/.preview/fishbone-preview.html
  */
@@ -136,7 +136,7 @@ async function main() {
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>鱼骨图预览 — ${path.basename(projectRoot)}</title>
+<title>项目流程图预览 — ${path.basename(projectRoot)}</title>
 <style>
   body { margin: 0; padding: 20px; font: 13px/1.6 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2937; background: #fff; }
   .wrap { max-width: 1200px; }
@@ -153,19 +153,19 @@ async function main() {
 </head>
 <body>
 <div class="wrap">
-  <h1>鱼骨图预览（真实数据 · 真实渲染代码）</h1>
-  <div class="meta">项目：${projectRoot}<br>主骨 ${data.spine.length} 段 · 鱼刺 ${data.ribs.length} 根</div>
+  <h1>项目流程图预览（真实数据 · 真实渲染代码）</h1>
+  <div class="meta">项目：${projectRoot}<br>主支 ${data.spine.length} 段 · 分支 ${data.ribs.length} 根</div>
   <div class="frame w1200"><h2>容器 1200px（宽屏）</h2>${bodyWide}</div>
   <div class="frame w520"><h2>容器 520px（中等侧栏）</h2>${bodyWide}</div>
   <div class="frame w380"><h2>容器 380px（窄侧栏）</h2>${bodyWide}</div>
-  <div class="frame w1200"><h2>空脊骨场景（没有模块时的引导）</h2>${bodyEmpty}</div>
+  <div class="frame w1200"><h2>空主支场景（没有模块时的引导）</h2>${bodyEmpty}</div>
 </div>
 </body>
 </html>
 `
   fs.writeFileSync(outFile, html, 'utf8')
   console.log(`已生成预览：${outFile}`)
-  console.log(`主骨 ${data.spine.length} 段 · 鱼刺 ${data.ribs.length} 根`)
+  console.log(`主支 ${data.spine.length} 段 · 分支 ${data.ribs.length} 根`)
 }
 
 /** 把元素树渲染成 HTML 字符串。 */

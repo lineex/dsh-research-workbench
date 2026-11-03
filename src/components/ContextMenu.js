@@ -86,7 +86,7 @@ export function renderContextMenu(h, state, onClose) {
 }
 
 /**
- * 渲染鱼刺悬停速览卡。
+ * 渲染分支悬停速览卡。
  * card: null | { x, y, rib, module, onOpen, onGraft, onDelete, onBlock }
  */
 export function renderHoverCard(h, card, onClose) {
@@ -141,7 +141,7 @@ export function renderHoverCard(h, card, onClose) {
 }
 
 /**
- * 内联闪电分叉气泡（幻影刺单击后弹出，只填名称）。
+ * 内联闪电分叉气泡（幻影分支单击后弹出，只填名称）。
  * form: null | { x, y, moduleId, moduleName, fromRib?, name, error }
  */
 export function renderInlineSprout(h, form, onChange, onSubmit, onCancel) {
@@ -152,14 +152,14 @@ export function renderInlineSprout(h, form, onChange, onSubmit, onCancel) {
       className: 'rdw-inline-sprout',
       style: { left: form.x, top: form.y },
       role: 'dialog',
-      'aria-label': '在此分叉新鱼刺',
+      'aria-label': '在此分叉新分支',
       'data-dsh-no-drag': '',
       onClick: (e) => e.stopPropagation(),
     },
     h(
       'div',
       { style: { fontSize: 12, fontWeight: 600, color: 'var(--rdw-organic-ink)', marginBottom: 5 } },
-      `🌱 在「${form.moduleName || form.moduleId}」${form.fromRib ? `的鱼刺 ${form.fromRib} ` : ''}分叉`,
+      `🌱 在「${form.moduleName || form.moduleId}」${form.fromRib ? `的分支 ${form.fromRib} ` : ''}分叉`,
     ),
     form.messageExcerpt
       ? h(
@@ -184,8 +184,8 @@ export function renderInlineSprout(h, form, onChange, onSubmit, onCancel) {
     h('input', {
       autoFocus: true,
       value: form.name || '',
-      placeholder: '新鱼刺名称，回车即建…',
-      'aria-label': '鱼刺名称',
+      placeholder: '新分支名称，回车即建…',
+      'aria-label': '分支名称',
       onChange: (e) => onChange(e && e.target ? e.target.value : ''),
       onKeyDown: (e) => {
         if (!e) return
@@ -194,7 +194,7 @@ export function renderInlineSprout(h, form, onChange, onSubmit, onCancel) {
       },
     }),
     form.error ? h('div', { style: { fontSize: 11, color: 'var(--rdw-st-rejected)', marginTop: 4 } }, form.error) : null,
-    h('div', { className: 'hint' }, '回车创建 · Esc 取消 · 详细选项走顶栏「+刺」'),
+    h('div', { className: 'hint' }, '回车创建 · Esc 取消 · 详细选项走顶栏「+分支」'),
     h(
       'div',
       { className: 'row' },

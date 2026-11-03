@@ -69,4 +69,4 @@ const source = dedented.join('\n') + '\n'
 writeFileSync(target, source, { encoding: 'utf8' })
 console.log('已还原:', target)
 console.log('  行数:', source.split('\n').length, ' 字符数:', source.length)
-console.log('  含中文样例:', source.includes('鱼骨') ? '是' : '否')
+console.log('  含中文样例:', source.includes('项目流程') ? '是' : '否')

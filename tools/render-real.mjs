@@ -310,7 +310,7 @@ const props = {
     branch: { id: 'B40-03', name: 'IPTW 诊断', parent: 'B20-01' },
     parent: 'B20-01',
     brief: '为队列 v2 构建 IPTW 权重并完成诊断：加权后协变量平衡、权重极端值、有效样本量，提出截尾方案供主项目决定。',
-    context: '# 鱼刺上下文档案 — B40-03（IPTW 诊断）\n- 所属主骨：M40（统计分析）\n- 任务意图：构建倾向评分加权模型...',
+    context: '# 分支上下文档案 — B40-03（IPTW 诊断）\n- 所属主支：M40（统计分析）\n- 任务意图：构建倾向评分加权模型...',
     directivesParsed: [
       {
         at: '2026-10-18T14:20:00Z',
@@ -357,7 +357,7 @@ const props = {
     ok: true,
     head: {
       title: '重症低磷血症早期补磷对 28 天病死率的影响',
-      goal: '目标试验模拟（Target Trial Emulation）；鱼头=研究目标，主脊骨=研究阶段，鱼刺=按需分出的探索智能体。',
+      goal: '目标试验模拟（Target Trial Emulation）；项目目标=研究目标，主支=研究阶段，分支=按需分出的探索智能体。',
       phase: '分析',
       nextSteps: ['主项目决定 IPTW 权重截尾方案', '完成主分析 v1 并提交'],
       blockers: [{ id: 'K01', name: 'B30-03 缺失审计', reason: '待数据管理员澄清 2024-07 起补磷医嘱表结构变更' }],
@@ -365,7 +365,7 @@ const props = {
     spine: [
       /* 字段必须与真实 GET /fishbone 契约一致（DESIGN §4.2）：
        * completion（accepted/total 比率），**不是** progress。
-       * 早前这里写 progress，渲染出 "undefined% · N 刺"，是 mock 与真 API 的字段漂移。 */
+       * 早前这里写 progress，渲染出 "undefined% · N 分支"，是 mock 与真 API 的字段漂移。 */
       { id: 'M00', name: '研究问题与方案', phase: '规划', status: 'ACCEPTED', completion: 100, active: false, staleness: false, ribs: ['B10-01'], total: 1 },
       { id: 'M10', name: '文献证据', phase: '文献', status: 'ACCEPTED', completion: 50, active: false, staleness: false, ribs: ['B20-01', 'B20-02'], total: 2 },
       { id: 'M20', name: '数据队列', phase: '数据', status: 'PROVISIONAL', completion: 0, active: true, staleness: false, ribs: ['B30-01', 'B30-03'], total: 2 },

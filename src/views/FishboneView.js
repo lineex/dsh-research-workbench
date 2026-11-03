@@ -1,15 +1,15 @@
 /**
- * 研究项目 DAG 工作台 — 鱼骨主线视图（v2.6，真正的鱼形骨架）。
+ * 研究项目 DAG 工作台 — 项目流程主线视图（v2.6，真正的分叉骨架）。
  *
- * 布局 = 经典鱼骨图（Ishikawa）：
- *   - 左侧鱼头：研究目标（可点击清除筛选）；
- *   - 中间粗脊骨：一条渐变主轴；
- *   - 每个模块 = 一根从脊骨斜伸出的主刺（上下交错，指向鱼头方向），
- *     刺尖挂模块名牌（名称 + 完成度 + 刺数）；
- *   - 每个分支 = 从主刺身上横向长出的细刺（圆点 = 状态色，⚠ = 级联过期）；
- *   - 右侧鱼尾：整体回连进度。
+ * 布局 = 经典项目流程图（Ishikawa）：
+ *   - 左侧项目目标：研究目标（可点击清除筛选）；
+ *   - 中间粗主支：一条渐变主轴；
+ *   - 每个模块 = 一根从主支斜伸出的主支（上下交错，指向项目目标方向），
+ *     末端挂模块名牌（名称 + 完成度 + 分支数）；
+ *   - 每个分支 = 从主支身上横向长出的子分支（圆点 = 状态色，⚠ = 级联过期）；
+ *   - 右侧整体进度：整体回连进度。
  *
- * 交互：点名牌筛选该模块；点细刺打开智能体工作区；点鱼头/清除按钮取消筛选。
+ * 交互：点名牌筛选该模块；点子分支打开智能体工作区；点项目目标/清除按钮取消筛选。
  * 数据：GET /fishbone。
  */
 
@@ -27,7 +27,7 @@ function emitContextMenu(options, event, target) {
   }
 }
 
-/** 触发鱼刺悬停速览卡（400ms 延迟由面板层控制；这里只报位置与目标）。 */
+/** 触发分支悬停速览卡（400ms 延迟由面板层控制；这里只报位置与目标）。 */
 function emitHoverCard(options, event, rib) {
   if (typeof options.onHoverRib === 'function') {
     options.onHoverRib(rib, { x: event.clientX + 12, y: event.clientY + 10 })
@@ -37,17 +37,17 @@ function emitHoverCardLeave(options) {
   if (typeof options.onHoverRibLeave === 'function') options.onHoverRibLeave()
 }
 /**
- * 鱼刺状态 → 颜色主题。
+ * 分支状态 → 颜色主题。
  * v3.4：颜色改用 --rdw-* 令牌（SVG 内同样可用 CSS 变量），随宿主明暗主题自适应。
  */
 const RIB_THEME = {
-  EMPTY: { color: 'var(--rdw-st-draft)', label: '未开工', dot: '○', tone: 'draft' },
-  DRAFT: { color: 'var(--rdw-st-draft)', label: '探路中', dot: '◍', tone: 'draft' },
-  PROVISIONAL: { color: 'var(--rdw-st-provisional)', label: '待回连', dot: '◉', tone: 'provisional' },
-  ACCEPTED: { color: 'var(--rdw-st-accepted)', label: '已回连', dot: '●', tone: 'accepted' },
-  REJECTED: { color: 'var(--rdw-st-rejected)', label: '已修剪', dot: '×', tone: 'rejected' },
-  SUPERSEDED: { color: 'var(--rdw-st-superseded)', label: '旧版本', dot: '◌', tone: 'superseded' },
-  BLOCKED: { color: 'var(--rdw-st-blocked)', label: '受阻', dot: '⊘', tone: 'blocked' },
+  EMPTY: { color: 'var(--rdw-st-draft)', mute: 'var(--rdw-st-draft-mute)', label: '未开工', dot: '○', tone: 'draft' },
+  DRAFT: { color: 'var(--rdw-st-draft)', mute: 'var(--rdw-st-draft-mute)', label: '探路中', dot: '◍', tone: 'draft' },
+  PROVISIONAL: { color: 'var(--rdw-st-provisional)', mute: 'var(--rdw-st-provisional-mute)', label: '待回连', dot: '◉', tone: 'provisional' },
+  ACCEPTED: { color: 'var(--rdw-st-accepted)', mute: 'var(--rdw-st-accepted-mute)', label: '已回连', dot: '●', tone: 'accepted' },
+  REJECTED: { color: 'var(--rdw-st-rejected)', mute: 'var(--rdw-st-rejected-mute)', label: '已修剪', dot: '×', tone: 'rejected' },
+  SUPERSEDED: { color: 'var(--rdw-st-superseded)', mute: 'var(--rdw-st-superseded-mute)', label: '旧版本', dot: '◌', tone: 'superseded' },
+  BLOCKED: { color: 'var(--rdw-st-blocked)', mute: 'var(--rdw-st-blocked-mute)', label: '受阻', dot: '⊘', tone: 'blocked' },
 }
 
 function ribTheme(status) {
@@ -57,7 +57,7 @@ function ribTheme(status) {
 const RIB_RANK = { PROVISIONAL: 0, DRAFT: 1, BLOCKED: 2, ACCEPTED: 3, REJECTED: 4, SUPERSEDED: 5, EMPTY: 6 }
 
 /**
- * 模块主刺的配色（EvoResearch 自然有机语汇）。
+ * 模块主支的配色（EvoResearch 自然有机语汇）。
  * 选中态用鼠尾草绿（交互色），名牌底色用纸面白，未选中时是中性暖土描边。
  */
 const BONE = {
@@ -70,7 +70,7 @@ const BONE = {
 }
 
 /** SVG 画布几何。
- *  画布按模块数自适应加宽（computeViewBox），保证名牌与细刺互不重叠。 */
+ *  画布按模块数自适应加宽（computeViewBox），保证名牌与子分支互不重叠。 */
 const GEO = {
   W: 1040,
   H: 480,
@@ -79,9 +79,9 @@ const GEO = {
   SPINE_X1: 908,
   BONE_LEN: 118,
   BONE_DX: 52,
-  /** 每根主刺在脊骨上占用的横向宽度（名牌 + 细刺不重叠的关键）。 */
+  /** 每根主支在主支上占用的横向宽度（名牌 + 子分支不重叠的关键）。 */
   SLOT_W: 150,
-  /** 主刺上细刺的分布区间（沿刺身的比例），刻意避开刺尖名牌。 */
+  /** 主支上子分支的分布区间（沿主体的比例），刻意避开末端名牌。 */
   RIB_FROM: 0.18,
   RIB_TO: 0.74,
 }
@@ -98,7 +98,7 @@ function truncate(text, max) {
  * 为什么需要这个函数（v3.7）：
  *   真实 `GET /fishbone` 的契约字段是 `completion`（= accepted/total，见 DESIGN §4.2），
  *   但历史上多个 mock / 旧预览脚本用的是 `progress`。字段一旦漂移，模板字符串会直接
- *   渲染出 "undefined% · 3 刺" —— 测试全绿、画面出错，正是公理五要防的那类缺陷。
+ *   渲染出 "undefined% · 3 分支" —— 测试全绿、画面出错，正是公理五要防的那类缺陷。
  *   兜底顺序：completion → progress → 由 counts 现算 → 0。
  */
 function pctOf(node) {
@@ -128,13 +128,13 @@ function orderSpine(spine, phase) {
   return list.map((node, index) => ({ ...node, isCurrentPhase: index === currentIndex, index }))
 }
 
-/** 一根主刺（含刺尖名牌与刺身上的细刺）。
+/** 一根主支（含末端名牌与主体上的子分支）。
  *
  *  防重叠布局规则（v3.0）：
- *   - 每个模块在脊骨上独占一个 SLOT_W 宽的槽位，模块多时画布自动加宽；
- *   - 名牌固定挂在刺尖，向上/下外侧偏移，宽度不超过槽位；
- *   - 细刺只分布在刺身中段（RIB_FROM..RIB_TO），绝不进入名牌区域；
- *   - 细刺名称按「同一刺身上交替左右」摆放，避免彼此压字。
+ *   - 每个模块在主支上独占一个 SLOT_W 宽的槽位，模块多时画布自动加宽；
+ *   - 名牌固定挂在末端，向上/下外侧偏移，宽度不超过槽位；
+ *   - 子分支只分布在主体中段（RIB_FROM..RIB_TO），绝不进入名牌区域；
+ *   - 子分支名称按「同一主体上交替左右」摆放，避免彼此压字。
  */
 function renderBone(h, node, index, count, ribs, options) {
   const { SPINE_Y, BONE_LEN, BONE_DX, SLOT_W, RIB_FROM, RIB_TO } = GEO
@@ -156,10 +156,10 @@ function renderBone(h, node, index, count, ribs, options) {
 
   const children = []
   children.push(
-    h('title', { key: 'tt' }, `${node.name}：${pctOf(node)}% 已回连 · ${moduleRibs.length} 根鱼刺${node.staleness ? ' · 有级联过期' : ''}`),
+    h('title', { key: 'tt' }, `${node.name}：${pctOf(node)}% 已回连 · ${moduleRibs.length} 根分支${node.staleness ? ' · 有级联过期' : ''}`),
   )
 
-  // ---- 刺身骨线（加粗：这是「主骨」的可视锚点）
+  // ---- 主体骨线（加粗：这是「主支」的可视锚点）
   children.push(
     h('line', {
       key: 'bone',
@@ -173,11 +173,11 @@ function renderBone(h, node, index, count, ribs, options) {
     }),
   )
 
-  // ---- 刺尖名牌：宽度收敛到槽位内，文字不越界
+  // ---- 末端名牌：宽度收敛到槽位内，文字不越界
   // 名牌是「有机卡片」：纸面底 + 暖土细描边 + 大圆角；选中时用鼠尾草淡底与强调描边。
   const badgeW = Math.min(SLOT_W - 12, 132)
   const badgeH = 40
-  // 名牌放在刺尖「远离脊骨」的一侧
+  // 名牌放在末端「远离主支」的一侧
   const badgeY = dir < 0 ? tipY - badgeH - 8 : tipY + 8
   children.push(
     h('rect', {
@@ -220,11 +220,11 @@ function renderBone(h, node, index, count, ribs, options) {
         fill: accent,
         fontWeight: 600,
       },
-      `${pctOf(node)}% · ${moduleRibs.length} 刺${node.staleness ? ' · ⚠' : ''}`,
+      `${pctOf(node)}% · ${moduleRibs.length} 分支${node.staleness ? ' · ⚠' : ''}`,
     ),
   )
 
-  // ---- 细刺：只落在刺身中段，左右交替挂标签
+  // ---- 子分支：只落在主体中段，左右交替挂标签
   const ribCount = moduleRibs.length
   moduleRibs.forEach((rib, j) => {
     const f = ribCount === 1 ? (RIB_FROM + RIB_TO) / 2 : RIB_FROM + ((RIB_TO - RIB_FROM) * j) / (ribCount - 1)
@@ -260,7 +260,7 @@ function renderBone(h, node, index, count, ribs, options) {
           },
         },
         h('title', null, `${rib.name} · ${theme.label} · ${fileCount} 个文件${rib.is_stale ? ' · ⚠ 级联过期' : ''}`),
-        // 横向短刺
+        // 横向短分支
         h('line', {
           x1: px,
           y1: py,
@@ -278,7 +278,7 @@ function renderBone(h, node, index, count, ribs, options) {
           stroke: 'var(--rdw-organic-surface)',
           strokeWidth: 1.2,
         }),
-        // 名称：贴着短刺末端，字号略小并截断，保证不越出槽位
+        // 名称：贴着短分支末端，字号略小并截断，保证不越出槽位
         h(
           'text',
           {
@@ -296,7 +296,7 @@ function renderBone(h, node, index, count, ribs, options) {
     )
   })
 
-  // ---- 选中该主刺时，名牌外侧出现「+ 分刺」
+  // ---- 选中该主支时，名牌外侧出现「+ 创建分支」
   if (selected && typeof options.onSproutHere === 'function') {
     const btnY = dir < 0 ? badgeY - 28 : badgeY + badgeH + 8
     children.push(
@@ -315,7 +315,7 @@ function renderBone(h, node, index, count, ribs, options) {
             if (event && (event.key === 'Enter' || event.key === ' ')) options.onSproutHere(node.id)
           },
         },
-        h('title', null, `从「${node.name}」分出一根新鱼刺`),
+        h('title', null, `从「${node.name}」分出一根新分支`),
         h('rect', {
           x: tipX - 31,
           y: btnY,
@@ -329,23 +329,23 @@ function renderBone(h, node, index, count, ribs, options) {
         h(
           'text',
           { x: tipX, y: btnY + 14.5, textAnchor: 'middle', fontSize: 12, fill: 'var(--rdw-sage)', fontWeight: 600 },
-          '+ 分刺',
+          '+ 创建分支',
         ),
       ),
     )
   }
 
-  // ---- 悬停在主刺身上（名牌区域之外）时，沿法线方向浮出一根幻影刺
+  // ---- 悬停在主支身上（名牌区域之外）时，沿法线方向浮出一根幻影分支
   const showPhantom = selected && typeof options.onPhantomSprout === 'function' && !options.inlineSprout
   if (showPhantom) {
-    // 幻影刺起止点：从刺身中点沿「远离脊骨」方向伸出
+    // 幻影分支起止点：从主体中点沿「远离主支」方向伸出
     const f = (RIB_FROM + RIB_TO) / 2
     const px = attachX + (tipX - attachX) * f
     const py = SPINE_Y + (tipY - SPINE_Y) * f
     const nx = tipX - attachX
     const ny = tipY - SPINE_Y
     const len = Math.sqrt(nx * nx + ny * ny) || 1
-    // 法线方向（垂直刺身，指向名牌一侧）
+    // 法线方向（垂直主体，指向名牌一侧）
     const nxu = (-ny / len) * 34
     const nyu = (nx / len) * 34
     const ex = px + nxu
@@ -396,7 +396,7 @@ function renderBone(h, node, index, count, ribs, options) {
       opacity: dimmed ? 0.35 : 1,
       style: { cursor: 'pointer', transition: 'opacity .16s ease' },
       onClick: () => options.onSelectModule(selected ? null : node.id),
-      onContextMenu: (event) => emitContextMenu(options, event, { kind: 'module', module: node }),
+      onContextMenu: (event) => emitContextMenu(options, event, { kind: 'module', module: node, index }),
       onKeyDown: (event) => {
         if (event && (event.key === 'Enter' || event.key === ' ')) options.onSelectModule(selected ? null : node.id)
       },
@@ -405,24 +405,24 @@ function renderBone(h, node, index, count, ribs, options) {
   )
 }
 
-/** 按模块数计算画布宽度：模块多时加宽，保证名牌与细刺各自有槽位。 */
+/** 按模块数计算画布宽度：模块多时加宽，保证名牌与子分支各自有槽位。 */
 function computeViewBoxWidth(count) {
   const need = GEO.SPINE_X0 + 40 + Math.max(1, count) * GEO.SLOT_W + 150
   return Math.max(GEO.W, need)
 }
 
 /**
- * 鱼骨全景 SVG：鱼头 + 渐变脊骨 + 上下交错主刺 + 细刺 + 鱼尾。
+ * 项目流程全景 SVG：项目目标 + 渐变主支 + 上下交错主支 + 子分支 + 整体进度。
  */
 function renderFishSvg(h, spine, ribs, totals, options) {
   const { H, SPINE_Y, SPINE_X0 } = GEO
   const selected = options.selectedModule || null
   const elements = []
-  // 自适应：画布宽度随模块数增长，脊骨右端与鱼尾随之右移
+  // 自适应：画布宽度随模块数增长，主支右端与整体进度随之右移
   const W = computeViewBoxWidth(spine.length)
   const SPINE_X1 = W - 132
 
-  // 脊骨渐变：鼠尾草绿 → 暖沙（EvoResearch 自然有机语汇，禁冷蓝与彩虹渐变）。
+  // 主支渐变：鼠尾草绿 → 暖沙（EvoResearch 自然有机语汇，禁冷蓝与彩虹渐变）。
   elements.push(
     h(
       'defs',
@@ -449,7 +449,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
         fill: 'var(--rdw-organic-ink)',
         style: { fontFamily: 'var(--rdw-font-serif)' },
       },
-      `🐟 ${truncate(options.projectTitle || '', 30)}`,
+      `📋 ${truncate(options.projectTitle || '', 30)}`,
     ),
     h(
       'text',
@@ -458,7 +458,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
     ),
   )
 
-  // 鱼尾（整体回连进度）：暖雾底 + 鼠尾草描边
+  // 整体进度（整体回连进度）：暖雾底 + 鼠尾草描边
   elements.push(
     h(
       'g',
@@ -477,7 +477,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
     ),
   )
 
-  // 脊骨：主脊骨是整个视图的锚点，必须「一定看得见」。
+  // 主支：主支是整个视图的锚点，必须「一定看得见」。
   // 三层叠画，任何一层失效（渐变 id 冲突/主题覆盖）都还有下一层兜底：
   //   1) 外发光（低透明度，撑出体量）
   //   2) 实色核心（不依赖渐变，永远可见）
@@ -516,7 +516,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
     }),
   )
 
-  // 鱼头（点击 = 清除筛选）：暖雾底 + 鼠尾草描边
+  // 项目目标（点击 = 清除筛选）：暖雾底 + 鼠尾草描边
   elements.push(
     h(
       'g',
@@ -531,7 +531,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
           if (event && (event.key === 'Enter' || event.key === ' ')) options.onSelectModule(null)
         },
       },
-      h('title', null, '鱼头 · 研究目标（点击清除筛选）'),
+      h('title', null, '项目目标 · 研究目标（点击清除筛选）'),
       h('polygon', {
         points: `${SPINE_X0},${SPINE_Y - 46} ${SPINE_X0},${SPINE_Y + 46} 24,${SPINE_Y}`,
         fill: 'color-mix(in srgb,var(--rdw-sage-tint) 18%,var(--rdw-organic-surface))',
@@ -549,12 +549,12 @@ function renderFishSvg(h, spine, ribs, totals, options) {
       h(
         'text',
         { x: 52, y: SPINE_Y + 74, textAnchor: 'middle', fontSize: 12, fill: 'var(--rdw-organic-ink-3)' },
-        '鱼头 · 目标',
+        '项目目标 · 目标',
       ),
     ),
   )
 
-  // 脊骨 attachment 点（与 renderBone 的槽位排布一致）
+  // 主支 attachment 点（与 renderBone 的槽位排布一致）
   const n = spine.length
   const slotStart = SPINE_X0 + GEO.SLOT_W / 2
   spine.forEach((node, index) => {
@@ -572,12 +572,12 @@ function renderFishSvg(h, spine, ribs, totals, options) {
     )
   })
 
-  // 主刺
+  // 主支
   spine.forEach((node, index) => {
     elements.push(renderBone(h, node, index, n, ribs, { ...options, selectedModule: selected }))
   })
 
-  // 还没有模块时，在脊骨上标注「主任务沿这条脊骨推进」
+  // 还没有模块时，在主支上标注「主任务沿这条主支推进」
   if (n === 0) {
     elements.push(
       h(
@@ -592,7 +592,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
           fontWeight: 600,
           opacity: 0.9,
         },
-        '主任务沿这条脊骨推进 —— 遇到复杂子问题时再分刺',
+        '主任务沿这条主支推进 —— 遇到复杂子问题时再创建分支',
       ),
     )
   }
@@ -616,7 +616,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
         color: 'inherit',
       },
       role: 'img',
-      'aria-label': '研究项目鱼骨图（右键任意对象打开操作菜单）',
+      'aria-label': '研究项目项目流程图（右键任意对象打开操作菜单）',
       onContextMenu: (event) => emitContextMenu(options, event, { kind: 'canvas' }),
     },
     ...elements,
@@ -625,7 +625,7 @@ function renderFishSvg(h, spine, ribs, totals, options) {
 
 /**
  * 三栏式 EvoResearch 科研工作台（对齐用户指定布局设计）：
- * - 左栏 · 竖向鱼骨（研究规划与分支导航）：鱼头 + 竖向连续脊骨节点 + 各分支 + [🌱 创建分支]
+ * - 左栏 · 竖向项目流程（研究规划与分支导航）：项目目标 + 竖向连续主支节点 + 各分支 + [🌱 创建分支]
  * - 中栏 · 当前工作区：主线/分支任务、绑定智能体身份、往来指令对白流、指令输入区
  * - 右栏 · 结果面板：本任务产物清单、合并状态、[审核与合并设计]
  */
@@ -634,7 +634,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
   const call = (handler, ...args) => {
     if (typeof handler === 'function') handler(...args)
   }
-  // v3.5 快捷键：N 分刺 / Del 删刺 / ⌘Z 撤销 / ⇧⌘Z 或 ⌘Y 重做 / ? 帮助
+  // v3.5 快捷键：N 创建分支 / Del 删分支 / ⌘Z 撤销 / ⇧⌘Z 或 ⌘Y 重做 / ? 帮助
   const onStageKeyDown = (event) => {
     if (!event) return
     const tag = event.target && event.target.tagName ? String(event.target.tagName).toLowerCase() : ''
@@ -691,7 +691,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
   const draft = typeof options.directiveDraft === 'string' ? options.directiveDraft : ''
   const sending = Boolean(options.sending)
 
-  // 1. 左栏 · 竖向鱼骨（研究规划与分支导航）
+  // 1. 左栏 · 竖向项目流程（研究规划与分支导航）
   //    样式参照 Karbo123/DSH-EvoResearch 的会话导航栏（evo-threadlist）：
   //    纸纹底 + 衬线栏标题 + 分组小标题 + 行内有机圆点 + 选中左竖条 + 悬停暖洗。
   const leftPane = h(
@@ -704,9 +704,12 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         flexDirection: 'column',
         gap: 6,
         minHeight: 0,
-        background: 'var(--rdw-organic-bg)',
+        /* 左栏 = 底板：灰面、无投影、几乎看不见的描边。
+         * 之前与中栏同为「灰底 + 明显边框」，三栏互相争抢；
+         * 现在它只负责托住中栏，眼睛不该在这里停留。 */
+        background: 'var(--rdw-side-surface)',
         backgroundImage: 'var(--rdw-organic-grain)',
-        border: '1px solid var(--rdw-warm-line-2)',
+        border: '1px solid var(--rdw-side-line)',
         borderRadius: 'var(--rdw-r-blob)',
       },
     },
@@ -725,7 +728,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
             color: 'var(--rdw-organic-ink)',
           },
         },
-        '竖向鱼骨',
+        '竖向项目流程',
       ),
       h(
         'div',
@@ -733,7 +736,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         '研究规划与分支导航',
       ),
     ),
-    // 鱼头 · 研究总目标（有机 pebble 卡片 + 左侧重音竖条；右键打开鱼头菜单）
+    // 项目目标 · 研究总目标（有机 pebble 卡片 + 左侧重音竖条；右键打开项目目标菜单）
     h(
       'div',
       {
@@ -752,7 +755,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       h(
         'div',
         { style: { display: 'flex', alignItems: 'center', gap: 5 } },
-        h('span', { style: { fontSize: 11 } }, '🐟'),
+        h('span', { style: { fontSize: 11 } }, '📋'),
         h(
           'span',
           {
@@ -763,7 +766,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
               color: 'var(--rdw-tan-ink)',
             },
           },
-          '鱼头 · 研究目标',
+          '项目目标 · 研究目标',
         ),
       ),
       h(
@@ -785,7 +788,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         head.goal ? truncate(head.goal, 56) : '目标试验模拟 · Target Trial Emulation',
       ),
     ),
-    // 分组小标题
+    // 分组小标题（右侧带「新增主支」入口，v3.9）
     h(
       'div',
       {
@@ -796,11 +799,28 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           letterSpacing: '.3px',
           textTransform: 'uppercase',
           color: 'var(--rdw-organic-ink-3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
         },
       },
-      '主脊骨 · 研究主线',
+      h('span', { style: { flex: '1 1 auto', minWidth: 0 } }, '主支 · 研究主线'),
+      h(
+        'button',
+        {
+          type: 'button',
+          className: 'rdw-add-module',
+          title: '新增主支（新的研究阶段）',
+          'aria-label': '新增主支',
+          onClick: (event) => {
+            if (event && event.stopPropagation) event.stopPropagation()
+            call(options.onAddModule)
+          },
+        },
+        '＋ 主支',
+      ),
     ),
-    // 竖向连续脊骨节点（可滚动区）
+    // 竖向连续主支节点（可滚动区）
     h(
       'div',
       {
@@ -823,7 +843,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         return h(
           'div',
           { key: `v-spine-${mod.id}`, style: { display: 'flex', flexDirection: 'column' } },
-          // 纵向脊骨连线（暖土发丝线，非蓝管线）
+          // 纵向主支连线（暖土发丝线，非蓝管线）
           idx > 0
             ? h('div', {
                 style: {
@@ -834,7 +854,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                 },
               })
             : null,
-          // 主骨节点行（会话列表行语言：选中左竖条 + 悬停暖洗 + pebble 圆角）
+          // 主支节点行（会话列表行语言：选中左竖条 + 悬停暖洗 + pebble 圆角）
           h(
             'div',
             {
@@ -851,7 +871,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                 transition: 'background .2s cubic-bezier(.4,0,.2,1)',
               },
               onClick: () => call(options.onSelectModule, mod.id),
-              onContextMenu: (event) => emitContextMenu(options, event, { kind: 'module', module: mod }),
+              onContextMenu: (event) => emitContextMenu(options, event, { kind: 'module', module: mod, index: idx }),
             },
             // 选中左竖条（3px 鼠尾草，上下留白 22%）
             isModSelected
@@ -908,32 +928,88 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
             isCompleted
               ? h('span', { style: { fontSize: 12, color: 'var(--rdw-sage)', flex: '0 0 auto' } }, '✓')
               : null,
+            // v3.9 主支行内联操作：↑ ↓ ×（悬停显现，不挤压文字）
             h(
-              'button',
+              'div',
               {
-                type: 'button',
-                style: {
-                  marginLeft: 'auto',
-                  padding: '1px 5px',
-                  borderRadius: 'var(--rdw-r-pebble-sm)',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'var(--rdw-sage)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  opacity: 0.7,
-                },
-                title: `在「${mod.name}」阶段下分新刺`,
-                onClick: (e) => {
-                  if (e && e.stopPropagation) e.stopPropagation()
-                  call(options.onSprout, mod.id)
-                },
+                className: 'rdw-mod-actions',
+                style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 1, flex: '0 0 auto' },
               },
-              '+',
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'rdw-mod-act',
+                  title: `上移主支「${mod.name}」`,
+                  'aria-label': '上移主支',
+                  disabled: idx === 0,
+                  style: { opacity: idx === 0 ? 0.25 : undefined, cursor: idx === 0 ? 'default' : 'pointer' },
+                  onClick: (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation()
+                    if (idx > 0) call(options.onMoveModule, mod.id, -1)
+                  },
+                },
+                '↑',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'rdw-mod-act',
+                  title: `下移主支「${mod.name}」`,
+                  'aria-label': '下移主支',
+                  disabled: idx >= spine.length - 1,
+                  style: {
+                    opacity: idx >= spine.length - 1 ? 0.25 : undefined,
+                    cursor: idx >= spine.length - 1 ? 'default' : 'pointer',
+                  },
+                  onClick: (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation()
+                    if (idx < spine.length - 1) call(options.onMoveModule, mod.id, 1)
+                  },
+                },
+                '↓',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'rdw-mod-act rdw-mod-act-danger',
+                  title: `收起主支「${mod.name}」`,
+                  'aria-label': '收起主支',
+                  onClick: (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation()
+                    call(options.onRemoveModule, mod.id)
+                  },
+                },
+                '×',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  style: {
+                    padding: '1px 5px',
+                    borderRadius: 'var(--rdw-r-pebble-sm)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--rdw-sage)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    opacity: 0.7,
+                  },
+                  title: `在「${mod.name}」阶段下新建分支`,
+                  onClick: (e) => {
+                    if (e && e.stopPropagation) e.stopPropagation()
+                    call(options.onSprout, mod.id)
+                  },
+                },
+                '+',
+              ),
             ),
           ),
-          // 鱼刺分支（缩进 + 左侧细竖线，EvoResearch 的子项语言）
+          // 分支（缩进 + 左侧细竖线，EvoResearch 的子项语言）
           modRibs.length > 0
             ? h(
                 'div',
@@ -978,7 +1054,9 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                         height: 5,
                         flex: '0 0 auto',
                         borderRadius: 'var(--rdw-r-dot)',
-                        background: theme.color,
+                        /* 侧栏小色点用降饱和版：仍能分辨状态，但不会在
+                         * 白灰底上跳出来跟中栏抢注意力。 */
+                        background: theme.mute || theme.color,
                       },
                     }),
                     h(
@@ -1003,13 +1081,16 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                           {
                             style: {
                               flex: '0 0 auto',
-                              padding: '1px 6px',
+                              padding: '1px 5px',
                               borderRadius: 'var(--rdw-r-pebble-sm)',
                               fontSize: 11,
-                              fontWeight: 600,
+                              fontWeight: 500,
                               fontFamily: 'var(--rdw-font-mono)',
-                              color: theme.color,
-                              background: `color-mix(in srgb,${theme.color} 13%,transparent)`,
+                              /* 侧栏降噪：不再给每个状态铺一层彩色底。
+                               * 六个彩色胶囊同时出现时，侧栏比中栏还抢眼。
+                               * 改为「小色点 + 中性字色」，颜色只做身份标记。 */
+                              color: 'var(--rdw-organic-ink-3)',
+                              background: 'transparent',
                             },
                           },
                           theme.label,
@@ -1030,7 +1111,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                           cursor: 'pointer',
                           opacity: isRibSelected ? 0.9 : 0.4,
                         },
-                        title: `以「${rib.name}」分出二级子刺`,
+                        title: `以「${rib.name}」分出二级子分支`,
                         onClick: (e) => {
                           if (e && e.stopPropagation) e.stopPropagation()
                           call(options.onSprout, rib.module, rib.id)
@@ -1067,7 +1148,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
             transition: 'all .2s cubic-bezier(.4,0,.2,1)',
           },
           disabled: Boolean(options.busy),
-          title: '自动回连全部已满意的鱼刺',
+          title: '自动回连全部已满意的分支',
           onClick: () => call(options.onAuto),
         },
         '自动回连',
@@ -1090,10 +1171,10 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
             boxShadow: 'var(--rdw-shadow-organic-1)',
           },
           disabled: Boolean(options.busy),
-          title: '在此模块下分一根新刺',
+          title: '在此模块下新建一个分支',
           onClick: () => call(options.onSprout, selectedModId, selectedRibId),
         },
-        '🌱 分一根新刺',
+        '🌱 新建一个分支',
       ),
     ),
   )
@@ -1138,7 +1219,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           ? h(
               'div',
               { style: { display: 'flex', alignItems: 'center', gap: 6, color: 'var(--rdw-organic-ink-2)' } },
-              '🌿 派生自父刺：',
+              '🌿 派生自父分支：',
               h(
                 'button',
                 {
@@ -1168,7 +1249,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           h(
             'span',
             { style: { color: 'var(--rdw-organic-ink-2)', fontSize: 11 } },
-            contextText ? '📄 已挂载主骨上下文档案快照 (CONTEXT.md)' : '📄 鱼刺任务上下文',
+            contextText ? '📄 已挂载主支上下文档案快照 (CONTEXT.md)' : '📄 分支任务上下文',
           ),
           h(
             'div',
@@ -1188,7 +1269,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                   border: 'none',
                   cursor: 'pointer',
                 },
-                title: '将当前鱼刺的研究目标、所属阶段与上下文档案注入会话框，让 AI 智能体掌握当前上下文',
+                title: '将当前分支的研究目标、所属阶段与上下文档案注入会话框，让 AI 智能体掌握当前上下文',
                 onClick: () => call(options.onMountContext, { module: activeModule.id, branch: activeRib.id }),
               },
               '⚡ 注入上下文到对话',
@@ -1208,10 +1289,10 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                   border: '1px solid color-mix(in srgb,var(--rdw-teal) 32%,transparent)',
                   cursor: 'pointer',
                 },
-                title: '从当前对话自动分叉创建新鱼刺',
+                title: '从当前对话自动分叉创建新分支',
                 onClick: () => call(options.onAutoSprout, activeRib.brief || activeRib.name),
               },
-              '🌱 自动分新刺',
+              '🌱 自动分新分支',
             ),
           ),
         ),
@@ -1221,7 +1302,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
   const middlePane = h(
     'div',
     {
-      className: 'rdw-pane-middle',
+      className: 'rdw-pane-middle rdw-pane-focus',
       style: {
         margin: 0,
         padding: '12px 14px',
@@ -1234,10 +1315,11 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
          * 会以内容高度为基准循环，导致内部 100% 子树塌陷。 */
         minHeight: 0,
         overflow: 'hidden',
-        background: 'var(--rdw-organic-surface)',
-        border: '1px solid var(--rdw-warm-line-2)',
+        /* 中栏是唯一「抬起来」的面：纯白 + 投影，左右两栏退成底板。 */
+        background: 'var(--rdw-focus-surface)',
+        border: '1px solid var(--rdw-focus-line)',
         borderRadius: 'var(--rdw-r-blob)',
-        boxShadow: 'var(--rdw-shadow-organic-1)',
+        boxShadow: 'var(--rdw-focus-shadow)',
       },
     },
     // 中栏顶部：紧凑优雅的工作区标题栏（Apple OS 规范：扁平微通透，主次分明）
@@ -1307,7 +1389,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           },
           activeModule.name || '统计分析',
         ),
-        // v3.6 锚点提示：如果当前鱼刺是从消息分叉来的，给一个「📍 源消息」提示
+        // v3.6 锚点提示：如果当前分支是从消息分叉来的，给一个「📍 源消息」提示
         activeRib && activeRib.origin && activeRib.origin.kind === 'message'
           ? h(
               'span',
@@ -1382,7 +1464,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                   },
                   title: nextSteps.map((st) => (typeof st === 'object' ? st.title || st.name : st)).join('；'),
                 },
-                '🐟 主骨下一步',
+                '📋 主支下一步',
               )
             : null,
         ),
@@ -1490,7 +1572,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                 border: '1px solid color-mix(in srgb,var(--rdw-teal) 32%,transparent)',
                 cursor: 'pointer',
               },
-              title: '将当前鱼刺的完整上下文同步挂载并注入至会话框',
+              title: '将当前分支的完整上下文同步挂载并注入至会话框',
               onClick: () => call(options.onMountContext, { module: activeModule.id, branch: activeRib.id }),
             },
             '⚡ 注入上下文',
@@ -1510,10 +1592,10 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                 border: '1px solid color-mix(in srgb,var(--rdw-soil) 32%,transparent)',
                 cursor: 'pointer',
               },
-              title: '从当前对话自动分叉创建新鱼刺',
+              title: '从当前对话自动分叉创建新分支',
               onClick: () => call(options.onAutoSprout, activeRib.brief || activeRib.name),
             },
-            '🌱 对话自动分刺',
+            '🌱 对话自动建分支',
           ),
           h(
             'span',
@@ -1672,7 +1754,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                         h(
                           'div',
                           { className: 'rdw-chat-empty-title' },
-                          h('span', null, '🐟'),
+                          h('span', null, '📋'),
                           h('span', null, '探索未至之境'),
                           h(
                             'span',
@@ -1699,7 +1781,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
                         h(
                           'div',
                           { style: { fontSize: 12, color: 'var(--rdw-organic-ink-3)', maxWidth: '36ch', lineHeight: 1.6 } },
-                          '向当前探索智能体下达指令，开启本鱼刺的科学探索',
+                          '向当前探索智能体下达指令，开启本分支的科学探索',
                         ),
                       )
                     : h(
@@ -1787,6 +1869,382 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         { icon: '📝', title: '方法学审查结论', desc: '结论与可信证据' },
       ]
 
+  // v3.8 · 本分支的文献（Zotero 接入）
+  //   两块能力，都落在右栏，与「产物」并列：
+  //     1) 搜索 Zotero 库 → 把条目挂到当前这根分支（点 ✚）
+  //     2) 从合集导入 → 整个 Zotero 合集一键挂上来
+  //   Zotero 没开机时只显示「未连接」+ 重试，已挂的 key 仍然列出来（不给假象）。
+  const zotero = options.zotero && typeof options.zotero === 'object' ? options.zotero : null
+  const zoteroAvailable = Boolean(zotero && zotero.available)
+  const zoteroBusy = Boolean(options.zoteroBusy)
+  const linkedItems = zotero && Array.isArray(zotero.items) ? zotero.items : []
+  const linkedKeys = zotero && Array.isArray(zotero.linked) ? zotero.linked : []
+  const missingKeys = zotero && Array.isArray(zotero.missing) ? zotero.missing : []
+  const searchState = zotero && zotero.search && typeof zotero.search === 'object' ? zotero.search : null
+  const searchHits = searchState && Array.isArray(searchState.items) ? searchState.items : []
+  const collections = zotero && Array.isArray(zotero.collections) ? zotero.collections : []
+  const searchDraft = typeof options.zoteroSearch === 'string' ? options.zoteroSearch : ''
+  const collectionOpen = Boolean(options.zoteroCollectionOpen)
+
+  /** 迷你图文按钮：右栏很窄，按钮只能放「一个图标 + 一个字」。 */
+  const miniBtn = (label, handler, extra) =>
+    h(
+      'button',
+      {
+        type: 'button',
+        title: label,
+        disabled: zoteroBusy || !zoteroAvailable,
+        onClick: (event) => {
+          if (event && typeof event.stopPropagation === 'function') event.stopPropagation()
+          call(handler)
+        },
+        style: {
+          flex: '0 0 auto',
+          padding: '1px 6px',
+          borderRadius: 'var(--rdw-r-pebble-sm)',
+          border: '1px solid var(--rdw-warm-line)',
+          background: 'var(--rdw-organic-input)',
+          color: 'var(--rdw-organic-ink-2)',
+          font: 'inherit',
+          fontSize: 11,
+          lineHeight: '16px',
+          cursor: zoteroBusy || !zoteroAvailable ? 'default' : 'pointer',
+          opacity: zoteroBusy || !zoteroAvailable ? 0.55 : 1,
+          ...(extra || {}),
+        },
+      },
+      label,
+    )
+
+  const zoteroPane = h(
+    'div',
+    { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+    // 小标题 + 计数 + 刷新
+    h(
+      'div',
+      { style: { ...row, gap: 6, padding: '2px 6px 0' } },
+      h(
+        'div',
+        {
+          style: {
+            flex: 1,
+            minWidth: 0,
+            fontSize: 12.5,
+            fontWeight: 600,
+            letterSpacing: '.3px',
+            textTransform: 'uppercase',
+            color: 'var(--rdw-organic-ink-3)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          },
+        },
+        '📚 本分支的文献',
+      ),
+      linkedKeys.length > 0
+        ? h(
+            'span',
+            {
+              style: {
+                flex: '0 0 auto',
+                fontFamily: 'var(--rdw-font-mono)',
+                fontSize: 11,
+                color: 'var(--rdw-organic-ink-3)',
+              },
+            },
+            String(linkedKeys.length),
+          )
+        : null,
+      miniBtn('↻', options.onZoteroRefresh, { background: 'transparent', border: 'none', color: 'var(--rdw-organic-ink-3)' }),
+    ),
+
+    // 未连接：说明 + 重试，绝不假装读到数据
+    !zoteroAvailable
+      ? h(
+          'div',
+          {
+            style: {
+              padding: '6px 9px',
+              borderRadius: 'var(--rdw-r-pebble-sm)',
+              background: 'color-mix(in srgb,var(--rdw-tan) 12%,var(--rdw-organic-surface))',
+              border: '1px solid color-mix(in srgb,var(--rdw-tan) 30%,transparent)',
+              fontSize: 11.5,
+              lineHeight: 1.5,
+              color: 'var(--rdw-organic-ink-2)',
+            },
+          },
+          h('div', { style: { fontWeight: 600, color: 'var(--rdw-tan-ink)' } }, '未连接 Zotero'),
+          h(
+            'div',
+            { style: { marginTop: 2 } },
+            (zotero && zotero.error) || '请先启动 Zotero 桌面版（本地 API 默认 127.0.0.1:23119）。',
+          ),
+        )
+      : null,
+
+    // 已挂文献
+    linkedItems.length > 0
+      ? h(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          ...linkedItems.slice(0, 6).map((item) =>
+            h(
+              'div',
+              {
+                key: `zot-${item.key}`,
+                style: {
+                  padding: '6px 9px',
+                  borderRadius: 'var(--rdw-r-pebble-sm)',
+                  background: 'var(--rdw-organic-surface)',
+                  border: '1px solid var(--rdw-warm-line-2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  boxShadow: 'var(--rdw-shadow-organic-1)',
+                },
+              },
+              h(
+                'div',
+                {
+                  style: {
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    color: 'var(--rdw-organic-ink)',
+                    lineHeight: 1.4,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  },
+                  title: item.title,
+                },
+                item.title,
+              ),
+              h(
+                'div',
+                {
+                  style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--rdw-organic-ink-3)' },
+                },
+                h(
+                  'span',
+                  { style: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                  [item.creators, item.year ? String(item.year) : ''].filter(Boolean).join(' · ') || item.itemType || '',
+                ),
+                miniBtn('定位', () => call(options.onZoteroLocate, item.key, 'item')),
+                miniBtn('移出', () => call(options.onZoteroDetach, item.key)),
+              ),
+            ),
+          ),
+          linkedKeys.length > linkedItems.length
+            ? h(
+                'div',
+                { style: { padding: '0 6px', fontSize: 11, color: 'var(--rdw-organic-ink-3)' } },
+                `另有 ${linkedKeys.length - linkedItems.length} 条未取到摘要（Zotero 里可能已删除或归档）`,
+              )
+            : null,
+        )
+      : missingKeys.length > 0
+        ? h(
+            'div',
+            { style: { padding: '0 6px', fontSize: 11, color: 'var(--rdw-organic-ink-3)' } },
+            `已挂 ${missingKeys.length} 条，但当前读不到摘要`,
+          )
+        : zoteroAvailable
+          ? h(
+              'div',
+              { style: { padding: '0 6px', fontSize: 11.5, color: 'var(--rdw-organic-ink-3)', lineHeight: 1.5 } },
+              '这个分支还没挂文献。在下面搜索，或从合集导入。',
+            )
+          : null,
+
+    // 搜索 Zotero 库
+    zoteroAvailable
+      ? h(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 } },
+          h(
+            'div',
+            { style: { ...row, gap: 5, flexWrap: 'nowrap' } },
+            h('input', {
+              value: searchDraft,
+              placeholder: '在 Zotero 库中搜索…',
+              disabled: zoteroBusy,
+              'aria-label': '在 Zotero 库中搜索文献',
+              onChange: (event) =>
+                call(options.onZoteroSearchChange, event && event.target ? event.target.value : ''),
+              onKeyDown: (event) => {
+                if (event && event.key === 'Enter') {
+                  if (typeof event.preventDefault === 'function') event.preventDefault()
+                  call(options.onZoteroSearchSubmit)
+                }
+              },
+              style: {
+                flex: '1 1 0',
+                minWidth: 0,
+                padding: '4px 8px',
+                borderRadius: 'var(--rdw-r-pebble-sm)',
+                border: '1px solid var(--rdw-warm-line)',
+                background: 'var(--rdw-organic-input)',
+                color: 'var(--rdw-organic-ink)',
+                font: 'inherit',
+                fontSize: 11.5,
+                outline: 'none',
+              },
+            }),
+            miniBtn('搜', options.onZoteroSearchSubmit),
+          ),
+          searchState
+            ? searchHits.length > 0
+              ? h(
+                  'div',
+                  { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 190, overflowY: 'auto' } },
+                  ...searchHits.slice(0, 10).map((hit) => {
+                    const attached = linkedKeys.includes(hit.key)
+                    return h(
+                      'div',
+                      {
+                        key: `hit-${hit.key}`,
+                        style: {
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '4px 7px',
+                          borderRadius: 'var(--rdw-r-pebble-sm)',
+                          border: '1px solid var(--rdw-warm-line-2)',
+                          background: 'var(--rdw-fill-quat)',
+                        },
+                      },
+                      h(
+                        'span',
+                        {
+                          style: {
+                            flex: 1,
+                            minWidth: 0,
+                            fontSize: 11,
+                            color: 'var(--rdw-organic-ink-2)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          },
+                          title: `${hit.title}${hit.publication ? ` · ${hit.publication}` : ''}`,
+                        },
+                        `${hit.year ? `${hit.year} · ` : ''}${hit.title}`,
+                      ),
+                      attached
+                        ? h(
+                            'span',
+                            { style: { flex: '0 0 auto', fontSize: 11, color: 'var(--rdw-sys-green)' } },
+                            '已挂',
+                          )
+                        : miniBtn('✚', () => call(options.onZoteroAttach, hit.key)),
+                    )
+                  }),
+                )
+              : h(
+                  'div',
+                  { style: { padding: '0 6px', fontSize: 11, color: 'var(--rdw-organic-ink-3)' } },
+                  searchState.error ? `检索失败：${searchState.error}` : '没有命中条目',
+                )
+            : null,
+        )
+      : null,
+
+    // 从合集导入
+    zoteroAvailable && collections.length > 0
+      ? h(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2 } },
+          h(
+            'button',
+            {
+              type: 'button',
+              disabled: zoteroBusy,
+              onClick: () => call(options.onZoteroToggleCollections),
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '3px 6px',
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--rdw-organic-ink-3)',
+                font: 'inherit',
+                fontSize: 12.5,
+                fontWeight: 600,
+                letterSpacing: '.3px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                textAlign: 'left',
+              },
+            },
+            h('span', { style: { flex: '0 0 auto' } }, collectionOpen ? '▾' : '▸'),
+            h('span', { style: { flex: 1, minWidth: 0 } }, '从合集导入'),
+            h(
+              'span',
+              { style: { flex: '0 0 auto', fontFamily: 'var(--rdw-font-mono)', fontSize: 11 } },
+              String(collections.length),
+            ),
+          ),
+          collectionOpen
+            ? h(
+                'div',
+                {
+                  style: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    maxHeight: 200,
+                    overflowY: 'auto',
+                    padding: '4px 2px',
+                    border: '1px solid var(--rdw-warm-line-2)',
+                    borderRadius: 'var(--rdw-r-pebble-sm)',
+                    background: 'var(--rdw-fill-quat)',
+                  },
+                },
+                ...collections
+                  .filter((col) => col && col.items > 0)
+                  .slice(0, 40)
+                  .map((col) =>
+                    h(
+                      'div',
+                      {
+                        key: `col-${col.key}`,
+                        title: `把「${col.name}」整个挂到这个分支（${col.items} 条）`,
+                        onClick: () => {
+                          if (!zoteroBusy) call(options.onZoteroImportCollection, col.key, col.name)
+                        },
+                        style: {
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '2px 6px',
+                          paddingLeft: 6 + Number(col.depth || 0) * 10,
+                          borderRadius: 'var(--rdw-r-pebble-sm)',
+                          cursor: zoteroBusy ? 'default' : 'pointer',
+                          fontSize: 11,
+                          color: 'var(--rdw-organic-ink-2)',
+                          opacity: zoteroBusy ? 0.6 : 1,
+                        },
+                      },
+                      h('span', { style: { flex: '0 0 auto', fontSize: 11 } }, col.depth > 0 ? '↳' : '📁'),
+                      h(
+                        'span',
+                        { style: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                        col.name,
+                      ),
+                      h(
+                        'span',
+                        { style: { flex: '0 0 auto', fontFamily: 'var(--rdw-font-mono)', fontSize: 11, color: 'var(--rdw-organic-ink-3)' } },
+                        String(col.items),
+                      ),
+                    ),
+                  ),
+              )
+            : null,
+        )
+      : null,
+  )
+
   const rightPane = h(
     'div',
     {
@@ -1797,9 +2255,11 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         flexDirection: 'column',
         gap: 9,
         minHeight: 0,
-        background: 'var(--rdw-organic-bg)',
+        /* 右栏同样是底板。唯一保留强色的是里面「需要你拍板」
+         * 那张卡——那才是真要你看的东西。 */
+        background: 'var(--rdw-side-surface)',
         backgroundImage: 'var(--rdw-organic-grain)',
-        border: '1px solid var(--rdw-warm-line-2)',
+        border: '1px solid var(--rdw-side-line)',
         borderRadius: 'var(--rdw-r-blob)',
       },
     },
@@ -1904,6 +2364,8 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         ),
       ),
     ),
+    // v3.8 · 本分支的文献（Zotero 接入：搜索挂载 + 合集导入）
+    zoteroPane,
     // 整合：需要你拍板或处理
     attention.length > 0
       ? h(
@@ -1981,7 +2443,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           }),
         )
       : null,
-    // 阶段里程碑 / 交付物沉淀（展示主骨已锁定的科学证据资产）
+    // 阶段里程碑 / 交付物沉淀（展示主支已锁定的科学证据资产）
     (() => {
       const milestoneList =
         Array.isArray(markers) && markers.length > 0
@@ -2010,7 +2472,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           h(
             'strong',
             { style: { fontSize: 12, fontWeight: 700, color: 'var(--rdw-organic-ink)', letterSpacing: '.2px' } },
-            '主骨里程碑沉淀',
+            '主支里程碑沉淀',
           ),
         ),
         ...milestoneList.slice(0, 3).map((ms, mIdx) =>
@@ -2150,7 +2612,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
     className: 'rdw-fishbone-stage',
     tabIndex: 0,
     role: 'application',
-    'aria-label': '鱼骨工作台（按 ? 查看快捷键）',
+    'aria-label': '项目流程工作台（按 ? 查看快捷键）',
     onKeyDown: onStageKeyDown,
     onContextMenu: (event) => {
       // 空白处右键 = 画布菜单（仅当事件没被子元素消费时才走到这里）
@@ -2193,7 +2655,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
 
 /**
  * 递归分支树视图（对齐 EvoResearch 递归分支规范）。
- * 支持从主脊骨任务节点到多级子鱼刺的无限深度树形展现与分叉操作。
+ * 支持从主支任务节点到多级子分支的无限深度树形展现与分叉操作。
  */
 function renderRecursiveTree(h, spine, ribs, options) {
   const { row, chip, button, primaryButton, muted } = STYLES
@@ -2266,7 +2728,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
                   flex: '0 0 auto',
                 },
               },
-              `↳ 父刺: ${rib.parent}`,
+              `↳ 父分支: ${rib.parent}`,
             )
           : null,
         h(
@@ -2332,7 +2794,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
                     call(options.onGraft, rib.id)
                   },
                 },
-                '🪡 逐级回连',
+                '🔗 逐级回连',
               )
             : null,
           h(
@@ -2384,7 +2846,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
           h(
             'div',
             { style: { ...row, gap: 6, minWidth: 0 } },
-            h('span', { style: { fontSize: 13 } }, '🦴'),
+            h('span', { style: { fontSize: 13 } }, '🌿'),
             h(
               'strong',
               {
@@ -2410,7 +2872,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
                   flex: '0 0 auto',
                 },
               },
-              `${mod.ribs ? mod.ribs.length : modRibs.length} 根鱼刺`,
+              `${mod.ribs ? mod.ribs.length : modRibs.length} 根分支`,
             ),
             h(
               'span',
@@ -2443,10 +2905,10 @@ function renderRecursiveTree(h, spine, ribs, options) {
                 cursor: 'pointer',
                 flex: '0 0 auto',
               },
-              title: `在此主骨阶段（${mod.name}）下创建新鱼刺`,
+              title: `在此主支阶段（${mod.name}）下创建新分支`,
               onClick: () => call(options.onSprout, mod.id),
             },
-            '➕ 从此阶段分刺',
+            '➕ 从此阶段新建分支',
           ),
         ),
         modRibs.length > 0
@@ -2454,7 +2916,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
           : h(
               'div',
               { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)', paddingLeft: 6 } },
-              '该主骨阶段尚未分出鱼刺。点击右侧「➕ 从此阶段分刺」开始探索。',
+              '该主支阶段尚未分出分支。点击右侧「➕ 从此阶段新建分支」开始探索。',
             ),
       )
     }),
@@ -2462,7 +2924,7 @@ function renderRecursiveTree(h, spine, ribs, options) {
 }
 
 /**
- * 鱼刺清单表格渲染函数。
+ * 分支清单表格渲染函数。
  */
 function renderRibsTable(h, visibleRibs, spine, options) {
   const { chip, button } = STYLES
@@ -2483,8 +2945,8 @@ function renderRibsTable(h, visibleRibs, spine, options) {
         h(
           'tr',
           null,
-          h('th', { style: STYLES.th }, '鱼刺'),
-          h('th', { style: STYLES.th }, '所属主骨'),
+          h('th', { style: STYLES.th }, '分支'),
+          h('th', { style: STYLES.th }, '所属主支'),
           h('th', { style: STYLES.th }, '状态'),
           h('th', { style: STYLES.th }, '产出'),
           h('th', { style: STYLES.th }, '最近活动'),
@@ -2521,7 +2983,7 @@ function renderRibsTable(h, visibleRibs, spine, options) {
                   { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                   h('span', { style: { color: theme.color, fontSize: 12 } }, theme.dot),
                   h('span', { style: { fontWeight: 600, color: 'var(--rdw-text)' } }, rib.name),
-                  rib.parent ? h('span', { style: { ...chip, fontSize: 11.5, color: 'var(--rdw-sage)' } }, `↳ 父刺: `) : null,
+                  rib.parent ? h('span', { style: { ...chip, fontSize: 11.5, color: 'var(--rdw-sage)' } }, `↳ 父分支: `) : null,
                   rib.hasSession ? h('span', { style: { fontSize: 12 }, title: '有会话记录' }, '🧠') : null,
                   rib.is_stale ? h('span', { style: { fontSize: 12, color: 'var(--rdw-st-rejected)' }, title: '过期' }, '⚠') : null,
                 ),
@@ -2591,7 +3053,7 @@ function renderRibsTable(h, visibleRibs, spine, options) {
                         cursor: 'pointer',
                       },
                       disabled: Boolean(busy),
-                      title: '审阅后把该鱼刺的交接结果接回主骨',
+                      title: '审阅后把该分支的交接结果接回主支',
                       onClick: () => call(options.onGraft, rib.id),
                     }, '回连')
                   : null,
@@ -2611,7 +3073,7 @@ function renderRibsTable(h, visibleRibs, spine, options) {
                     },
                     onClick: () => call(options.onSelectRib, rib),
                   },
-                  '打开鱼刺',
+                  '打开分支',
                 ),
                 h(
                   'button',
@@ -2629,7 +3091,7 @@ function renderRibsTable(h, visibleRibs, spine, options) {
                       cursor: 'pointer',
                       opacity: 0.8,
                     },
-                    title: `删除鱼刺「${rib.name}」到回收站`,
+                    title: `删除分支「${rib.name}」到回收站`,
                     onClick: (e) => {
                       if (e && e.stopPropagation) e.stopPropagation()
                       call(options.onDeleteRib, rib)
@@ -2646,7 +3108,7 @@ function renderRibsTable(h, visibleRibs, spine, options) {
 }
 
 /**
- * 渲染鱼骨主线视图。
+ * 渲染项目流程主线视图。
  * @param {object} h React.createElement
  * @param {{fishbone?: object|null, loading?: boolean, error?: string,
  *          selectedModule?: string|null, selectedRib?: string|null,
@@ -2670,7 +3132,7 @@ export function renderFishboneView(h, props) {
       return h(
         'div',
         { style: card },
-        h('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, '鱼骨主线读取失败'),
+        h('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, '项目流程主线读取失败'),
         h('div', { style: { ...muted, marginBottom: 8 } }, error),
         h('button', { type: 'button', style: primaryButton, disabled: loading, onClick: () => call(options.onRefresh) }, '重试'),
       )
@@ -2696,12 +3158,12 @@ export function renderFishboneView(h, props) {
   const ctx = { head, spine, ribs, totals, nextSteps, blockers, attention, markers, visibleRibs, selModule, selRib, displayMode, options, busy, cliErrors, muted, row }
 
   /* v4 三栏舞台模式：只输出三栏（由外壳的 .rdw-stage 网格承载），
-   * 全景与鱼刺表通过 renderFishboneDrawer 单独渲染到底部抽屉里。 */
+   * 全景与分支表通过 renderFishboneDrawer 单独渲染到底部抽屉里。 */
   if (options.mode === 'stage') {
     return renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, nextSteps, blockers, attention, markers })
   }
 
-  /* v4 抽屉模式：只输出全景骨架 + 鱼刺清单表。 */
+  /* v4 抽屉模式：只输出全景骨架 + 分支清单表。 */
   if (options.mode === 'drawer') {
     return h(
       'div',
@@ -2728,14 +3190,14 @@ export function renderFishboneView(h, props) {
     )
   }
 
-  /* 兼容模式（单页纵向堆叠）：旧宿主或非 stage 场景下的完整鱼骨页。 */
+  /* 兼容模式（单页纵向堆叠）：旧宿主或非 stage 场景下的完整项目流程页。 */
   return h(
     'div',
     { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
     /* --------------------------------------------- EvoResearch 三栏科研工作台（用户指定布局） */
     renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, nextSteps, blockers, attention, markers }),
 
-    /* --------------------------------------------- 鱼刺清单与全景骨架（紧凑整合面板） */
+    /* --------------------------------------------- 分支清单与全景骨架（紧凑整合面板） */
     h(
       'div',
       {
@@ -2767,7 +3229,7 @@ export function renderFishboneView(h, props) {
                 whiteSpace: 'nowrap',
               },
             },
-            '鱼刺清单与全景骨架',
+            '分支清单与全景骨架',
           ),
           h(
             'span',
@@ -2827,7 +3289,7 @@ export function renderFishboneView(h, props) {
               disabled: Boolean(busy),
               onClick: () => call(options.onSprout),
             },
-            '🌱 分一根新刺',
+            '🌱 新建一个分支',
           ),
         ),
       ),

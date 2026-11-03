@@ -1,5 +1,5 @@
 /**
- * 研究项目 DAG 工作台 — 鱼刺/主骨会话视图。
+ * 研究项目 DAG 工作台 — 分支/主支会话视图。
  * 全面板工作区：上下文、简报、工作记录、对话及文件访问均在同一页面。
  */
 import { STYLES } from '../core/constants.js'
@@ -68,7 +68,7 @@ export function renderBranchSessionView(h, props) {
   const draft = typeof options.directiveDraft === 'string' ? options.directiveDraft : ''
   const sending = Boolean(options.sending)
   if (!session || (!session.data && !loading && !error)) {
-    return h('div', { style: { ...card, textAlign: 'center', padding: '24px 0' } }, loading ? h('div', { style: muted }, '正在打开工作区…') : h('div', { style: muted }, error || '选择一根鱼刺以打开会话'))
+    return h('div', { style: { ...card, textAlign: 'center', padding: '24px 0' } }, loading ? h('div', { style: muted }, '正在打开工作区…') : h('div', { style: muted }, error || '选择一根分支以打开会话'))
   }
   const data = session.data || {}
   const modName = (data.module && data.module.name) || session.module || ''
@@ -93,36 +93,36 @@ export function renderBranchSessionView(h, props) {
           h('span', { style: { ...muted, fontSize: 12 } }, rib.id),
           h('span', { style: { ...muted, fontSize: 12 } }, '→'),
         )))
-      : h('div', { style: muted }, '当前主骨还没有鱼刺。复杂起来时再手动分刺。')
+      : h('div', { style: muted }, '当前主支还没有分支。复杂起来时再手动创建分支。')
     return h(
       'div',
       { style: { display: 'flex', flexDirection: 'column', gap: 10, minHeight: '100%' } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0 10px', borderBottom: '1px solid var(--rdw-line-2)', position: 'sticky', top: 0, zIndex: 2, background: 'var(--rdw-bg)' } },
-        h('button', { type: 'button', style: { ...button, padding: '3px 10px' }, onClick: options.onBack, title: '返回鱼骨主线' }, '← 鱼骨'),
-        h('span', { style: { fontSize: 14 } }, '🦴'),
+        h('button', { type: 'button', style: { ...button, padding: '3px 10px' }, onClick: options.onBack, title: '返回项目流程主线' }, '← 项目流程'),
+        h('span', { style: { fontSize: 14 } }, '🌿'),
         h('div', { style: { minWidth: 0, flex: '1 1 auto' } },
-          h('div', { style: { fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, `主骨档案 · ${module.name || session.module}`),
+          h('div', { style: { fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, `主支档案 · ${module.name || session.module}`),
           h('div', { style: { ...muted, fontSize: 12 } }, module.id || session.module),
         ),
-        h('span', { style: { ...chip, fontSize: 12 } }, `${ribs.length} 根鱼刺`),
+        h('span', { style: { ...chip, fontSize: 12 } }, `${ribs.length} 根分支`),
       ),
       h('div', { style: { ...card, padding: '12px' } },
-        h('div', { style: { fontWeight: 700, marginBottom: 6 } }, spine.name || module.name || '主骨'),
-        h('div', { style: { ...muted, lineHeight: 1.7 } }, spine.goal || '短任务直接沿主骨推进，只有复杂子问题才手动分刺。'),
+        h('div', { style: { fontWeight: 700, marginBottom: 6 } }, spine.name || module.name || '主支'),
+        h('div', { style: { ...muted, lineHeight: 1.7 } }, spine.goal || '短任务直接沿主支推进，只有复杂子问题才手动创建分支。'),
         h('div', { style: { ...row, gap: 6, marginTop: 8, flexWrap: 'wrap' } },
           h('span', { style: chip }, `完成度 ${spine.completion === undefined ? '—' : `${spine.completion}%`}`),
-          h('span', { style: chip }, `活跃鱼刺 ${ribs.filter((rib) => !rib.is_stale).length}`),
-          h('span', { style: chip }, `过期鱼刺 ${ribs.filter((rib) => rib.is_stale).length}`),
+          h('span', { style: chip }, `活跃分支 ${ribs.filter((rib) => !rib.is_stale).length}`),
+          h('span', { style: chip }, `过期分支 ${ribs.filter((rib) => rib.is_stale).length}`),
         ),
       ),
       h('div', { style: { ...card, padding: '10px 12px' } },
-        h('div', { style: { ...row, gap: 6, marginBottom: 8 } }, h('span', null, '🧩'), h('strong', null, '本主骨下的鱼刺'), h('span', { style: { ...muted, fontSize: 12 } }, '点击进入会话')),
+        h('div', { style: { ...row, gap: 6, marginBottom: 8 } }, h('span', null, '🧩'), h('strong', null, '本主支下的分支'), h('span', { style: { ...muted, fontSize: 12 } }, '点击进入会话')),
         ribList,
       ),
       h(
         'button',
         { type: 'button', style: primaryButton, onClick: () => options.onSprout && options.onSprout(module.id, '') },
-        '🌱 从这根主骨分一根新刺',
+        '🌱 从这根主支新建一个分支',
       ),
     )
   }
@@ -187,13 +187,13 @@ export function renderBranchSessionView(h, props) {
     'div',
     { style: { display: 'flex', flexDirection: 'column', gap: 0, minHeight: '100%' } },
     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0 10px', borderBottom: '1px solid var(--rdw-line-2)', marginBottom: 10, position: 'sticky', top: 0, zIndex: 2, background: 'var(--rdw-bg)' } },
-      h('button', { type: 'button', style: { ...button, padding: '3px 10px' }, onClick: options.onBack, title: '返回鱼骨主线' }, '← 鱼骨'),
+      h('button', { type: 'button', style: { ...button, padding: '3px 10px' }, onClick: options.onBack, title: '返回项目流程主线' }, '← 项目流程'),
       h('span', { style: { fontSize: 16 } }, persona.icon),
       h('div', { style: { minWidth: 0, flex: '1 1 auto' } },
         h('div', { style: { fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, brName || session.branch),
-        h('div', { style: { ...muted, fontSize: 12 } }, `${persona.role} · 所属主骨：${modName || session.module}`),
+        h('div', { style: { ...muted, fontSize: 12 } }, `${persona.role} · 所属主支：${modName || session.module}`),
       ),
-      brMode ? h('span', { style: { ...chip, fontSize: 12 } }, brMode === 'spike' ? '探索突刺' : '标准推进') : null,
+      brMode ? h('span', { style: { ...chip, fontSize: 12 } }, brMode === 'spike' ? '探索突分支' : '标准推进') : null,
       data.branch && data.branch.id ? h('span', { style: { ...chip, fontSize: 12, background: 'var(--rdw-sunken)' } }, data.branch.id) : null,
       typeof options.onSprout === 'function'
         ? h(
@@ -215,7 +215,7 @@ export function renderBranchSessionView(h, props) {
               type: 'button',
               style: { ...button, padding: '3px 10px', whiteSpace: 'nowrap' },
               disabled: Boolean(options.busy),
-              title: '删除这根鱼刺的 CONTEXT.md（默认留 .bak 备份，可重新补建）',
+              title: '删除这根分支的 CONTEXT.md（默认留 .bak 备份，可重新补建）',
               onClick: () => options.onClearContext(data.branch && data.branch.id),
             },
             '🧹 清除上下文',
@@ -226,9 +226,9 @@ export function renderBranchSessionView(h, props) {
             type: 'button',
             style: { ...button, color: 'var(--rdw-st-accepted)', borderColor: 'color-mix(in srgb,var(--rdw-st-accepted) 32%,transparent)', padding: '3px 10px', whiteSpace: 'nowrap', fontWeight: 600 },
             disabled: Boolean(options.busy),
-            title: '审阅满意后，把这根鱼刺的交接结果接回主骨',
+            title: '审阅满意后，把这根分支的交接结果接回主支',
             onClick: () => options.onGraft && options.onGraft(),
-          }, options.busy === 'graft' ? '回连中…' : '🪡 回连主骨')
+          }, options.busy === 'graft' ? '回连中…' : '🔗 回连主支')
         : null,
     ),
     h('div', { style: { flex: '1 1 auto', minHeight: 0, overflowY: 'auto', paddingBottom: 8 } },
@@ -276,8 +276,8 @@ export function renderBranchSessionView(h, props) {
                   'div',
                   { style: { fontSize: 11, color: 'var(--rdw-text-2)', lineHeight: 1.6 } },
                   modId === 'M40'
-                    ? '基于主骨统计分析上下文：建议在此分支运行逆概率加权诊断，验证加权后倾向评分重叠度与极值权重截尾分布，输出 Love Plot 产物。'
-                    : '基于主骨当前阶段推进度：建议在此分支继续推进核心细分子任务，确保实验数据与中间产物全程留痕可回放。',
+                    ? '基于主支统计分析上下文：建议在此分支运行逆概率加权诊断，验证加权后倾向评分重叠度与极值权重截尾分布，输出 Love Plot 产物。'
+                    : '基于主支当前阶段推进度：建议在此分支继续推进核心细分子任务，确保实验数据与中间产物全程留痕可回放。',
                 ),
               ),
 
@@ -324,17 +324,17 @@ export function renderBranchSessionView(h, props) {
               ),
 
               data.context
-                ? renderSection(h, { id: 'ctx', title: '主骨上下文档案（分刺时刻的完整快照）', icon: '🧬', badge: h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-superseded)', borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } }, 'CONTEXT.md'), open: Boolean(options.openSections && options.openSections.context), onToggle: () => options.onToggleSection && options.onToggleSection('context'), children: [data.context] })
+                ? renderSection(h, { id: 'ctx', title: '主支上下文档案（创建分支时刻的完整快照）', icon: '🧬', badge: h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-superseded)', borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } }, 'CONTEXT.md'), open: Boolean(options.openSections && options.openSections.context), onToggle: () => options.onToggleSection && options.onToggleSection('context'), children: [data.context] })
                 : h(
                     'div',
                     { key: 'ctx-missing', style: { ...card, padding: '10px 12px', marginBottom: 10, borderColor: 'color-mix(in srgb,var(--rdw-st-provisional) 34%,transparent)', background: 'var(--rdw-warn-soft)' } },
                     h('div', { style: { ...row, gap: 6, marginBottom: 4 } },
                       h('span', null, '🧬'),
-                      h('strong', { style: { fontSize: 12 } }, '缺少主骨上下文档案'),
+                      h('strong', { style: { fontSize: 12 } }, '缺少主支上下文档案'),
                       h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-provisional)', borderColor: 'color-mix(in srgb,var(--rdw-st-provisional) 34%,transparent)' } }, 'CONTEXT.md 缺失'),
                     ),
                     h('div', { style: { ...muted, fontSize: 11, lineHeight: 1.7 } },
-                      '这根鱼刺创建于上下文档案机制之前，没有分刺时刻的主骨快照，',
+                      '这根分支创建于上下文档案机制之前，没有创建分支时刻的主支快照，',
                       '因此该工作区的智能体看不到此前的决策与已接受输入。',
                     ),
                     h('div', { style: { ...row, gap: 6, marginTop: 8, flexWrap: 'wrap' } },
@@ -344,7 +344,7 @@ export function renderBranchSessionView(h, props) {
                           type: 'button',
                           style: button,
                           disabled: Boolean(options.busy),
-                          title: '回填这根鱼刺的 CONTEXT.md（命令行：dag context --branch <id>）',
+                          title: '回填这根分支的 CONTEXT.md（命令行：dag context --branch <id>）',
                           onClick: () => options.onBuildContext && options.onBuildContext(data.branch && data.branch.id),
                         },
                         '补建 CONTEXT.md',
@@ -355,18 +355,18 @@ export function renderBranchSessionView(h, props) {
               data.brief ? renderSection(h, { id: 'brief', title: '任务简报', icon: '📋', badge: h('span', { style: { ...chip, fontSize: 11 } }, 'BRIEF.md'), open: Boolean(options.openSections && options.openSections.brief), onToggle: () => options.onToggleSection && options.onToggleSection('brief'), children: [data.brief] }) : null,
               sessionSections.length ? renderSection(h, { id: 'session', title: `智能体工作记录（${sessionSections.length} 节）`, icon: '🧠', badge: h('span', { style: { ...chip, fontSize: 11 } }, 'SESSION.md'), open: Boolean(options.openSections && options.openSections.session), onToggle: () => options.onToggleSection && options.onToggleSection('session'), children: sessionSections.flatMap((sec, index) => [sec.title ? h('div', { key: `st-${index}`, style: { fontWeight: 700, marginTop: index ? 8 : 0 } }, sec.title) : null, h('div', { key: `sb-${index}` }, sec.text || '')]) }) : null,
               fileSection,
-              // v3.2：父刺溯源 —— 「这根刺从哪来」
+              // v3.2：父分支溯源 —— 「这个分支从哪来」
               data.parent
                 ? h(
                     'div',
                     { key: 'lineage', style: { ...card, padding: '10px 12px', marginBottom: 10, borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } },
                     h('div', { style: { ...row, gap: 6, marginBottom: 6 } },
                       h('span', null, '🌿'),
-                      h('strong', { style: { fontSize: 12 } }, '这根刺从哪来'),
-                      h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-superseded)', borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } }, '从鱼刺分叉'),
+                      h('strong', { style: { fontSize: 12 } }, '这个分支从哪来'),
+                      h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-superseded)', borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } }, '从分支分叉'),
                     ),
                     h('div', { style: { ...muted, fontSize: 11, lineHeight: 1.7 } },
-                      '父刺：',
+                      '父分支：',
                       h('button', {
                         type: 'button',
                         style: { ...button, padding: '1px 7px', fontSize: 11, margin: '0 4px' },
@@ -375,7 +375,7 @@ export function renderBranchSessionView(h, props) {
                           if (parent && typeof options.onOpenSibling === 'function') options.onOpenSibling(parent)
                         },
                       }, data.parent),
-                      '（主脊骨 → 鱼刺 → 这根子刺）。上下文档案里带着父刺的简报与产出摘要。',
+                      '（主支 → 分支 → 这根子分支）。上下文档案里带着父分支的简报与产出摘要。',
                     ),
                     h('button', {
                       type: 'button',
@@ -384,17 +384,17 @@ export function renderBranchSessionView(h, props) {
                       onClick: () =>
                         options.onSproutHere &&
                         options.onSproutHere(options.sessionModule || data.module.id, data.parent),
-                    }, '🌱 从父刺再分一根子刺'),
+                    }, '🌱 从父分支再分一根子分支'),
                   )
                 : null,
-              // v3.2：同伴鱼刺 —— 鱼刺之间可以通讯
+              // v3.2：同伴分支 —— 分支之间可以通讯
               Array.isArray(data.siblings) && data.siblings.length > 0
                 ? h(
                     'div',
                     { key: 'siblings', style: { ...card, padding: '10px 12px', marginBottom: 10 } },
                     h('div', { style: { ...row, gap: 6, marginBottom: 8 } },
                       h('span', null, '🔗'),
-                      h('strong', { style: { fontSize: 12 } }, '同一主骨下的其他鱼刺'),
+                      h('strong', { style: { fontSize: 12 } }, '同一主支下的其他分支'),
                       h('span', { style: { ...muted, fontSize: 12 } }, '可互相通讯'),
                     ),
                     h(
@@ -414,7 +414,7 @@ export function renderBranchSessionView(h, props) {
                             },
                             row.isParent ? '🌿 ' : '🧠 ',
                             row.name || row.id,
-                            row.isParent ? h('span', { style: { ...muted, fontSize: 11 } }, '（父刺）') : null,
+                            row.isParent ? h('span', { style: { ...muted, fontSize: 11 } }, '（父分支）') : null,
                           ),
                           typeof options.onMessageSibling === 'function' && !row.isParent
                             ? h(
@@ -433,11 +433,11 @@ export function renderBranchSessionView(h, props) {
                     ),
                   )
                 : null,
-              // v3.2：收件箱 —— 其他鱼刺投递来的消息
+              // v3.2：收件箱 —— 其他分支投递来的消息
               data.inbox && data.inbox.messages > 0
                 ? renderSection(h, {
                     id: 'inbox',
-                    title: `收件箱（${data.inbox.messages} 条来自其他鱼刺的消息）`,
+                    title: `收件箱（${data.inbox.messages} 条来自其他分支的消息）`,
                     icon: '📥',
                     badge: h('span', { style: { ...chip, fontSize: 11, color: 'var(--rdw-st-superseded)', borderColor: 'color-mix(in srgb,var(--rdw-st-superseded) 32%,transparent)' } }, 'work/INBOX.md'),
                     open: Boolean(options.openSections && options.openSections.inbox),
@@ -474,9 +474,9 @@ export function renderBranchSessionView(h, props) {
         },
         h('span', null, '🧬'),
         h('strong', { style: { color: 'var(--rdw-text-2)' } }, '科研记忆 Dock ·'),
-        h('span', null, data.context ? '已挂载分刺主骨快照 (CONTEXT.md)' : '分刺主骨记忆未就绪'),
+        h('span', null, data.context ? '已挂载主支上下文快照 (CONTEXT.md)' : '主支上下文档案未就绪'),
         h('span', { style: { opacity: 0.5 } }, '·'),
-        h('span', null, `${Array.isArray(data.siblings) ? data.siblings.length : 0} 根同伴鱼刺`),
+        h('span', null, `${Array.isArray(data.siblings) ? data.siblings.length : 0} 根同伴分支`),
         h('span', { style: { opacity: 0.5 } }, '·'),
         h('span', null, `${allFiles.length} 个工作区文件`),
         h('span', { style: { opacity: 0.5 } }, '·'),

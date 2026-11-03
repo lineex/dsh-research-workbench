@@ -17,7 +17,7 @@ export function renderStatCards(h, props) {
 
   const cards = [
     { label: '模块', value: modules.length, icon: '📦', color: 'var(--rdw-accent)', sub: '研究阶段' },
-    { label: '分支', value: branchTotal, icon: '🌱', color: 'var(--rdw-accent-dark)', sub: '探索鱼刺' },
+    { label: '分支', value: branchTotal, icon: '🌱', color: 'var(--rdw-accent-dark)', sub: '探索分支' },
     { label: '交接', value: handoffs.length, icon: '📄', color: 'var(--rdw-text-2)', sub: '产物账本' },
     { label: '草稿', value: countOf(counts, 'draft'), icon: '◍', color: STATUS_INFO.DRAFT.color, sub: '探路推进' },
     { label: '待决定', value: countOf(counts, 'provisional'), icon: '◉', color: STATUS_INFO.PROVISIONAL.color, sub: '需你拍板' },
