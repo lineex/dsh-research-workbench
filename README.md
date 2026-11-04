@@ -1,7 +1,13 @@
-# 📋 研究项目 DAG 工作台 (`dsh-research-dag-workbench`)
+<p align="center">
+  <img src="icon.svg" width="68" height="68" alt="Research DAG Workbench Logo" />
+</p>
 
-> **面向科学研究与复杂课题的「项目流程式」探索智能体协同工作台**  
-> 将一个 `research-dag` 课题转化为**业务整页优先**的可视化推进中枢：**项目目标 = 研究总目标，主支 = 研究阶段，分支 = 任意节点长出的探索/修正智能体**。成果满意后一键回连主支，沉淀为发表级证据链。
+<h1 align="center">研究项目 DAG 工作台 (Research DAG Workbench)</h1>
+
+<p align="center">
+  <strong>面向科学研究与复杂课题的「项目流程式」探索智能体协同工作台</strong><br>
+  项目目标 = 研究总目标 · 主支 = 研究阶段 · 分支 = 任意节点长出的探索智能体 · 成果满意后一键回连
+</p>
 
 [![Version](https://img.shields.io/badge/version-3.10.0-blue.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DeepSeek%20Harness-Plugin-green.svg)](https://github.com/lineex/research-dag-workbench)

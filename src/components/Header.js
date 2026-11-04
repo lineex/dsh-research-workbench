@@ -10,6 +10,7 @@
  */
 import { STYLES, VIEWS, WELCOME_COPY, phaseLabel } from '../core/constants.js'
 import { renderThemePicker } from './ThemePicker.js'
+import { renderBrandLogo } from './CommandBar.js'
 
 /**
  * @param {object} h React.createElement
@@ -78,7 +79,7 @@ export function renderHeader(h, props) {
       h(
         'h2',
         { className: 'rdw-toolbar-title' },
-        h('span', { className: 'rdw-toolbar-brand', 'aria-hidden': 'true' }, '📋'),
+        h('span', { className: 'rdw-toolbar-brand', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center' } }, renderBrandLogo(h, 18)),
         '研究项目工作台',
         h(
           'a',

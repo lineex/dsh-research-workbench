@@ -15,6 +15,53 @@
  *      把「需要我处理的事」从隐性变成常驻可点；
  *   5. **面板入口**：低频管理（主智能体/内容/网络/工程/概览）收进侧滑面板。
  */
+/** 工作台专属品牌矢量 Logo (DAG 拓扑星芒) */
+export function renderBrandLogo(h, size = 18) {
+  return h(
+    'svg',
+    {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 24 24',
+      width: size,
+      height: size,
+      fill: 'none',
+      style: { flex: '0 0 auto', verticalAlign: 'middle', display: 'inline-block' },
+      'aria-hidden': 'true',
+    },
+    h('path', {
+      d: 'M12 2.2 L21 11.2 C21.4 11.6 21.4 12.4 21 12.8 L12 21.8 C11.6 22.2 10.8 22.2 10.4 21.8 L2 12.8 C1.6 12.4 1.6 11.6 2 11.2 L11 2.2 C11.4 1.8 12.2 1.8 12.6 2.2 Z',
+      stroke: 'currentColor',
+      strokeWidth: 1.7,
+      strokeLinejoin: 'round',
+    }),
+    h('line', {
+      x1: 12,
+      y1: 4.2,
+      x2: 12,
+      y2: 19.8,
+      stroke: 'currentColor',
+      strokeWidth: 1.7,
+      strokeLinecap: 'round',
+    }),
+    h('circle', { cx: 12, cy: 6.8, r: 1.9, fill: 'currentColor' }),
+    h('circle', { cx: 6.5, cy: 12, r: 1.7, fill: 'currentColor' }),
+    h('circle', { cx: 17.5, cy: 12, r: 1.7, fill: 'currentColor' }),
+    h('path', {
+      d: 'M6.5 12 C9 14.2 10.5 16 12 16.8',
+      stroke: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinecap: 'round',
+    }),
+    h('path', {
+      d: 'M17.5 12 C15 14.2 13.5 16 12 16.8',
+      stroke: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinecap: 'round',
+    }),
+    h('circle', { cx: 12, cy: 17, r: 1.7, fill: 'currentColor' }),
+  )
+}
+
 /**
  * @param {object} h React.createElement
  * @param {{project?: object, fishbone?: object, selectedModule?: string|null,
@@ -101,7 +148,7 @@ export function renderCommandBar(h, props) {
     h(
       'div',
       { className: 'rdw-cmd-brand' },
-      h('span', { className: 'rdw-cmd-mark', 'aria-hidden': 'true' }, '📋'),
+      h('span', { className: 'rdw-cmd-mark', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center' } }, renderBrandLogo(h, 17)),
       h(
         'span',
         { className: 'rdw-cmd-name', title: head.title ? `当前研究：${head.title}` : '研究项目工作台' },

@@ -1,7 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
-  <rect x="3" y="3.5" width="7" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
-  <rect x="14" y="3.5" width="7" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
-  <rect x="8.5" y="15.5" width="7" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
-  <path d="M6.5 8.5v2.2c0 .9.7 1.6 1.6 1.6h7.8c.9 0 1.6-.7 1.6-1.6V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M12 12.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 外部 DAG 闭环流动拓扑外廓（微圆角 2.4px，端庄饱满） -->
+  <path d="M12 2.2 L21 11.2 C21.4 11.6 21.4 12.4 21 12.8 L12 21.8 C11.6 22.2 10.8 22.2 10.4 21.8 L2 12.8 C1.6 12.4 1.6 11.6 2 11.2 L11 2.2 C11.4 1.8 12.2 1.8 12.6 2.2 Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+
+  <!-- 中央主支垂直主骨 (Central Spine Backbone) -->
+  <line x1="12" y1="4.2" x2="12" y2="19.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+
+  <!-- 顶端：研究总目标核心 (Target Origin) -->
+  <circle cx="12" cy="6.8" r="1.9" fill="currentColor"/>
+
+  <!-- 左右探索分支节点 (Branch Sprout) -->
+  <circle cx="6.5" cy="12" r="1.7" fill="currentColor"/>
+  <circle cx="17.5" cy="12" r="1.7" fill="currentColor"/>
+
+  <!-- 分支向中央汇聚回连 (Graft Back to Spine) -->
+  <path d="M6.5 12 C9 14.2 10.5 16 12 16.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M17.5 12 C15 14.2 13.5 16 12 16.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 底部成果收束节点 (Accepted Milestone) -->
+  <circle cx="12" cy="17" r="1.7" fill="currentColor"/>
 </svg>
