@@ -97,9 +97,15 @@ export async function saveConfig(projectRoot) {
   })
 }
 
-/** POST /run —— 提交一个白名单 action，返回 run 记录（status=running）。 */
-export async function postAction(body) {
-  const payload = body && typeof body === 'object' ? body : {}
+/** POST /run —— 提交一个白名单 action，返回 run 记录（status=running）。
+ * 支持 postAction({ action, ... }) 与 postAction('action-name', { ... }) 两种调用形态。 */
+export async function postAction(actionOrBody, options) {
+  let payload = {}
+  if (typeof actionOrBody === 'string') {
+    payload = Object.assign({ action: actionOrBody }, options && typeof options === 'object' ? options : {})
+  } else if (actionOrBody && typeof actionOrBody === 'object') {
+    payload = actionOrBody
+  }
   return requestJson(`${ROUTE}/run`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

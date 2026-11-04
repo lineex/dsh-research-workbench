@@ -14,7 +14,7 @@
   "main": "./lib/host.js",
   "scripts": {
     "build": "node tools/build-client.mjs",
-    "verify": "node verify/verify-host.mjs && node verify/verify-client.mjs && node verify/verify-layout.mjs && node verify/verify-doc.mjs && node verify/verify-bundle-coverage.mjs && node verify/verify-kit-root.mjs && node verify/verify-session-bind.mjs && node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs",
+    "verify": "node verify/verify-host.mjs && node verify/verify-client.mjs && node verify/verify-layout.mjs && node verify/verify-doc.mjs && node verify/verify-bundle-coverage.mjs && node verify/verify-kit-root.mjs && node verify/verify-session-bind.mjs && node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs && node verify/verify-new-project-flow.mjs",
     "verify:coverage": "node verify/verify-bundle-coverage.mjs",
     "verify:kit": "node verify/verify-kit-root.mjs",
     "verify:session": "node verify/verify-session-bind.mjs && node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs",

@@ -2420,7 +2420,8 @@ export function createWorkbenchPanel(React) {
         setModuleDialog({ mode: 'add', id: '', name: '', error: '' })
         return
       }
-      const preferred = moduleHint || selectedModule || (modules[0] && modules[0].id) || ''
+      const actualModule = (selectedModule && selectedModule !== '__goal__') ? selectedModule : ''
+      const preferred = (moduleHint && moduleHint !== '__goal__' ? moduleHint : '') || actualModule || (modules[0] && modules[0].id) || ''
       setSproutDialog({
         module: preferred,
         id: '',
@@ -2825,14 +2826,15 @@ export function createWorkbenchPanel(React) {
         return null
       }
       try {
-        const result = await postAction('module-add', Object.assign({ project: rootPath, id, name }, {}))
-        if (!result || result.ok === false) {
-          setToast(`新增主支失败：${(result && result.message) || '未知错误'}`)
+        const result = await execute({ action: 'module-add', id, name })
+        if (!result || result.ok === false || (result.run && result.run.status === 'failed')) {
+          const errMsg = (result && result.run && result.run.stderr) || (result && result.message) || '执行失败'
+          setToast(`新增主支失败：${errMsg}`)
           return null
         }
         await loadFishbone(rootPath)
         setSelectedModule(id)
-        setToast(`已新增主支 ${id}`)
+        setToast(`已新增主支 ${name || id}`)
         return result
       } catch (problem) {
         setToast(`新增主支失败：${networkMessage(problem)}`)
