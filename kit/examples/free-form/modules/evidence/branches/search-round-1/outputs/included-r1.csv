@@ -1,0 +1,19 @@
+study_id,first_author_year,design,n,population,outcome,doi_simulated
+E01,Alvarez 2019,cohort,214,medical ICU,delirium,10.2000/sim.2019.101
+E02,Bergman 2019,cohort,168,general ICU,delirium,10.2000/sim.2019.102
+E03,Cho 2020,cohort,320,ICU adults,delirium,10.2000/sim.2020.103
+E04,Davies 2020,quasi-experimental,145,ICU adults,delirium,10.2000/sim.2020.104
+E05,Evans 2020,cohort,268,medical ICU,delirium,10.2000/sim.2020.105
+E06,Fischer 2021,cohort,190,surgical ICU,delirium,10.2000/sim.2021.106
+E07,Gonzalez 2021,cohort,412,ICU adults,delirium,10.2000/sim.2021.107
+E08,Hughes 2021,quasi-experimental,176,medical ICU,delirium,10.2000/sim.2021.108
+E09,Ito 2022,cohort,233,ICU adults,delirium,10.2000/sim.2022.109
+E10,Jensen 2022,cohort,289,general ICU,delirium,10.2000/sim.2022.110
+E11,Klein 2022,cohort,155,neurological ICU,delirium,10.2000/sim.2022.111
+E12,Lopez 2023,cohort,374,ICU adults,delirium,10.2000/sim.2023.112
+E13,Meyer 2023,quasi-experimental,201,surgical ICU,delirium,10.2000/sim.2023.113
+E14,Nakamura 2023,cohort,187,medical ICU,delirium,10.2000/sim.2023.114
+E15,Ortiz 2024,cohort,296,ICU adults,delirium,10.2000/sim.2024.115
+E16,Park 2024,cohort,144,general ICU,delirium,10.2000/sim.2024.116
+E17,Quinn 2024,randomized trial,96,ICU adults,delirium,10.2000/sim.2024.117
+E18,Rossi 2024,cohort,258,ICU adults,delirium,10.2000/sim.2024.118

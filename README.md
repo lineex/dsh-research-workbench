@@ -1,10 +1,10 @@
-# 研究项目 DAG 工作台（workbench v3.9）
+# 研究项目 DAG 工作台（workbench v3.10）
 
 DSH 侧栏工作台插件：把一个 research-dag 协议项目变成**业务整页优先**的项目流程工作台。
 默认整页展示研究主线（项目目标/主支/分支）；中栏按分支的生命阶段切换三种形态
 （空白探索 / 上下文承袭 / 已有记录），需要 AI 协助时切到宿主原生会话窗口。
 
-- 版本：`3.9.0`（`package.json`）
+- 版本：`3.10.0`（`package.json`）
 - 插件包名：`dsh-research-dag-workbench`
 - 路由前缀：`/research-dag-workbench`
 - 宿主入口：`lib/host.js`（Cordis 插件，`inject: ['webServer']`，不导出 `Config`）
@@ -78,6 +78,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 | GET | `/health` | 包名/版本/路由/动作白名单/桥可用性/kitRoot/配置路径/示例项目 |
 | GET | `/fishbone?project=<abs>` | **v3.x 主接口**：项目流程全量数据（head/spine/ribs/recycleBin/attention/markers/totals），已合并工作台元数据 |
 | POST | `/rib-op` | **v3.5**：分支元数据操作。`op` ∈ `delete` / `restore` / `purge` / `empty-bin` / `block` / `unblock` / `rename` / `anchor` |
+| GET/POST | `/goal-card` | **v3.10**：研究目标 · 好问题卡。GET 返回 `card` / `layers` / `goal` / `missing` / `falsifiable` / `layerSpec`；POST `{ project, card, layers, syncGoal }` 合并写卡，并把「问题 + 推翻条件」摘要回写 `project.goal` |
 | GET | `/branch-work?project=&module=&branch=` | **v2.7/v3.7**：单分支工作区。返回 `brief` / `context` / `sessionNotes` / `directives` + 解析好的 `directivesParsed` / `sessionParsed` / `workFiles` / `outputFiles` / `parent` / `siblings` / `inbox` |
 | POST | `/branch-directive` | **v2.7**：向分支工作区下达指令，追加写入 `work/DIRECTIVES.md` |
 | GET | `/detail?project=<abs>&branch=<id>` | 单分支详情 |
@@ -102,7 +103,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 {
   "ok": true,
   "name": "dsh-research-dag-workbench",
-  "version": "3.9.0",
+  "version": "3.7.0",
   "route": "/research-dag-workbench",
   "actions": ["status","verify","list","check","submit","accept","reject","block","unblock",
               "report","state-set","results","auto","init","module-add","branch-add",
@@ -118,7 +119,7 @@ node verify/verify-layout.mjs      # 整页布局验收（容器查询/对话安
 - `actions` 是 `/run` 的 DAG 动作白名单；v2.1 末尾追加只读 `content`（`/run` 不接受它）。
 - `bridgeActions` 是 `/bridge` 白名单；`networkAvailable` = kit 内
   `integrations/teammcp/teammcp.mjs` 是否存在。
-- `version` 直接读 `package.json`（当前 `3.9.0`）。
+- `version` 直接读 `package.json`（当前 `3.7.0`）。
 
 ### 3.2 `GET /content?project=<abs>`
 

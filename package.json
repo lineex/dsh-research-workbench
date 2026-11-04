@@ -1,9 +1,10 @@
 {
   "name": "dsh-research-dag-workbench",
-  "version": "3.9.0",
+  "version": "3.10.0",
+  "private": true,
   "type": "module",
   "description": "项目流程式研究项目工作台：项目目标=研究目标，主支=研究阶段，分支=从任意位置长出的探索/修正智能体；成果满意后一键回连主支。",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "author": "lineex (https://github.com/lineex)",
   "icon": "./icon.svg",
   "repository": {
@@ -13,7 +14,11 @@
   "main": "./lib/host.js",
   "scripts": {
     "build": "node tools/build-client.mjs",
-    "verify": "node verify/verify-host.mjs && node verify/verify-client.mjs && node verify/verify-layout.mjs && node verify/verify-doc.mjs",
+    "verify": "node verify/verify-host.mjs && node verify/verify-client.mjs && node verify/verify-layout.mjs && node verify/verify-doc.mjs && node verify/verify-bundle-coverage.mjs && node verify/verify-kit-root.mjs && node verify/verify-session-bind.mjs && node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs",
+    "verify:coverage": "node verify/verify-bundle-coverage.mjs",
+    "verify:kit": "node verify/verify-kit-root.mjs",
+    "verify:session": "node verify/verify-session-bind.mjs && node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs",
+    "verify:inherit": "node verify/verify-inheritance-text.mjs && node verify/verify-host-inheritance.mjs",
     "verify:layout": "node verify/verify-layout.mjs",
     "verify:doc": "node verify/verify-doc.mjs",
     "pack:check": "node scripts/check-workbench-package.mjs",
@@ -32,12 +37,10 @@
     "src/",
     "tools/build-client.mjs",
     "tools/preview-layout.mjs",
-    "integrations/",
-    "docs/images/",
     "cordis.patch.yml",
+    "kit/",
     "icon.svg",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=0.1.5-rc.2 <0.2.0-0"

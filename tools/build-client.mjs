@@ -40,6 +40,10 @@ const SOURCES = [
   'src/components/RunConsole.js',
   'src/components/Toast.js',
   'src/components/Charts.js',
+  // v3.10 研究目标编辑器（八层假设审计 + 好问题卡）。漏加这两条会让 bundle 缺少实现，
+  // 运行时点开目标卡直接报错；verify-client 现已加「src 下所有被 import 的模块都必须在清单内」自测兜住。
+  'src/core/goal-skills.js',
+  'src/components/GoalCardView.js',
   'src/views/ResultsView.js',
   'src/views/OverviewView.js',
   'src/views/DagView.js',
@@ -56,16 +60,83 @@ const SOURCES = [
   'src/index.js',
 ]
 
-/** 去掉模块化语法：import 行与 export 关键字（拼进同一 factory 作用域）。 */
+/**
+ * 去掉模块化语法：import 行与 export 关键字（拼进同一 factory 作用域）。
+ *
+ * ⚠ 关键：所有模块最终拼进**同一个作用域**，所以 `import { A } from 'x'` 直接删掉是对的
+ * （A 由 x 模块提供）。但 `import { A as B }` 不能直接删——B 这个名字在拼接作用域里
+ * 从未被定义。曾因此炸出真实故障：GoalCardView 写 `THINKING_LAYERS as SKILL_LAYERS`，
+ * 打包后 `SKILL_LAYERS is not defined`，整个工作台白屏。
+ * 这里把「带别名的具名导入」降级为 `const B = A;`，让别名在拼接作用域真正成立。
+ */
 function stripImportsAndExports(code) {
   return code
-    .replace(/^import\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*$/gm, '')
+    .replace(/^import\s+([\s\S]*?)\s+from\s+['"][^'"]+['"];?\s*$/gm, (whole, clause) => {
+      const aliases = []
+      // 具名导入：{ A, B as C }
+      const named = clause.match(/\{([\s\S]*?)\}/)
+      if (named) {
+        for (const part of named[1].split(',')) {
+          const m = part.trim().match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/)
+          if (m) aliases.push(`const ${m[2]} = ${m[1]};`)
+        }
+      }
+      // 命名空间导入：* as NS（保留为别名声明，指向空对象交由调用方兜底）
+      const ns = clause.match(/\*\s+as\s+([A-Za-z_$][\w$]*)/)
+      if (ns) aliases.push(`const ${ns[1]} = undefined;`)
+      return aliases.join(' ')
+    })
     .replace(/^export\s+(const|let|var|function|async function|class)\s+/gm, '$1 ')
     .replace(/^export\s*\{[^}]*\}\s*;?/gm, '')
     .trim()
 }
 
-const moduleBodies = SOURCES.map((relPath) => {
+/**
+ * 依赖拓扑排序（v3.15）。
+ *
+ * 所有模块拼进**同一个作用域**，因此被依赖的模块必须先出现——否则 `const A = ...` 还在
+ * 后面、前面就先读它会触发 TDZ / is not defined。此前靠手写清单顺序，一次顺序调整就可能
+ * 炸掉整页（真实故障：SKILL_LAYERS is not defined）。
+ * 这里按模块间的相对 import 关系做稳定拓扑排序：保持原清单的先后作为同层顺序。
+ */
+function topoSortSources(sources) {
+  const set = new Set(sources)
+  const deps = new Map()
+  for (const rel of sources) {
+    const abs = resolve(ROOT, rel)
+    let text = ''
+    try {
+      text = readFileSync(abs, 'utf8')
+    } catch {
+      text = ''
+    }
+    const list = []
+    for (const m of text.matchAll(/from\s+['"](\.[^'"]+)['"]/g)) {
+      const target = resolve(dirname(abs), m[1].endsWith('.js') ? m[1] : `${m[1]}.js`)
+      const trel = target.slice(ROOT.length + 1).split('\\').join('/')
+      if (set.has(trel) && trel !== rel) list.push(trel)
+    }
+    deps.set(rel, list)
+  }
+  const out = []
+  const mark = new Map() // 0=未访问 1=访问中 2=完成
+  const visit = (rel) => {
+    const state = mark.get(rel) || 0
+    if (state === 2) return
+    // 循环依赖：直接按当前顺序收口，避免死循环（这类结构本身也不该出现在同作用域 bundle 里）
+    if (state === 1) return
+    mark.set(rel, 1)
+    for (const dep of deps.get(rel) || []) visit(dep)
+    mark.set(rel, 2)
+    out.push(rel)
+  }
+  for (const rel of sources) visit(rel)
+  return out
+}
+
+const ORDERED_SOURCES = topoSortSources(SOURCES)
+
+const moduleBodies = ORDERED_SOURCES.map((relPath) => {
   const fullPath = resolve(ROOT, relPath)
   const raw = readFileSync(fullPath, 'utf8')
   const clean = stripImportsAndExports(raw)

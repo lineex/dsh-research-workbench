@@ -15,11 +15,12 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const BUNDLE = path.resolve(HERE, '..')
-const KIT_ROOT = path.resolve(BUNDLE, '..')
+const KIT_ROOT = fs.existsSync(path.join(BUNDLE, 'examples', 'early-phosphate')) ? BUNDLE : path.resolve(BUNDLE, '..')
 const EXAMPLE = path.join(KIT_ROOT, 'examples', 'early-phosphate')
 const ROUTE = '/research-dag-workbench'
 
@@ -894,6 +895,341 @@ async function main() {
     '/zotero-op open 非法 key -> 400（不触发协议）',
     `非法 key 未被拦截：${response.status}`,
   )
+
+  /* ------------------------------- R v2.1 主支成稿（/spine 与 /spine-op） */
+  console.log('')
+  console.log('R) v2.1 主支成稿接口（GET /spine · POST /spine-op · /fishbone 主支字段）')
+
+  // R1) 旧项目（示例项目没有 SPINE.json）：必须 ok:true + exists:false，绝不 500
+  response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(EXAMPLE)}`)
+  const spineLegacy = response.payload || {}
+  check(
+    response.status === 200 && spineLegacy.ok === true && spineLegacy.exists === false,
+    'GET /spine 无 SPINE.json 的旧项目 -> 200 ok + exists:false',
+    `旧项目未降级：status=${response.status} body=${JSON.stringify(spineLegacy).slice(0, 240)}`,
+  )
+  check(
+    Array.isArray(spineLegacy.spine && spineLegacy.spine.stages) && spineLegacy.spine.stages.length === 0,
+    '旧项目 spine.stages = []（不是错误）',
+    `stages 不是空数组：${JSON.stringify(spineLegacy.spine && spineLegacy.spine.stages).slice(0, 160)}`,
+  )
+  check(
+    Boolean(spineLegacy.profile && typeof spineLegacy.profile.statsLanguage === 'string'),
+    `旧项目 profile.statsLanguage 有默认值（${spineLegacy.profile && spineLegacy.profile.statsLanguage}）`,
+    'profile 缺失',
+  )
+
+  // R2) 用临时副本造一个真主支链项目：init + module add + spine init + rebuild
+  const spineProj = path.join(TMP, 'spine-proj')
+  try {
+    fs.rmSync(spineProj, { recursive: true, force: true })
+  } catch {
+    /* 不存在即已干净 */
+  }
+  const dagRun = (args) => {
+    const result = spawnSync(process.execPath, [path.join(KIT_ROOT, 'tools', 'dag.mjs'), ...args], {
+      cwd: TMP,
+      encoding: 'utf8',
+      windowsHide: true,
+    })
+    return { code: result.status, out: result.stdout || '', err: result.stderr || '' }
+  }
+  const dagJson = (args) => {
+    const result = dagRun([...args, '--json'])
+    let json = null
+    try {
+      const lines = result.out.split('\n').map((line) => line.trim()).filter(Boolean)
+      for (let i = lines.length - 1; i >= 0; i -= 1) {
+        if (lines[i].startsWith('{')) {
+          json = JSON.parse(lines[i])
+          break
+        }
+      }
+    } catch {
+      json = null
+    }
+    return { ...result, json }
+  }
+
+  let spineReady = false
+  const initRun = dagRun(['init', spineProj, '--id', 'spine-demo', '--title', '主支成稿验收'])
+  if (initRun.code !== 0) {
+    bad(`建临时项目失败：${(initRun.err || initRun.out).slice(0, 300)}`)
+  } else {
+    const moduleIds = ['lit', 'stat']
+    let modulesOk = true
+    for (const id of moduleIds) {
+      const added = dagJson(['module', 'add', '--id', id, '--name', `模块-${id}`, '--root', spineProj])
+      if (!added.json || added.json.ok === false) {
+        modulesOk = false
+        bad(`module add ${id} 失败：${(added.err || added.out).slice(0, 200)}`)
+      }
+    }
+    if (modulesOk) {
+      const inited = dagJson(['spine', 'init', '--root', spineProj])
+      if (!inited.json || inited.json.ok === false) {
+        bad(`spine init 失败：${(inited.err || inited.out).slice(0, 200)}`)
+      } else {
+        const rebuilt = dagJson(['spine', 'rebuild', inited.json.spine.stages[0].id, '--root', spineProj])
+        if (!rebuilt.json || rebuilt.json.ok === false) {
+          bad(`spine rebuild 失败：${(rebuilt.err || rebuilt.out).slice(0, 200)}`)
+        } else {
+          spineReady = true
+        }
+      }
+    }
+  }
+
+  if (!spineReady) {
+    bad('主支链临时项目未就绪，跳过 R3–R8')
+  } else {
+    const firstStageId = (dagJson(['spine', 'list', '--root', spineProj]).json || { stages: [] }).stages[0].id
+
+    // R3) 列表形态：契约 §7 的字段名必须齐全
+    response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(spineProj)}`)
+    const spineList = response.payload || {}
+    check(
+      response.status === 200 && spineList.ok === true && spineList.exists === true,
+      'GET /spine 有 SPINE.json -> 200 ok + exists:true',
+      `主支列表失败：status=${response.status} ${JSON.stringify(spineList).slice(0, 260)}`,
+    )
+    const stages = (spineList.spine && spineList.spine.stages) || []
+    check(stages.length >= 2, `/spine.spine.stages = ${stages.length} 段（>=2）`, `主支段数不足：${stages.length}`)
+    const stage0 = stages[0] || {}
+    const stageFieldChecks = [
+      ['id', typeof stage0.id === 'string'],
+      ['order', Number.isFinite(stage0.order)],
+      ['title', typeof stage0.title === 'string'],
+      ['status', typeof stage0.status === 'string'],
+      ['revision', Number.isFinite(stage0.revision)],
+      ['locked', typeof stage0.locked === 'boolean'],
+      ['lastSource', 'lastSource' in stage0],
+      ['backupCount', Number.isFinite(stage0.backupCount)],
+      ['hasDraft', typeof stage0.hasDraft === 'boolean'],
+      ['draft', Boolean(stage0.draft && typeof stage0.draft === 'object')],
+    ]
+    const badFields = stageFieldChecks.filter(([, pass]) => !pass).map(([name]) => name)
+    check(
+      badFields.length === 0,
+      `spine.stages[] 契约字段齐全（${stageFieldChecks.length} 项）`,
+      `字段缺失：${badFields.join(', ')} —— ${JSON.stringify(stage0).slice(0, 240)}`,
+    )
+    check(
+      stage0.status === 'current' && stage0.hasDraft === true && stage0.revision >= 1,
+      `已重生成的主支标 current + hasDraft + v${stage0.revision}`,
+      `主支状态不对：status=${stage0.status} hasDraft=${stage0.hasDraft} revision=${stage0.revision}`,
+    )
+    check(
+      Boolean(spineList.chain && spineList.chain.ok === true && Array.isArray(spineList.chain.issues)),
+      'chain:{ok,issues} 形状正确',
+      `chain 形状不对：${JSON.stringify(spineList.chain).slice(0, 200)}`,
+    )
+    check(
+      typeof spineList.paper === 'boolean' || Boolean(spineList.paper && typeof spineList.paper.exists === 'boolean'),
+      'paper 段声明终稿状态（exists）',
+      `paper 段缺失：${JSON.stringify(spineList.paper)}`,
+    )
+    check(
+      Number.isFinite(spineList.spine && spineList.spine.stagesWithDraft),
+      `spine.stagesWithDraft = ${spineList.spine && spineList.spine.stagesWithDraft}`,
+      'stagesWithDraft 缺失',
+    )
+
+    // R4) 详情：stage 参数带出 draftRaw（--raw 全文），列表不带
+    check(stage0.draftRaw === undefined, '列表接口不下发 draftRaw（首屏不为正文付代价）', '列表竟带了正文')
+    response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(spineProj)}&stage=${enc(firstStageId)}`)
+    const spineDetail = response.payload || {}
+    const detail = spineDetail.detail || {}
+    check(
+      response.status === 200 && detail.ok === true && detail.stage,
+      `GET /spine&stage=${firstStageId} -> detail.ok`,
+      `详情失败：${JSON.stringify(detail).slice(0, 260)}`,
+    )
+    check(
+      typeof detail.draftRaw === 'string' && detail.draftRaw.length > 0,
+      `detail.draftRaw = ${(detail.draftRaw || '').length} 字节全文`,
+      'detail.draftRaw 缺失（--raw 未生效）',
+    )
+    const sectionTitles = ['本主支要回答的问题', '上游输入（续贯来源）', '方法与数据', '结果', '结论与对下游的交付', '局限与待决', '参考文献']
+    const missingSections = sectionTitles.filter((title, index) => !(detail.draftRaw || '').includes(`## ${index + 1}. ${title}`))
+    check(
+      missingSections.length === 0,
+      'draftRaw 含 7 节固定标题',
+      `缺节：${missingSections.join(' / ')}`,
+    )
+    check(
+      Boolean(detail.stage && detail.stage.draft && Number.isFinite(detail.stage.draft.revision)),
+      `detail.stage.draft.revision = ${detail.stage && detail.stage.draft && detail.stage.draft.revision}`,
+      'draft.revision 缺失',
+    )
+
+    // R5) chain 断裂：手工把 order 改成 9 → /spine 仍 200，但 chain.ok=false + SPINE-E102
+    const spineJsonPath = path.join(spineProj, 'control', 'SPINE.json')
+    const spineJsonRaw = JSON.parse(fs.readFileSync(spineJsonPath, 'utf8'))
+    spineJsonRaw.stages[spineJsonRaw.stages.length - 1].order = 9
+    fs.writeFileSync(spineJsonPath, `${JSON.stringify(spineJsonRaw, null, 2)}\n`, 'utf8')
+    response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(spineProj)}`)
+    const broken = response.payload || {}
+    check(response.status === 200, 'chain 断裂时 GET /spine 仍 200（校验失败不是崩溃）', `断裂时返回 ${response.status}`)
+    check(
+      Boolean(broken.chain && broken.chain.ok === false),
+      'chain.ok = false',
+      `chain 未报断：${JSON.stringify(broken.chain).slice(0, 200)}`,
+    )
+    check(
+      Boolean(broken.chain && Array.isArray(broken.chain.issues) && broken.chain.issues.some((issue) => issue.code === 'SPINE-E102')),
+      'cx〔E102〕：issues 含 SPINE-E102（order 不连续）',
+      `issues 无 E102：${JSON.stringify(broken.chain && broken.chain.issues).slice(0, 240)}`,
+    )
+    // 同时 /fishbone 的 chainBroken 必须为 true
+    response = await call(handler, 'GET', `${ROUTE}/fishbone?project=${enc(spineProj)}`)
+    const brokenFish = response.payload || {}
+    check(
+      Boolean(brokenFish.spine && brokenFish.spine.some((node) => node.chainBroken === true)),
+      '/fishbone 主支节点 chainBroken = true',
+      'fishbone 未反映链断',
+    )
+    // 恢复
+    spineJsonRaw.stages[spineJsonRaw.stages.length - 1].order = spineJsonRaw.stages.length
+    fs.writeFileSync(spineJsonPath, `${JSON.stringify(spineJsonRaw, null, 2)}\n`, 'utf8')
+    response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(spineProj)}`)
+    check(
+      Boolean(response.payload && response.payload.chain && response.payload.chain.ok === true),
+      '恢复 order 后 chain.ok = true',
+      `恢复后仍断链：${JSON.stringify(response.payload && response.payload.chain).slice(0, 200)}`,
+    )
+
+    // R6) /fishbone 追加的 6 个主支字段
+    response = await call(handler, 'GET', `${ROUTE}/fishbone?project=${enc(spineProj)}`)
+    const spineFish = response.payload || {}
+    const nodeWithStage = (spineFish.spine || []).find((node) => node.stageId) || {}
+    const newFieldChecks = [
+      ['stageId', typeof nodeWithStage.stageId === 'string'],
+      ['stageStatus', typeof nodeWithStage.stageStatus === 'string'],
+      ['stageRevision', Number.isFinite(nodeWithStage.stageRevision)],
+      ['backupCount', Number.isFinite(nodeWithStage.backupCount)],
+      ['hasDraft', typeof nodeWithStage.hasDraft === 'boolean'],
+      ['chainBroken', typeof nodeWithStage.chainBroken === 'boolean'],
+    ]
+    const badNewFields = newFieldChecks.filter(([, pass]) => !pass).map(([name]) => name)
+    check(
+      badNewFields.length === 0,
+      `fishbone.spine[] 追加 6 个主支成稿字段（stageId=${nodeWithStage.stageId} status=${nodeWithStage.stageStatus}）`,
+      `新字段缺失：${badNewFields.join(', ')}`,
+    )
+    check(
+      Boolean(spineFish.spine && spineFish.spine.every((node) => 'stageId' in node && 'chainBroken' in node)),
+      '每个主支节点都带新字段（不是只有建成稿的那个）',
+      '部分主支节点缺新字段',
+    )
+
+    // R7) /spine-op 参数校验（不真的改盘）
+    response = await call(handler, 'POST', `${ROUTE}/spine-op`, JSON.stringify({ project: spineProj, op: 'nuke' }))
+    check(
+      response.status === 400 && response.payload && response.payload.code === 'E_OP',
+      '/spine-op 未知 op -> 400 E_OP',
+      `未知 op 未被拒：${response.status}`,
+    )
+    response = await call(handler, 'POST', `${ROUTE}/spine-op`, JSON.stringify({ project: spineProj, op: 'rebuild' }))
+    check(
+      response.status === 400 && response.payload && response.payload.code === 'E_PARAM',
+      '/spine-op rebuild 缺 stage -> 400 E_PARAM',
+      `缺 stage 未被拒：${response.status}`,
+    )
+    response = await call(
+      handler,
+      'POST',
+      `${ROUTE}/spine-op`,
+      JSON.stringify({ project: spineProj, op: 'rebuild', stage: '../escape' }),
+    )
+    check(
+      response.status === 400 && response.payload && response.payload.code === 'E_PARAM',
+      '/spine-op 非法 stage（路径逃逸）-> 400 E_PARAM',
+      `非法 stage 未被拒：${response.status} ${JSON.stringify(response.payload).slice(0, 160)}`,
+    )
+    response = await call(handler, 'POST', `${ROUTE}/spine-op`, JSON.stringify({ op: 'chain' }))
+    check(
+      response.status === 400 && response.payload && response.payload.code === 'E_PROJECT',
+      '/spine-op 缺 project -> 400 E_PROJECT',
+      `缺 project 未被拒：${response.status}`,
+    )
+
+    // R8) /spine-op 真跑一次 backup：run 记录形态 + 备份计数 +1
+    const beforeBackup = (dagJson(['spine', 'list', '--root', spineProj]).json || { stages: [] }).stages
+      .find((item) => item.id === firstStageId)
+    response = await call(
+      handler,
+      'POST',
+      `${ROUTE}/spine-op`,
+      JSON.stringify({ project: spineProj, op: 'backup', stage: firstStageId, reason: '验收备份' }),
+    )
+    const opPayload = response.payload || {}
+    check(
+      response.status === 200 && opPayload.ok === true && opPayload.run && opPayload.run.id,
+      `POST /spine-op backup -> {ok, run:${opPayload.run && opPayload.run.id}}`,
+      `backup 未启动：${JSON.stringify(opPayload).slice(0, 260)}`,
+    )
+    check(opPayload.op === 'backup', 'spine-op 回显 op', `op 未回显：${opPayload.op}`)
+    const backupRun = await waitRun(handler, opPayload.run.id)
+    check(
+      Boolean(backupRun && backupRun.status === 'succeeded'),
+      `backup run 落定 succeeded（exit=${backupRun && backupRun.exitCode}）`,
+      `backup run 未成功：${JSON.stringify(backupRun && { status: backupRun.status, exit: backupRun.exitCode, stderr: backupRun.stderr }).slice(0, 260)}`,
+    )
+    check(
+      Boolean(backupRun && backupRun.json && backupRun.json.ok === true && backupRun.json.backup),
+      'backup run 的 json 含 backup 记录',
+      `run.json 缺 backup：${JSON.stringify(backupRun && backupRun.json).slice(0, 200)}`,
+    )
+    const afterBackupList = (dagJson(['spine', 'list', '--root', spineProj]).json || { stages: [] }).stages
+      .find((item) => item.id === firstStageId)
+    check(
+      Number(afterBackupList && afterBackupList.backups) === Number(beforeBackup && beforeBackup.backups) + 1,
+      `备份后 backups ${beforeBackup && beforeBackup.backups} -> ${afterBackupList && afterBackupList.backups}`,
+      `备份计数未增：${beforeBackup && beforeBackup.backups} -> ${afterBackupList && afterBackupList.backups}`,
+    )
+
+    // R9) backup 无成稿时是 DAG-E004（不是 SPINE-E1xx）：code 必须原样透传
+    const emptyStageId = (dagJson(['spine', 'list', '--root', spineProj]).json || { stages: [] }).stages
+      .find((item) => item.has_draft === false)
+    if (emptyStageId) {
+      response = await call(
+        handler,
+        'POST',
+        `${ROUTE}/spine-op`,
+        JSON.stringify({ project: spineProj, op: 'backup', stage: emptyStageId.id }),
+      )
+      const emptyRun = await waitRun(handler, response.payload.run.id)
+      const emptyJson = emptyRun && emptyRun.json
+      check(
+        Boolean(emptyJson && emptyJson.ok === false && emptyJson.code === 'DAG-E004'),
+        `无成稿主支 backup -> code=DAG-E004 原样透传（exit=${emptyRun && emptyRun.exitCode}）`,
+        `code 不符：${JSON.stringify(emptyJson).slice(0, 220)}`,
+      )
+    } else {
+      ok('所有主支都已有成稿，跳过「无成稿 backup」用例')
+    }
+
+    // R10) paper 段反映 compile 结果
+    response = await call(handler, 'POST', `${ROUTE}/spine-op`, JSON.stringify({ project: spineProj, op: 'paper' }))
+    const paperRun = await waitRun(handler, response.payload.run.id)
+    check(
+      Boolean(paperRun && paperRun.json && paperRun.json.out === 'manuscript/PAPER.md'),
+      `paper compile run 输出 ${paperRun && paperRun.json && paperRun.json.out}`,
+      `paper compile 失败：${JSON.stringify(paperRun && paperRun.json).slice(0, 260)}`,
+    )
+    response = await call(handler, 'GET', `${ROUTE}/spine?project=${enc(spineProj)}`)
+    check(
+      Boolean(response.payload && response.payload.paper && response.payload.paper.exists === true),
+      '/spine.paper.exists = true（汇编后）',
+      `paper 未反映：${JSON.stringify(response.payload && response.payload.paper)}`,
+    )
+    check(
+      Boolean(response.payload && typeof response.payload.paper.generatedAt === 'string'),
+      `paper.generatedAt（${response.payload && response.payload.paper && response.payload.paper.generatedAt}）`,
+      'paper.generatedAt 缺失',
+    )
+  }
 }
 
 /* -------------------------------------------------------------------- 收尾 */

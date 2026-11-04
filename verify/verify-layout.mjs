@@ -543,35 +543,25 @@ async function main() {
   check(!idleMarkup.includes('还没有关联的对话'), '对话区收起时不显示空会话提示（不干扰业务页）')
   check(idleMarkup.includes('💬 打开对话'), '工具栏提供「打开对话」入口（按需开启）')
 
-  /* -------- E. 对话节点安置与收起不卸载 -------- */
+  /* -------- E. v3.24：右侧空壳对话侧栏已移除，会话只在工作区中栏 -------- */
   console.log('')
-  console.log('E) 宿主会话节点的安置（§4.3）')
+  console.log('E) 会话只在中栏，右侧不再有空壳侧栏（v3.24）')
   const serviceBootE = makeService()
   const conversationBoot = await bootWithConversation(stateWithProject, serviceBootE.service)
   const chatAsides = (tree) =>
     collectByType(tree, 'aside').filter((node) => String(node.props.className || '').includes('rdw-chat'))
   let treeE = await conversationBoot.rerender()
-  check(chatAsides(treeE).length === 1, '对话区容器始终存在（收起时也未卸载）')
-  check(String(chatAsides(treeE)[0] && chatAsides(treeE)[0].props.className).includes('rdw-chat-collapsed'), '默认收起（不占用业务区宽度）')
-  check(textOf(treeE).includes('宿主原生会话节点'), '收起状态下宿主会话节点仍在树内（展开后不丢状态）')
+  check(chatAsides(treeE).length === 0, '右侧对话侧栏已彻底移除（不再渲染 rdw-chat aside）')
+  check(!textOf(treeE).includes('本侧栏仅作分屏对照入口'), '不再出现「本侧栏仅作分屏对照入口」空态文案')
+  check(!textOf(treeE).includes('收起对话'), '不再出现「收起对话」按钮')
 
   const openButton = findButton(treeE, '💬 打开对话')
-  check(Boolean(openButton), '存在「打开对话」按钮')
+  check(Boolean(openButton), '仍保留「打开对话」入口（改为一句话定位提示）')
   if (openButton) {
     openButton.props.onClick({ stopPropagation() {}, preventDefault() {} })
     treeE = await conversationBoot.rerender()
-    const openedAside = chatAsides(treeE)[0]
-    check(Boolean(openedAside) && !String(openedAside.props.className).includes('rdw-chat-collapsed'), '点击后对话区展开（去除 collapsed）')
-    check(serviceBootE.calls.newSession === 0 && serviceBootE.calls.newWorkspaceSession === 0, '只是打开对话，不自动建会话')
-    check(textOf(treeE).includes('宿主原生会话节点'), '展开后宿主会话节点仍在树内（同一个节点未被重建）')
-    const closeButton = findButton(treeE, '收起对话')
-    check(Boolean(closeButton), '展开后提供「收起对话」')
-    if (closeButton) {
-      closeButton.props.onClick({ stopPropagation() {}, preventDefault() {} })
-      treeE = await conversationBoot.rerender()
-      check(String(chatAsides(treeE)[0] && chatAsides(treeE)[0].props.className).includes('rdw-chat-collapsed'), '再次收起后不占用宽度')
-      check(textOf(treeE).includes('宿主原生会话节点'), '反复收起/展开不丢失宿主会话节点')
-    }
+    check(chatAsides(treeE).length === 0, '点「打开对话」也不会弹出右侧侧栏')
+    check(serviceBootE.calls.newSession === 0 && serviceBootE.calls.newWorkspaceSession === 0, '只提示定位，不建会话、不索要工作区目录')
   }
 
   /* -------- F. 无项目时的首用引导 -------- */

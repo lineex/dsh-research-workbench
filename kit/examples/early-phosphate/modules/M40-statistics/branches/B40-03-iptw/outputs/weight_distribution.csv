@@ -1,0 +1,22 @@
+group,statistic,value
+exposed,median,1.01
+exposed,q1,0.62
+exposed,q3,1.73
+exposed,min,0.31
+exposed,p1,0.31
+exposed,p99,7.8
+exposed,max,28.4
+control,median,1.00
+control,q1,0.72
+control,q3,1.42
+control,min,0.41
+control,p1,0.44
+control,p99,3.2
+control,max,24.9
+combined,median,1.00
+combined,p1,0.33
+combined,p99,6.2
+combined,max,28.4
+ess_exposed,effective sample size,1208
+ess_control,effective sample size,1977
+ess_total,effective sample size,3185

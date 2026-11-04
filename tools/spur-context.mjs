@@ -7,7 +7,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadProject, todayLocal, writeFileAtomic } from './dag-core.mjs';
+import { loadProject, todayLocal, writeFileAtomic, buildInheritanceChain } from './dag-core.mjs';
 
 export function writeSpurContext(root, opts) {
   const { state, ledger } = loadProject(root);
@@ -94,6 +94,15 @@ export function writeSpurContext(root, opts) {
   const decisionsCount = (decisionsText.match(/^## D-\d+/gm) || []).length;
   const acceptedCount = acceptedRows.length;
 
+  // ---- v2.4 继承链：点开任意一级分支，上下文固定为
+  //      前序主支成稿 → 本主支成稿 → 祖先分支成果（根→直接父）→ 本分支任务。
+  let inheritance = null;
+  try {
+    inheritance = buildInheritanceChain(root, state, ledger, moduleId, branchId);
+  } catch {
+    inheritance = null;
+  }
+
   const parts = [];
   parts.push(`# 鱼刺上下文档案 — ${branchId}（${opts.branchName || branchId}）`);
   parts.push('');
@@ -105,8 +114,52 @@ export function writeSpurContext(root, opts) {
     parts.push(`> 本文件是主骨在分刺时刻的**完整快照**：打开鱼刺分析问题时，先读这份档案。`);
   }
   parts.push('');
-  parts.push('## 0. 这根刺为什么存在');
-  parts.push('');
+  // ---- v2.4 继承链（放在最前：这是本分支唯一允许的上下文来源，顺序即契约）----
+  if (inheritance) {
+    parts.push('## 继承链（本分支上下文的唯一来源，顺序即契约）');
+    parts.push('');
+    parts.push('读取顺序固定为：**前序主支成稿 → 本主支成稿 → 祖先分支成果（根→直接父）→ 本分支任务**。');
+    parts.push('不读其它主支、不读旁系分支，避免污染。');
+    parts.push('');
+    let step = 0;
+    for (const stage of inheritance.precedingStages) {
+      step += 1;
+      parts.push(`### ${step}. 前序主支 ${stage.order}「${stage.title}」（${stage.status} · v${stage.revision}）`);
+      if (stage.draftRel) parts.push(`- 成稿：\`${stage.draftRel}\``);
+      for (const h of stage.conclusions) parts.push(`- ${h}`);
+      parts.push('');
+    }
+    if (inheritance.ownStage) {
+      step += 1;
+      const own = inheritance.ownStage;
+      parts.push(`### ${step}. 本主支「${own.title}」（${own.status} · v${own.revision}）`);
+      if (own.draftRel) parts.push(`- 成稿：\`${own.draftRel}\``);
+      for (const h of own.conclusions) parts.push(`- ${h}`);
+      parts.push('');
+    }
+    for (const ancestor of inheritance.ancestors) {
+      step += 1;
+      parts.push(
+        `### ${step}. 祖先分支「${ancestor.name}」${
+          ancestor.revision > 0 ? `（成果 v${ancestor.revision}）` : '（尚无成果）'
+        }`,
+      );
+      if (ancestor.resultRel) parts.push(`- 成果档案：\`${ancestor.resultRel}\``);
+      if (ancestor.acceptedStreams.length > 0) {
+        parts.push(`- 已回连成果：${ancestor.acceptedStreams.join('、')}`);
+      }
+      for (const h of ancestor.highlights) parts.push(`- ${h}`);
+      parts.push('');
+    }
+    step += 1;
+    parts.push(`### ${step}. 本分支「${opts.branchName || branchId}」（当前任务）`);
+    parts.push('');
+    parts.push('> 回连规则：本级成果回连到上一级时，**上一级原有内容先备份**，再写入本次最新结果；');
+    parts.push('> 需要一次做完时用 `dag graft <handoff> --chain`，它会按反向顺序逐级更新到主支成稿。');
+    parts.push('');
+  }
+
+  parts.push('## 0. 这根刺为什么存在');  parts.push('');
   parts.push(`- 所属主骨：${moduleId}${moduleRec && moduleRec.name ? `（${moduleRec.name}）` : ''}`);
   if (opts.prompt) {
     parts.push(`- 任务意图：${opts.prompt}`);

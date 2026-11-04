@@ -1,0 +1,16 @@
+stage,n,excluded,detail
+icu_admissions,44090,,2018-01-01 至 2024-12-31（模拟）
+excluded_age_lt18,1414,,年龄 <18 岁
+adults_ge18,42676,,队列 1
+excluded_nonfirst_or_short_stay,4934,,非首次 ICU 入住或停留 <6h
+first_icu_stay_ge6h,37742,,队列 2
+excluded_no_phosphate_24h,24684,,入 ICU 24h 内无血磷检测
+phosphate_measured_24h,13058,,队列 3
+excluded_phosphate_ge_0_65,8346,,24h 最低血磷 ≥0.65 mmol/L
+hypophosphatemia_lt_0_65,4712,,队列 4
+excluded_pre_icu_phosphate_6h,331,,入 ICU 前 6h 内已开始补磷（暴露污染）
+excluded_phosphate_timing_missing,454,,补磷时点记录缺失或医嘱/护理记录矛盾
+excluded_ecmo_or_cpb,80,,入 ICU 时使用 ECMO/体外循环
+final_cohort,3847,,队列 v2 最终纳入
+exposed_early_repletion,1462,,入 ICU 24h 内开始静脉补磷（38.0%）
+control_no_early_repletion,2385,,24h 内未补磷（62.0%）

@@ -1177,6 +1177,22 @@ export const SHELL_CSS = `
 .rdw-add-module{flex:0 0 auto;padding:2px 7px;border-radius:var(--rdw-r-pebble-sm);border:1px solid color-mix(in srgb,var(--rdw-sage-tint) 30%,transparent);background:color-mix(in srgb,var(--rdw-sage-tint) 10%,transparent);color:var(--rdw-sage);font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;cursor:pointer;transition:background .16s var(--rdw-ease-organic),color .16s var(--rdw-ease-organic),border-color .16s var(--rdw-ease-organic)}
 .rdw-add-module:hover{background:var(--rdw-sage);border-color:var(--rdw-sage);color:var(--rdw-on-brand)}
 
+/* ── v3.10 研究目标 · 好问题卡编辑器 ── */
+/* 左栏目标卡片：可点开编辑器，悬停给一点点「可以按」的反馈。 */
+.rdw-goal-card{transition:border-color .18s var(--rdw-ease-organic),background .18s var(--rdw-ease-organic),box-shadow .18s var(--rdw-ease-organic)}
+.rdw-goal-card:hover{border-color:color-mix(in srgb,var(--rdw-sage) 46%,transparent);background:color-mix(in srgb,var(--rdw-sage-tint) 20%,var(--rdw-organic-surface));box-shadow:var(--rdw-shadow-organic-1)}
+.rdw-goal-card:focus-visible{outline:2px solid var(--rdw-sage);outline-offset:2px}
+/* 编辑器本体：占满中栏，自身可滚动（八层矩阵 + 11 个字段会很高）。 */
+.rdw-goal-card-view{height:100%;box-sizing:border-box;background:var(--rdw-organic-surface)}
+.rdw-goal-card-view input:focus,.rdw-goal-card-view textarea:focus{border-color:var(--rdw-sage);box-shadow:0 0 0 2px color-mix(in srgb,var(--rdw-sage) 18%,transparent)}
+/* 窄视口：八层的三列网格退化成单列，输入框不挤成一条线。 */
+@media (max-width:1180px){
+  .rdw-goal-card-view [style*="grid-template-columns: 42px"]{grid-template-columns:1fr !important;gap:3px !important}
+}
+@media (max-width:760px){
+  .rdw-goal-card-view{padding:8px}
+}
+
 /* ── 中栏：任务工作区 ── */
 .rdw-ws-head{padding:10px 13px 8px;border-bottom:1px solid var(--rdw-warm-line-2)}
 .rdw-ws-crumb{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--rdw-organic-ink-3);margin-bottom:3px}

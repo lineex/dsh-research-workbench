@@ -56,6 +56,90 @@ function ribTheme(status) {
 
 const RIB_RANK = { PROVISIONAL: 0, DRAFT: 1, BLOCKED: 2, ACCEPTED: 3, REJECTED: 4, SUPERSEDED: 5, EMPTY: 6 }
 
+/* ------------------------------------------------ v2.1 主支成稿（spine stage）
+ *
+ * 主支（模块）除了「分支回连进度」，现在还有一层「成稿状态」：
+ * 分支回连后，主支会留下可备份、可重生成、可续贯的一节成稿。
+ *
+ * 语义要点（契约 SPINE-PIPELINE §7 / §9）：
+ *  - `empty` = 还没开工，**不是异常**，绝不能标红；
+ *  - `stale` = 上游变了、本主支的成稿可能过期，这才是要提醒的；
+ *  - `locked` = 人工锁定，graft 不会再自动重生成；
+ *  - 旧项目没有 SPINE.json 时 `stageId === null`，此时整块徽标不渲染。
+ */
+const STAGE_STATUS = {
+  empty: { label: '未成稿', color: 'var(--rdw-organic-ink-3)', tone: 'muted' },
+  draft: { label: '起草中', color: 'var(--rdw-st-draft)', tone: 'draft' },
+  current: { label: '已成稿', color: 'var(--rdw-st-accepted)', tone: 'current' },
+  stale: { label: '待重生成', color: 'var(--rdw-tan-ink)', tone: 'stale' },
+  locked: { label: '锁定', color: 'var(--rdw-sage)', tone: 'locked' },
+}
+
+/** 主支成稿徽标文案：`成稿 v3` / `待重生成` / `锁定` / `未成稿`。 */
+function stageBadgeText(node) {
+  const status = node && node.stageStatus ? node.stageStatus : 'empty'
+  const revision = Number(node && node.stageRevision) || 0
+  if (status === 'locked') return `锁定 · v${revision}`
+  if (status === 'stale') return `待重生成 · v${revision}`
+  if (status === 'current') return `成稿 v${revision}`
+  if (status === 'draft') return `起草中 · v${revision}`
+  return '未成稿'
+}
+
+function stageTheme(node) {
+  const status = node && node.stageStatus ? node.stageStatus : 'empty'
+  return STAGE_STATUS[status] || STAGE_STATUS.empty
+}
+
+/** 主支是否已经有成稿（决定「备份」「重新生成」按钮可用性）。 */
+function stageHasDraft(node) {
+  return Boolean(node && node.hasDraft)
+}
+
+/**
+ * 主支成稿徽标（SVG 版，画在主支名牌下方）。
+ * 旧项目 stageId 为 null 时返回 null —— 没有主支链就不画，不给旧项目添噪音。
+ */
+function renderStageBadge(h, node, x, y) {
+  if (!node || node.stageId === null || node.stageId === undefined) return null
+  const theme = stageTheme(node)
+  const text = stageBadgeText(node)
+  const backup = Number(node.backupCount) || 0
+  const label = backup > 0 ? `${text} · ${backup} 备份` : text
+  const w = Math.max(56, Math.min(120, 8 + label.length * 6.4))
+  const warning = node.stageStatus === 'stale' || node.chainBroken === true
+  return h(
+    'g',
+    { key: `stage-${node.id}`, style: { pointerEvents: 'none' } },
+    h('rect', {
+      x: x - w / 2,
+      y,
+      width: w,
+      height: 15,
+      rx: 7.5,
+      fill: warning
+        ? 'color-mix(in srgb,var(--rdw-tan) 20%,var(--rdw-organic-surface))'
+        : 'color-mix(in srgb,var(--rdw-sage-tint) 12%,var(--rdw-organic-surface))',
+      stroke: warning
+        ? 'color-mix(in srgb,var(--rdw-tan-ink) 46%,transparent)'
+        : 'color-mix(in srgb,var(--rdw-warm-line-2) 100%,transparent)',
+      strokeWidth: 1,
+    }),
+    h(
+      'text',
+      {
+        x,
+        y: y + 10.5,
+        textAnchor: 'middle',
+        fontSize: 11,
+        fontWeight: 700,
+        fill: theme.color,
+      },
+      label,
+    ),
+  )
+}
+
 /**
  * 模块主支的配色（EvoResearch 自然有机语汇）。
  * 选中态用鼠尾草绿（交互色），名牌底色用纸面白，未选中时是中性暖土描边。
@@ -147,10 +231,9 @@ function renderBone(h, node, index, count, ribs, options) {
   const dir = index % 2 === 0 ? -1 : 1
   const tipX = attachX - BONE_DX
   const tipY = SPINE_Y + dir * BONE_LEN
-  const moduleRibs = ribs
-    .filter((rib) => rib.module === node.id)
-    .slice()
-    .sort((left, right) => (RIB_RANK[left.status] ?? 9) - (RIB_RANK[right.status] ?? 9))
+  // 分支顺序：以宿主给出的显示顺序为准（/fishbone 已按 control/rdw-rib-meta.json 的 ribOrder 排好）。
+  // 不能在这里再按状态重排——那会把用户手动的「上移/下移」覆盖掉，看起来像操作没生效。
+  const moduleRibs = ribs.filter((rib) => rib.module === node.id)
   const boneColor = selected ? 'var(--rdw-sage)' : 'color-mix(in srgb,var(--rdw-sage-tint) 74%,transparent)'
   const accent = node.staleness ? 'var(--rdw-tan-ink)' : node.active ? 'var(--rdw-tan-ink)' : 'var(--rdw-sage)'
 
@@ -223,6 +306,10 @@ function renderBone(h, node, index, count, ribs, options) {
       `${pctOf(node)}% · ${moduleRibs.length} 分支${node.staleness ? ' · ⚠' : ''}`,
     ),
   )
+
+  // ---- v2.1 主支成稿徽标：挂在名牌「背向主支」一侧，与分支区不重叠
+  const stageBadge = renderStageBadge(h, node, tipX, dir < 0 ? badgeY - 19 : badgeY + badgeH + 4)
+  if (stageBadge) children.push(stageBadge)
 
   // ---- 子分支：只落在主体中段，左右交替挂标签
   const ribCount = moduleRibs.length
@@ -297,8 +384,10 @@ function renderBone(h, node, index, count, ribs, options) {
   })
 
   // ---- 选中该主支时，名牌外侧出现「+ 创建分支」
+  // v2.1：成稿徽标也占着这一侧，按钮要再往外让一格，避免压住徽标。
   if (selected && typeof options.onSproutHere === 'function') {
-    const btnY = dir < 0 ? badgeY - 28 : badgeY + badgeH + 8
+    const stageOffset = stageBadge ? 24 : 0
+    const btnY = dir < 0 ? badgeY - 28 - stageOffset : badgeY + badgeH + 8 + stageOffset
     children.push(
       h(
         'g',
@@ -670,24 +759,31 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
     }
   }
   const session = options.session && typeof options.session === 'object' ? options.session : null
+  const isGoalSelected = options.selectedModule === '__goal__'
   const ribList = Array.isArray(ribs) ? ribs : []
   const spineList = Array.isArray(spine) ? spine : []
-  const candidateRibs = options.selectedModule
+  const candidateRibs = options.selectedModule && !isGoalSelected
     ? ribList.filter((r) => r && r.module === options.selectedModule)
     : ribList
-  const defaultRib = candidateRibs[0] || ribList[0] || null
-  const selectedRibId = options.selectedRib || (session && session.branch) || (defaultRib && defaultRib.id) || null
-  const activeRib = (selectedRibId && ribList.find((r) => r.id === selectedRibId)) || defaultRib || {
-    id: selectedRibId || 'B01',
-    name: '任务工作区',
-    module: options.selectedModule || (spineList[0] && spineList[0].id) || 'M10',
-    status: 'PROVISIONAL',
-  }
-  const selectedModId = (activeRib && activeRib.module) || options.selectedModule || (session && session.module) || (spineList[0] && spineList[0].id) || null
-  const activeModule = (selectedModId && spineList.find((m) => m.id === selectedModId)) || spineList[0] || {
-    id: selectedModId || 'M10',
-    name: '研究主线',
-  }
+  const defaultRib = isGoalSelected ? null : (candidateRibs[0] || ribList[0] || null)
+  const selectedRibId = isGoalSelected ? null : (options.selectedRib || (session && session.branch) || (defaultRib && defaultRib.id) || null)
+  const activeRib = isGoalSelected
+    ? { id: '__goal__', name: (head && head.goal) || (head && head.title) || '研究目标', module: '__goal__', status: 'PROVISIONAL' }
+    : ((selectedRibId && ribList.find((r) => r.id === selectedRibId)) || defaultRib || {
+        id: selectedRibId || 'B01',
+        name: '任务工作区',
+        module: options.selectedModule || (spineList[0] && spineList[0].id) || 'M10',
+        status: 'PROVISIONAL',
+      })
+  const selectedModId = isGoalSelected
+    ? '__goal__'
+    : ((activeRib && activeRib.module) || options.selectedModule || (session && session.module) || (spineList[0] && spineList[0].id) || null)
+  const activeModule = isGoalSelected
+    ? { id: '__goal__', name: '研究目标' }
+    : ((selectedModId && spineList.find((m) => m.id === selectedModId)) || spineList[0] || {
+        id: selectedModId || 'M10',
+        name: '研究主线',
+      })
   const draft = typeof options.directiveDraft === 'string' ? options.directiveDraft : ''
   const sending = Boolean(options.sending)
 
@@ -737,9 +833,22 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       ),
     ),
     // 项目目标 · 研究总目标（有机 pebble 卡片 + 左侧重音竖条；右键打开项目目标菜单）
+    // v3.10：整卡可点 → 打开「研究目标 · 好问题」编辑器（八层审计 + good-question）
     h(
       'div',
       {
+        className: 'rdw-goal-card',
+        role: 'button',
+        tabIndex: 0,
+        title: '点击打开研究目标编辑器（八层假设审计 + 好问题卡）；右键更多操作',
+        onClick: () => call(options.onOpenGoalCard),
+        onKeyDown: (event) => {
+          if (!event) return
+          if (event.key === 'Enter' || event.key === ' ') {
+            if (event.preventDefault) event.preventDefault()
+            call(options.onOpenGoalCard)
+          }
+        },
         onContextMenu: (event) => emitContextMenu(options, event, { kind: 'head', head }),
         style: {
           padding: '9px 11px',
@@ -750,6 +859,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           display: 'flex',
           flexDirection: 'column',
           gap: 3,
+          cursor: 'pointer',
         },
       },
       h(
@@ -835,6 +945,63 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           paddingRight: 2,
         },
       },
+      // v3.27：**研究目标作为「第 0 个主支」**出现在研究主线顶部。
+      // 点它 = 切到「研究目标」自己的独立对话（技能脚手架不变：八层 + good-question）。
+      // 这样「每个主支/分支都有专属对话」的规则对研究目标同样成立。
+      h(
+        'div',
+        {
+          key: 'v-spine-goal',
+          className: 'rdw-vmod rdw-vmod-goal',
+          role: 'button',
+          tabIndex: 0,
+          title: '研究目标（点开：该目标专属对话，含八层 + good-question 技能）',
+          'aria-current': selectedModId === '__goal__' ? 'true' : undefined,
+          onClick: () => call(options.onSelectGoalSession),
+          onKeyDown: (event) => {
+            if (!event) return
+            if (event.key === 'Enter' || event.key === ' ') {
+              if (event.preventDefault) event.preventDefault()
+              call(options.onSelectGoalSession)
+            }
+          },
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '6px 8px',
+            margin: '2px 0 4px',
+            borderRadius: 'var(--rdw-r-pebble-sm)',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: 12.5,
+            color: 'var(--rdw-organic-ink)',
+            background:
+              selectedModId === '__goal__'
+                ? 'color-mix(in srgb,var(--rdw-sage-tint) 28%,var(--rdw-organic-surface))'
+                : 'transparent',
+            borderLeft:
+              selectedModId === '__goal__'
+                ? '3px solid var(--rdw-sage)'
+                : '3px solid transparent',
+            boxShadow:
+              selectedModId === '__goal__'
+                ? '0 1px 3px rgba(0,0,0,0.06)'
+                : 'none',
+          },
+        },
+        h('span', { 'aria-hidden': 'true' }, '🎯'),
+        h(
+          'span',
+          { style: { flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+          '研究目标',
+        ),
+        h(
+          'span',
+          { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)', fontWeight: 400 } },
+          '独立对话',
+        ),
+      ),
       ...spine.map((mod, idx) => {
         const isModSelected = selectedModId === mod.id
         const modRibs = ribs.filter((r) => r.module === mod.id)
@@ -1352,7 +1519,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
               textOverflow: 'ellipsis',
             },
           },
-          activeRib.name || '当前任务工作区',
+          isGoalSelected ? '🎯 研究目标 · 好问题讨论' : (activeRib.name || '当前任务工作区'),
         ),
         h(
           'span',
@@ -1368,7 +1535,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
               flex: '0 0 auto',
             },
           },
-          activeRib.id || '主线任务',
+          isGoalSelected ? '研究总目标' : (activeRib.id || '主线任务'),
         ),
       ),
       h(
@@ -2245,6 +2412,403 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       : null,
   )
 
+  /* ── v2.1 主支成稿面板（右栏第一块）─────────────────────────────
+   *
+   * 「这一节主支的成稿 / 备份 / 续贯」三段。旧项目（没有 SPINE.json）整块不渲染，
+   * 只给一句「本模块还没有主支成稿」的引导，不制造噪音。 */
+  const stageNode = activeModule && activeModule.stageId ? activeModule : null
+  const spineInfo = options.spine && options.spine.ok !== false ? options.spine : null
+  const stageDetail = spineInfo && spineInfo.detail && spineInfo.detail.ok !== false ? spineInfo.detail : null
+  const stageBusy = Boolean(options.stageBusy)
+  const stageFocusId = stageNode ? stageNode.stageId : null
+  // 只有详情抽屉里正在看这一主支时，正文才显示（避免点开别的主支串内容）
+  const showStageDraft =
+    stageDetail && stageDetail.stage && stageFocusId && stageDetail.stage.id === stageFocusId
+      ? stageDetail.draftRaw
+      : null
+  const chainIssuesForStage = spineInfo && Array.isArray(spineInfo.spine && spineInfo.spine.chainIssues)
+    ? spineInfo.spine.chainIssues
+    : []
+
+  const stagePane = stageNode
+    ? h(
+        'div',
+        { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        // 小标题 + 状态徽标
+        h(
+          'div',
+          { style: { ...row, gap: 6, padding: '2px 6px 0' } },
+          h(
+            'div',
+            {
+              style: {
+                flex: 1,
+                minWidth: 0,
+                fontSize: 12.5,
+                fontWeight: 600,
+                letterSpacing: '.3px',
+                textTransform: 'uppercase',
+                color: 'var(--rdw-organic-ink-3)',
+              },
+            },
+            '📜 主支成稿',
+          ),
+          h(
+            'span',
+            {
+              style: {
+                flex: '0 0 auto',
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '1px 8px',
+                borderRadius: 'var(--rdw-r-pill)',
+                color: stageTheme(stageNode).color,
+                background: 'color-mix(in srgb,var(--rdw-sage-tint) 12%,var(--rdw-organic-surface))',
+                border: `1px solid ${stageNode.stageStatus === 'stale' ? 'color-mix(in srgb,var(--rdw-tan-ink) 40%,transparent)' : 'var(--rdw-warm-line-2)'}`,
+              },
+            },
+            stageBadgeText(stageNode),
+          ),
+        ),
+
+        // 三个动作：重新生成 / 备份 / 汇编终稿
+        h(
+          'div',
+          { style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: '0 2px' } },
+          h(
+            'button',
+            {
+              type: 'button',
+              disabled: stageBusy || stageNode.stageStatus === 'locked',
+              title: stageNode.stageStatus === 'locked' ? '主支已锁定，先解锁再重生成' : '备份旧稿并确定性重生成 7 节成稿',
+              onClick: () => call(options.onSpineOp, 'rebuild', stageFocusId),
+              style: {
+                ...button,
+                height: 24,
+                padding: '0 9px',
+                fontSize: 11,
+                opacity: stageBusy || stageNode.stageStatus === 'locked' ? 0.5 : 1,
+                cursor: stageBusy || stageNode.stageStatus === 'locked' ? 'default' : 'pointer',
+              },
+            },
+            '↻ 重新生成',
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              disabled: stageBusy || !stageHasDraft(stageNode),
+              title: stageHasDraft(stageNode) ? '只备份当前成稿，不重生成' : '尚无成稿可备份',
+              onClick: () => call(options.onSpineOp, 'backup', stageFocusId),
+              style: {
+                ...button,
+                height: 24,
+                padding: '0 9px',
+                fontSize: 11,
+                opacity: stageBusy || !stageHasDraft(stageNode) ? 0.5 : 1,
+                cursor: stageBusy || !stageHasDraft(stageNode) ? 'default' : 'pointer',
+              },
+            },
+            '⧉ 备份',
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              disabled: stageBusy || stageNode.stageStatus === 'locked',
+              title: stageNode.stageStatus === 'locked' ? '已锁定（点击解锁）' : '锁定后 graft 不再自动重生成',
+              onClick: () => call(options.onSpineOp, stageNode.stageStatus === 'locked' ? 'unlock' : 'lock', stageFocusId),
+              style: {
+                ...button,
+                height: 24,
+                padding: '0 9px',
+                fontSize: 11,
+                opacity: stageBusy ? 0.5 : 1,
+              },
+            },
+            stageNode.stageStatus === 'locked' ? '🔓 解锁' : '🔒 锁定',
+          ),
+        ),
+
+        // 段一：成稿正文（7 节预览 + 全文展开）
+        h(
+          'div',
+          {
+            style: {
+              padding: '7px 10px',
+              borderRadius: 'var(--rdw-r-pebble-sm)',
+              background: 'var(--rdw-organic-surface)',
+              border: '1px solid var(--rdw-warm-line-2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+            },
+          },
+          h(
+            'div',
+            { style: { ...row, gap: 5 } },
+            h('span', { style: { fontSize: 11.5, fontWeight: 700, color: 'var(--rdw-organic-ink)' } }, '成稿'),
+            h(
+              'span',
+              { style: { fontFamily: 'var(--rdw-font-mono)', fontSize: 11, color: 'var(--rdw-organic-ink-3)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+              stageNode.draft && stageNode.draft.path ? stageNode.draft.path : '（无成稿路径）',
+            ),
+            typeof showStageDraft === 'string' && showStageDraft.length > 0
+              ? h(
+                  'button',
+                  {
+                    type: 'button',
+                    onClick: () => call(options.onOpenStageDraft, stageFocusId, showStageDraft),
+                    style: { ...button, height: 20, padding: '0 7px', fontSize: 11 },
+                    title: '查看 DRAFT.md 全文',
+                  },
+                  '全文',
+                )
+              : null,
+          ),
+          !stageHasDraft(stageNode)
+            ? h(
+                'div',
+                { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)', lineHeight: 1.5 } },
+                stageNode.stageStatus === 'empty'
+                  ? '本主支还没开工。分支回连（graft）后会自动生成成稿。'
+                  : '成稿文件缺失 —— 点「↻ 重新生成」重建。',
+              )
+            : (() => {
+                const sections = (stageNode.draft && Array.isArray(stageNode.draft.sections)) ? stageNode.draft.sections : []
+                if (sections.length === 0) {
+                  return h('div', { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)' } }, '（成稿小节未解析）')
+                }
+                return h(
+                  'div',
+                  { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+                  ...sections.slice(0, 7).map((sec) =>
+                    h(
+                      'div',
+                      {
+                        key: `sec-${sec.no}`,
+                        style: { display: 'flex', gap: 5, fontSize: 11, lineHeight: 1.45, alignItems: 'baseline' },
+                      },
+                      h(
+                        'span',
+                        { style: { flex: '0 0 auto', fontFamily: 'var(--rdw-font-mono)', color: 'var(--rdw-sage)', fontWeight: 700 } },
+                        `§${sec.no}`,
+                      ),
+                      h(
+                        'span',
+                        {
+                          style: {
+                            flex: 1,
+                            minWidth: 0,
+                            color: 'var(--rdw-organic-ink-2)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          },
+                          title: `${sec.title}：${sec.preview || ''}`,
+                        },
+                        sec.title || '（无标题）',
+                        sec.preview ? h('span', { style: { color: 'var(--rdw-organic-ink-3)' } }, ` · ${truncate(sec.preview, 22)}`) : null,
+                      ),
+                    ),
+                  ),
+                  sections.length > 7
+                    ? h('div', { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)' } }, `…共 ${sections.length} 节`)
+                    : null,
+                )
+              })(),
+        ),
+
+        // 段二：备份列表
+        h(
+          'div',
+          {
+            style: {
+              padding: '7px 10px',
+              borderRadius: 'var(--rdw-r-pebble-sm)',
+              background: 'var(--rdw-organic-surface)',
+              border: '1px solid var(--rdw-warm-line-2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+            },
+          },
+          h(
+            'div',
+            { style: { ...row, gap: 5 } },
+            h('span', { style: { fontSize: 11.5, fontWeight: 700, color: 'var(--rdw-organic-ink)' } }, '备份'),
+            h(
+              'span',
+              { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)', flex: 1 } },
+              `${Number(stageNode.backupCount) || 0} 份`,
+            ),
+          ),
+          (() => {
+            const backups = Array.isArray(stageNode.backups) ? stageNode.backups : []
+            if (backups.length === 0) {
+              return h('div', { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)' } }, '还没有备份（每次重生成前会自动备份上一版）')
+            }
+            return h(
+              'div',
+              { style: { display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 120, overflowY: 'auto' } },
+              ...backups
+                .slice()
+                .reverse()
+                .map((bak) =>
+                  h(
+                    'div',
+                    {
+                      key: `bak-${bak.revision}-${bak.at}`,
+                      role: 'button',
+                      tabIndex: 0,
+                      style: {
+                        display: 'flex',
+                        gap: 5,
+                        alignItems: 'baseline',
+                        fontSize: 11,
+                        padding: '2px 4px',
+                        borderRadius: 'var(--rdw-r-pebble-sm)',
+                        cursor: bak.path ? 'pointer' : 'default',
+                      },
+                      title: `${bak.path || ''}\n${bak.sha256 || ''}\n${bak.reason || ''}`,
+                      onClick: () => { if (bak.path) call(options.onOpenFile, bak.path) },
+                      onKeyDown: (event) => {
+                        if (bak.path && event && (event.key === 'Enter' || event.key === ' ')) call(options.onOpenFile, bak.path)
+                      },
+                    },
+                    h(
+                      'span',
+                      { style: { flex: '0 0 auto', fontFamily: 'var(--rdw-font-mono)', color: 'var(--rdw-tan-ink)', fontWeight: 700 } },
+                      `v${bak.revision}`,
+                    ),
+                    h(
+                      'span',
+                      {
+                        style: {
+                          flex: 1,
+                          minWidth: 0,
+                          color: 'var(--rdw-organic-ink-2)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        },
+                      },
+                      bak.reason || '手动备份',
+                    ),
+                  ),
+                ),
+            )
+          })(),
+        ),
+
+        // 段三：续贯
+        h(
+          'div',
+          {
+            style: {
+              padding: '7px 10px',
+              borderRadius: 'var(--rdw-r-pebble-sm)',
+              background: chainIssuesForStage.length
+                ? 'color-mix(in srgb,var(--rdw-tan) 12%,var(--rdw-organic-surface))'
+                : 'var(--rdw-organic-surface)',
+              border: chainIssuesForStage.length
+                ? '1px solid color-mix(in srgb,var(--rdw-tan) 34%,transparent)'
+                : '1px solid var(--rdw-warm-line-2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+            },
+          },
+          h(
+            'div',
+            { style: { ...row, gap: 5 } },
+            h('span', { style: { fontSize: 11.5, fontWeight: 700, color: 'var(--rdw-organic-ink)' } }, '续贯'),
+            h(
+              'span',
+              { style: { fontSize: 11, color: chainIssuesForStage.length ? 'var(--rdw-tan-ink)' : 'var(--rdw-organic-ink-3)', flex: 1 } },
+              chainIssuesForStage.length === 0
+                ? `第 ${stageNode.order} 顺位 · 链通`
+                : `${chainIssuesForStage.length} 条问题`,
+            ),
+          ),
+          chainIssuesForStage.length === 0
+            ? h(
+                'div',
+                { style: { fontSize: 11, color: 'var(--rdw-organic-ink-3)', lineHeight: 1.45 } },
+                `下游可直接引用 ${stageNode.draft && stageNode.draft.path ? stageNode.draft.path : '本主支成稿'}。`,
+              )
+            : h(
+                'div',
+                { style: { display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 110, overflowY: 'auto' } },
+                ...chainIssuesForStage.slice(0, 8).map((issue, issueIdx) =>
+                  h(
+                    'div',
+                    {
+                      key: `issue-${issueIdx}`,
+                      style: { display: 'flex', gap: 5, fontSize: 11, lineHeight: 1.45, alignItems: 'baseline' },
+                      title: `${issue.code || ''} ${issue.path || ''}\n${issue.message || ''}`,
+                    },
+                    h(
+                      'span',
+                      { style: { flex: '0 0 auto', fontFamily: 'var(--rdw-font-mono)', fontWeight: 700, color: 'var(--rdw-tan-ink)' } },
+                      issue.code || '?',
+                    ),
+                    h(
+                      'span',
+                      {
+                        style: {
+                          flex: 1,
+                          minWidth: 0,
+                          color: 'var(--rdw-organic-ink-2)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        },
+                      },
+                      issue.message || '',
+                    ),
+                  ),
+                ),
+              ),
+        ),
+
+        // 终稿论文状态 + 汇编入口
+        spineInfo && spineInfo.paper
+          ? h(
+              'div',
+              { style: { ...row, gap: 5, padding: '0 2px' } },
+              h(
+                'span',
+                { style: { flex: 1, minWidth: 0, fontSize: 11, color: 'var(--rdw-organic-ink-3)' } },
+                spineInfo.paper.exists
+                  ? `终稿已汇编 · ${truncate(formatTimeText(spineInfo.paper.generatedAt), 16)}`
+                  : '尚未汇编终稿论文',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  disabled: stageBusy || Number(spineInfo.spine && spineInfo.spine.stagesWithDraft) === 0,
+                  title:
+                    Number(spineInfo.spine && spineInfo.spine.stagesWithDraft) === 0
+                      ? '一个成稿都还没有，汇编会被拒绝（SPINE-E106）'
+                      : '汇编全部主支成稿为 manuscript/PAPER.md',
+                  onClick: () => call(options.onSpineOp, 'paper', null),
+                  style: {
+                    ...button,
+                    height: 22,
+                    padding: '0 8px',
+                    fontSize: 11,
+                    opacity: stageBusy || Number(spineInfo.spine && spineInfo.spine.stagesWithDraft) === 0 ? 0.5 : 1,
+                  },
+                },
+                '📄 汇编终稿',
+              ),
+            )
+          : null,
+      )
+    : null
+
   const rightPane = h(
     'div',
     {
@@ -2301,6 +2865,8 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       },
       '📁 本任务产物',
     ),
+    // v2.1 主支成稿（成稿 / 备份 / 续贯三段）—— 旧项目 stageId 为 null 时整块不渲染
+    stagePane,
     // 产物条目
     h(
       'div',
@@ -2365,8 +2931,7 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       ),
     ),
     // v3.8 · 本分支的文献（Zotero 接入：搜索挂载 + 合集导入）
-    zoteroPane,
-    // 整合：需要你拍板或处理
+    zoteroPane,    // 整合：需要你拍板或处理
     attention.length > 0
       ? h(
           'div',

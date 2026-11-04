@@ -1,0 +1,746 @@
+{
+  "schema": 1,
+  "handoffs": [
+    {
+      "path": "modules/M10-research-question/handoffs/HANDOFF-123-v1.md",
+      "project": "early-phosphate",
+      "module": "M10",
+      "branch": "123",
+      "stream": "123",
+      "version": 1,
+      "status": "DRAFT",
+      "mode": "spike",
+      "depends_on": [],
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-11-03T02:00:00+08:00",
+          "action": "CREATE",
+          "by": "123",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M10-research-question/handoffs/HANDOFF-B10-01-PROTOCOL-v1.md",
+      "project": "early-phosphate",
+      "module": "M10",
+      "branch": "B10-01",
+      "stream": "protocol-charter",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "ed914697107382f8c22b568a024962e8050bc8e39c471ca2a9d44f7a37304e52",
+      "submitted_at": "2026-09-19T14:10:00+08:00",
+      "decided_at": "2026-09-22T16:40:00+08:00",
+      "decision_reason": "方案覆盖 estimand、时间零点与随访窗口，可作为项目基准",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M10-research-question/branches/B10-01-protocol/outputs/target_trial_protocol.md",
+          "sha256": "17f24a4db654762c98655e91aa0c43319b810b25e7c9a148635d702b5ddac609"
+        },
+        {
+          "path": "modules/M10-research-question/branches/B10-01-protocol/outputs/causal_diagram.md",
+          "sha256": "057663a3b6bd56ed1cf81df8ad7a7c3c8ea06e3be45ce880c2b4d32595b6d547"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-09-18T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B10-01",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-09-19T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B10-01",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-09-22T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "方案覆盖 estimand、时间零点与随访窗口，可作为项目基准",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M10-research-question/handoffs/HANDOFF-B10-02-ESTIMAND-v1.md",
+      "project": "early-phosphate",
+      "module": "M10",
+      "branch": "B10-02",
+      "stream": "estimand-spec",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "ccc2025a71d526e762fdbbd37c60c10a6676ce1ae90761f43793ea4a41f0ef4e",
+      "submitted_at": "2026-09-24T14:10:00+08:00",
+      "decided_at": "2026-09-25T16:40:00+08:00",
+      "decision_reason": "estimand 与方案一致，同意以 ATE、30 天全因死亡为主对比",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M10-research-question/branches/B10-02-estimand/outputs/estimand_spec.md",
+          "sha256": "5a48de5557d40e644d1b8f2f4d3e0a2c04209c84e67dbd24c236f6dde9b28f20"
+        },
+        {
+          "path": "modules/M10-research-question/branches/B10-02-estimand/outputs/time_zero_and_eligibility.csv",
+          "sha256": "470888d7fcee949487b27f6fa1e97fd66b8d9e21fd775fb1820bed692d429614"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-09-23T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B10-02",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-09-24T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B10-02",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-09-25T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "estimand 与方案一致，同意以 ATE、30 天全因死亡为主对比",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M20-literature-search/handoffs/HANDOFF-22-v1.md",
+      "project": "early-phosphate",
+      "module": "M20",
+      "branch": "22",
+      "stream": "22",
+      "version": 1,
+      "status": "DRAFT",
+      "mode": "standard",
+      "depends_on": [],
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-11-04T22:20:49+08:00",
+          "action": "CREATE",
+          "by": "22",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M20-literature-search/handoffs/HANDOFF-23-v1.md",
+      "project": "early-phosphate",
+      "module": "M20",
+      "branch": "23",
+      "stream": "23",
+      "version": 1,
+      "status": "DRAFT",
+      "mode": "spike",
+      "depends_on": [],
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-10-27T08:04:24+08:00",
+          "action": "CREATE",
+          "by": "23",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M20-literature-search/handoffs/HANDOFF-B20-01-SEARCH-v1.md",
+      "project": "early-phosphate",
+      "module": "M20",
+      "branch": "B20-01",
+      "stream": "literature-search",
+      "version": 1,
+      "status": "REJECTED",
+      "body_hash": "f9697c9244224af590541fcbff4a5be0159fa795ac728a120335faf20e511672",
+      "submitted_at": "2026-09-29T14:10:00+08:00",
+      "decided_at": "2026-09-30T16:40:00+08:00",
+      "decision_reason": "去重流程不可复现、PRISMA 计数与附件不一致（1,284−312≠968），退回按 DOI 归一化重做",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M20-literature-search/branches/B20-01-search/outputs/search_strategy_v1.md",
+          "sha256": "592ddede47f0c5ca9c135822a9aebffaa9beb426721a9699b94537493e082bf9"
+        },
+        {
+          "path": "modules/M20-literature-search/branches/B20-01-search/outputs/dedup_log_v1.csv",
+          "sha256": "2c185312cc646e2a7ba7ba55a01afd47f65a3e22f2495af7f84b4d881dc35ef8"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-09-27T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B20-01",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-09-29T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B20-01",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-09-30T16:40:00+08:00",
+          "action": "REJECT",
+          "by": "main",
+          "reason": "去重流程不可复现、PRISMA 计数与附件不一致（1,284−312≠968），退回按 DOI 归一化重做",
+          "from": "PROVISIONAL",
+          "to": "REJECTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M20-literature-search/handoffs/HANDOFF-B20-02-SEARCH-v2.md",
+      "project": "early-phosphate",
+      "module": "M20",
+      "branch": "B20-02",
+      "stream": "literature-search",
+      "version": 2,
+      "status": "ACCEPTED",
+      "body_hash": "6124b58820e0058212966f40d7b7dd444e8829335e5d71a86b73089f78a7f015",
+      "submitted_at": "2026-10-03T14:10:00+08:00",
+      "decided_at": "2026-10-04T16:40:00+08:00",
+      "decision_reason": "去重与 PRISMA 计数可复现，接受 23 篇纳入文献作为引言依据",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M20-literature-search/branches/B20-02-search-v2/outputs/search_strategy_v2.md",
+          "sha256": "c5f555fc9f7c74cc773d85c43b40ed3d8cbdbdf1de4e709bcc270807344e312f"
+        },
+        {
+          "path": "modules/M20-literature-search/branches/B20-02-search-v2/outputs/prisma_flow_counts.csv",
+          "sha256": "545cbdd2a8f386976cf6addeac385f55fe3463de0f719dbb1c578d289a2b2c2f"
+        },
+        {
+          "path": "modules/M20-literature-search/branches/B20-02-search-v2/outputs/included_studies.csv",
+          "sha256": "c97a3ab51d6b4399c926abb689e4092668fb7078a84d8eb833da9b430c7f4b29"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-01T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B20-02",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-03T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B20-02",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-04T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "去重与 PRISMA 计数可复现，接受 23 篇纳入文献作为引言依据",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M20-literature-search/handoffs/HANDOFF-B20-03-v1.md",
+      "project": "early-phosphate",
+      "module": "M20",
+      "branch": "B20-03",
+      "stream": "b20-03",
+      "version": 1,
+      "status": "DRAFT",
+      "mode": "spike",
+      "depends_on": [],
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-11-04T15:27:58+08:00",
+          "action": "CREATE",
+          "by": "B20-03",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M30-cohort/handoffs/HANDOFF-B30-01-COHORT-v1.md",
+      "project": "early-phosphate",
+      "module": "M30",
+      "branch": "B30-01",
+      "stream": "cohort-definition",
+      "version": 1,
+      "status": "SUPERSEDED",
+      "body_hash": "65c3cb1efb8ba211334421c1a7996e0069c828113263ee9aea5d9daf02b2cb9b",
+      "submitted_at": "2026-10-06T14:10:00+08:00",
+      "decided_at": "2026-10-07T16:40:00+08:00",
+      "decision_reason": "队列定义与入选流程一致，先接受以启动基线表",
+      "supersedes": 0,
+      "superseded_by": "modules/M30-cohort/handoffs/HANDOFF-B30-02-COHORT-v2.md",
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M30-cohort/branches/B30-01-cohort/outputs/cohort_definition_v1.md",
+          "sha256": "5591e692bacedb0770ee1cb77bc637a2a4bc866b1d23c15eff9c924a4e037625"
+        },
+        {
+          "path": "modules/M30-cohort/branches/B30-01-cohort/outputs/cohort_counts_v1.csv",
+          "sha256": "d3e8926b9e7035667c08defd834b496573b6836cc13d71623a286854ffdde10a"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-05T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B30-01",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-06T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B30-01",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-07T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "队列定义与入选流程一致，先接受以启动基线表",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        },
+        {
+          "at": "2026-10-11T16:40:00+08:00",
+          "action": "SUPERSEDE",
+          "by": "main",
+          "from": "ACCEPTED",
+          "to": "SUPERSEDED",
+          "reason": "由 modules/M30-cohort/handoffs/HANDOFF-B30-02-COHORT-v2.md 替代"
+        }
+      ]
+    },
+    {
+      "path": "modules/M30-cohort/handoffs/HANDOFF-B30-02-COHORT-v2.md",
+      "project": "early-phosphate",
+      "module": "M30",
+      "branch": "B30-02",
+      "stream": "cohort-definition",
+      "version": 2,
+      "status": "ACCEPTED",
+      "body_hash": "df51c23d3ea77a747a19c8efd3d37489fe341b5149f9f4ffd3d998b2f27acc39",
+      "submitted_at": "2026-10-10T14:10:00+08:00",
+      "decided_at": "2026-10-11T16:40:00+08:00",
+      "decision_reason": "修正入 ICU 前 6 小时补磷排除与 ECMO 排除后接受，替代 v1",
+      "supersedes": 1,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M30-cohort/branches/B30-02-cohort-v2/outputs/cohort_definition_v2.md",
+          "sha256": "c3bcd1e106cbdabe554dea662b6f7219ff296a18f078c3844dca19cf1eac5ef2"
+        },
+        {
+          "path": "modules/M30-cohort/branches/B30-02-cohort-v2/outputs/attrition_flow_v2.csv",
+          "sha256": "676de8560d73121b8350dfc322713afd625ce87d6fbcf9249e7f1f37dec3edb9"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-09T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B30-02",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-10T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B30-02",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-11T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "修正入 ICU 前 6 小时补磷排除与 ECMO 排除后接受，替代 v1",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M30-cohort/handoffs/HANDOFF-B30-03-MISSING-v1.md",
+      "project": "early-phosphate",
+      "module": "M30",
+      "branch": "B30-03",
+      "stream": "missing-audit",
+      "version": 1,
+      "status": "BLOCKED",
+      "body_hash": "c94a251148fa463c783c4f474926c0b484bfe24337e165d0f898afd896136b4f",
+      "submitted_at": "2026-10-13T14:10:00+08:00",
+      "decided_at": "2026-10-13T16:40:00+08:00",
+      "decision_reason": "2024-07 起补磷医嘱表结构变更，补磷时点缺失率无法核实，等待数据管理员澄清",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": "PROVISIONAL",
+      "files": [
+        {
+          "path": "modules/M30-cohort/branches/B30-03-missing/outputs/missingness_audit.csv",
+          "sha256": "247e6a3bd3e435f9de7474a5d2198fb7f29ef0fa51f062e0204ec3831b416cec"
+        },
+        {
+          "path": "modules/M30-cohort/branches/B30-03-missing/outputs/missing_pattern_report.md",
+          "sha256": "28486868541bacd70be6db8e3e84e9e53859476de660c19bfd2cbd50953ad9d8"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-12T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B30-03",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-13T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B30-03",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-13T16:40:00+08:00",
+          "action": "BLOCK",
+          "by": "main",
+          "reason": "2024-07 起补磷医嘱表结构变更，补磷时点缺失率无法核实，等待数据管理员澄清",
+          "from": "PROVISIONAL",
+          "to": "BLOCKED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M40-statistics/handoffs/HANDOFF-B40-01-TABLE1-v1.md",
+      "project": "early-phosphate",
+      "module": "M40",
+      "branch": "B40-01",
+      "stream": "descriptive-tables",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "b3d26fd07b8eacded0f0f55784917919e4d3ec632587b5f4f31f492149e4a544",
+      "submitted_at": "2026-10-14T14:10:00+08:00",
+      "decided_at": "2026-10-15T16:40:00+08:00",
+      "decision_reason": "Table 1 与队列 v2 一致，加权前 SMD 可复现",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M40-statistics/branches/B40-01-table1/outputs/table1_baseline.csv",
+          "sha256": "cbaad4f0514fee6478fab0b03b7b1e308771e6250f4a748ac9e38c50bf8414ad"
+        },
+        {
+          "path": "modules/M40-statistics/branches/B40-01-table1/outputs/table1_notes.md",
+          "sha256": "11a8ca9441a8e94566d517a0fe35b43bb09614e3828042530e28c12272a3ca2b"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-12T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B40-01",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-14T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B40-01",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-15T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "Table 1 与队列 v2 一致，加权前 SMD 可复现",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M40-statistics/handoffs/HANDOFF-B40-02-MAIN-v1.md",
+      "project": "early-phosphate",
+      "module": "M40",
+      "branch": "B40-02",
+      "stream": "main-analysis",
+      "version": 1,
+      "status": "DRAFT",
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M40-statistics/branches/B40-02-main/outputs/main_analysis_plan.md",
+          "sha256": "6989eadb17030a18a9df5ab8d3d67fad2ba6104a62aad036c1b1e1539ee71974"
+        },
+        {
+          "path": "modules/M40-statistics/branches/B40-02-main/outputs/table2_primary_draft.csv",
+          "sha256": "09c88739df288308111caeab78504003b781a14530487ac636bf3bbf2e75133e"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-17T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B40-02",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M40-statistics/handoffs/HANDOFF-B40-03-IPTW-v1.md",
+      "project": "early-phosphate",
+      "module": "M40",
+      "branch": "B40-03",
+      "stream": "iptw-diagnostics",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "c1773c2d7ab22537fc1520915c1ca263b1e9ebe6fe6be660c5a240ea28a0fe9f",
+      "submitted_at": "2026-10-16T14:10:00+08:00",
+      "decided_at": "2026-10-19T01:22:43+08:00",
+      "decision_reason": "自动通过：verify 全绿",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M40-statistics/branches/B40-03-iptw/outputs/balance_smd.csv",
+          "sha256": "d8a65e5b999a9e734e2f41bedd6507b7ef1d2f57b8c90d987dc634c701be3a28"
+        },
+        {
+          "path": "modules/M40-statistics/branches/B40-03-iptw/outputs/weight_distribution.csv",
+          "sha256": "926b8937019a462d94fcb750f2131de8b384b42261e65e848a8a1937d29893a2"
+        },
+        {
+          "path": "modules/M40-statistics/branches/B40-03-iptw/outputs/iptw_diagnostics_report.md",
+          "sha256": "7085f95caa622c798ba65be372bb926b57c0fbd0e5f32b31a0898d884fcb54ac"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-13T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B40-03",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-16T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B40-03",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-19T01:22:43+08:00",
+          "action": "ACCEPT",
+          "by": "auto",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED",
+          "reason": "自动通过：verify 全绿"
+        }
+      ]
+    },
+    {
+      "path": "modules/M40-statistics/handoffs/HANDOFF-B40-04-v1.md",
+      "project": "early-phosphate",
+      "module": "M40",
+      "branch": "B40-04",
+      "stream": "b40-04",
+      "version": 1,
+      "status": "DRAFT",
+      "mode": "spike",
+      "depends_on": [],
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-10-28T08:37:45+08:00",
+          "action": "CREATE",
+          "by": "B40-04",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/M50-writing/handoffs/HANDOFF-B50-01-OUTLINE-v1.md",
+      "project": "early-phosphate",
+      "module": "M50",
+      "branch": "B50-01",
+      "stream": "manuscript-outline",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "a24897add3467b31a36c9fb1595ef265165eb682b65f4d9fc35e7a1f76259a0e",
+      "submitted_at": "2026-10-16T14:10:00+08:00",
+      "decided_at": "2026-10-17T16:40:00+08:00",
+      "decision_reason": "论文大纲与目标期刊要求一致，接受为写作基准",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M50-writing/branches/B50-01-outline/outputs/paper_outline.md",
+          "sha256": "9c96587bab6217e66a1859785c65fe288eeed99c65817a5912564be378da907b"
+        },
+        {
+          "path": "modules/M50-writing/branches/B50-01-outline/outputs/word_budget.csv",
+          "sha256": "b8a49b5d54cd3381b02e6889372f1faa44e8dd1f904a21564062c37e0bd30c84"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-16T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B50-01",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-16T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B50-01",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-17T16:40:00+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "reason": "论文大纲与目标期刊要求一致，接受为写作基准",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED"
+        }
+      ]
+    },
+    {
+      "path": "modules/M50-writing/handoffs/HANDOFF-B50-02-METHODS-v1.md",
+      "project": "early-phosphate",
+      "module": "M50",
+      "branch": "B50-02",
+      "stream": "methods-section",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "94e3dbff908ddfd8e983cc543eeab460e059b0d8c692cf5428d4d335a36188b9",
+      "submitted_at": "2026-10-18T14:10:00+08:00",
+      "decided_at": "2026-10-19T01:22:43+08:00",
+      "decision_reason": "自动通过：verify 全绿",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/M50-writing/branches/B50-02-methods/outputs/methods_section_draft.md",
+          "sha256": "bca1556b65aa08e5685c83eeade36236faab6ab520d9d79e0a0162574bb0e828"
+        },
+        {
+          "path": "modules/M50-writing/branches/B50-02-methods/outputs/target_checklist.md",
+          "sha256": "77ed0d83dd5561da9dc324177f412a03df5da67918e11d6a7248fec010e99f10"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-18T09:30:00+08:00",
+          "action": "CREATE",
+          "by": "B50-02",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-18T14:10:00+08:00",
+          "action": "SUBMIT",
+          "by": "B50-02",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-19T01:22:43+08:00",
+          "action": "ACCEPT",
+          "by": "auto",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED",
+          "reason": "自动通过：verify 全绿"
+        }
+      ]
+    }
+  ]
+}

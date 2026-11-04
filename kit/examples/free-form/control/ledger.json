@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "handoffs": [
+    {
+      "path": "modules/evidence/handoffs/HANDOFF-EV-R1-v1.md",
+      "project": "free-form",
+      "module": "evidence",
+      "branch": "search-round-1",
+      "stream": "evidence-search",
+      "version": 1,
+      "status": "REJECTED",
+      "body_hash": "e5ba027789b2e35ce8bceb8ca41c4f767dc9d4d69907c5cc07e574d76711bf55",
+      "submitted_at": "2026-10-18T21:45:01+08:00",
+      "decided_at": "2026-10-18T21:45:01+08:00",
+      "decision_reason": "第一轮检索式覆盖不足且去重不可审计（612→18 链路无法复核），退回 search-round-2 重做",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/evidence/branches/search-round-1/outputs/search-log-r1.md",
+          "sha256": "a866b1eaff97819f48820d48bf3d2a48f7b67344ca1281cce92bc8cd8b957f21"
+        },
+        {
+          "path": "modules/evidence/branches/search-round-1/outputs/included-r1.csv",
+          "sha256": "60fa79168c0e40204cc718fc0fb33325b5469fada195f08580edaa9a9b8ffecb"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-18T21:43:44+08:00",
+          "action": "CREATE",
+          "by": "search-round-1",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-18T21:45:01+08:00",
+          "action": "SUBMIT",
+          "by": "search-round-1",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-18T21:45:01+08:00",
+          "action": "REJECT",
+          "by": "main",
+          "from": "PROVISIONAL",
+          "to": "REJECTED",
+          "reason": "第一轮检索式覆盖不足且去重不可审计（612→18 链路无法复核），退回 search-round-2 重做"
+        }
+      ]
+    },
+    {
+      "path": "modules/explore/handoffs/HANDOFF-quick-check-v1.md",
+      "project": "free-form",
+      "module": "explore",
+      "branch": "quick-check",
+      "stream": "quick-check",
+      "version": 1,
+      "status": "DRAFT",
+      "body_hash": null,
+      "submitted_at": null,
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [],
+      "events": [
+        {
+          "at": "2026-10-18T21:43:45+08:00",
+          "action": "CREATE",
+          "by": "quick-check",
+          "from": null,
+          "to": "DRAFT"
+        }
+      ]
+    },
+    {
+      "path": "modules/pilot/handoffs/HANDOFF-pilot-iptw-v1.md",
+      "project": "free-form",
+      "module": "pilot",
+      "branch": "pilot-iptw",
+      "stream": "pilot-iptw",
+      "version": 1,
+      "status": "PROVISIONAL",
+      "body_hash": "aedad3c09b82306a8ed9b92194daea3178ca86f5aa9d31935de2530eed97667a",
+      "submitted_at": "2026-10-18T21:45:01+08:00",
+      "decided_at": null,
+      "decision_reason": null,
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/pilot/branches/pilot-iptw/outputs/pilot-balance.csv",
+          "sha256": "3f2c21926a16b6c5f046eb48b0970443e7f0642649d182c71debb9e0c4f2ef29"
+        },
+        {
+          "path": "modules/pilot/branches/pilot-iptw/outputs/pilot-note.md",
+          "sha256": "07c4d073fdc2773dbe42d4a492ab57404daca2ada5371d63d24bbe184f7ea34f"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-18T21:43:45+08:00",
+          "action": "CREATE",
+          "by": "pilot-iptw",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-18T21:45:01+08:00",
+          "action": "SUBMIT",
+          "by": "pilot-iptw",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        }
+      ]
+    },
+    {
+      "path": "modules/question/handoffs/HANDOFF-protocol-draft-v1.md",
+      "project": "free-form",
+      "module": "question",
+      "branch": "protocol-draft",
+      "stream": "protocol-draft",
+      "version": 1,
+      "status": "ACCEPTED",
+      "body_hash": "7a0a7fd5b6db3ada4d1a77e0c24ec95e0d817bb1c9aa837dc42f4bdca158c93f",
+      "submitted_at": "2026-10-18T21:45:00+08:00",
+      "decided_at": "2026-10-18T21:45:01+08:00",
+      "decision_reason": "问题定义清晰、范围边界明确，接受为全项目基准",
+      "supersedes": 0,
+      "superseded_by": null,
+      "blocked_from": null,
+      "files": [
+        {
+          "path": "modules/question/branches/protocol-draft/outputs/research-question.md",
+          "sha256": "4a6ca345160e4628ff7f60d1eae39c85305791942996cd69987e77da987474ff"
+        },
+        {
+          "path": "modules/question/branches/protocol-draft/outputs/scope-boundaries.md",
+          "sha256": "d199b07a21144633775cd7cddadd3b50d1305a2059f3789a7c4e2f1ebb8ecffa"
+        }
+      ],
+      "events": [
+        {
+          "at": "2026-10-18T21:43:44+08:00",
+          "action": "CREATE",
+          "by": "protocol-draft",
+          "from": null,
+          "to": "DRAFT"
+        },
+        {
+          "at": "2026-10-18T21:45:00+08:00",
+          "action": "SUBMIT",
+          "by": "protocol-draft",
+          "from": "DRAFT",
+          "to": "PROVISIONAL"
+        },
+        {
+          "at": "2026-10-18T21:45:01+08:00",
+          "action": "ACCEPT",
+          "by": "main",
+          "from": "PROVISIONAL",
+          "to": "ACCEPTED",
+          "reason": "问题定义清晰、范围边界明确，接受为全项目基准"
+        }
+      ]
+    }
+  ]
+}

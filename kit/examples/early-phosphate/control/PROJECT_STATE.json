@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "project": {
+    "id": "early-phosphate",
+    "title": "重症低磷血症患者早期补磷的 target trial emulation",
+    "goal": "在成人 ICU 低磷血症患者中评估入 ICU 24 小时内启动静脉补磷对 30 天全因死亡的影响",
+    "created_at": "2026-09-18"
+  },
+  "phase": "analysis",
+  "next_steps": [
+    "与数据管理员确认 2024-07 起补磷医嘱表结构变更，解除 B30-03 缺失审计阻塞",
+    "主项目决定 IPTW 诊断 v1 的权重截尾方案（99% 截尾 vs 不截尾）",
+    "完成主分析 v1（加权 Cox、加权 KM 与敏感性分析）并提交",
+    "方法学章节按 TARGET 清单核对后提交决定"
+  ],
+  "blockers": [
+    "B30-03 缺失审计 v1：2024-07 起补磷医嘱表结构变更，补磷时点缺失率无法核实，等待数据管理员澄清"
+  ],
+  "modules": [
+    {
+      "id": "M10",
+      "dir": "modules/M10-research-question",
+      "name": "研究问题与方案",
+      "created_at": "2026-09-18"
+    },
+    {
+      "id": "M20",
+      "dir": "modules/M20-literature-search",
+      "name": "文献检索",
+      "created_at": "2026-09-27"
+    },
+    {
+      "id": "M30",
+      "dir": "modules/M30-cohort",
+      "name": "数据与队列",
+      "created_at": "2026-10-05"
+    },
+    {
+      "id": "M40",
+      "dir": "modules/M40-statistics",
+      "name": "统计分析",
+      "created_at": "2026-10-12"
+    },
+    {
+      "id": "M50",
+      "dir": "modules/M50-writing",
+      "name": "论文写作",
+      "created_at": "2026-10-16"
+    },
+    {
+      "id": "M60",
+      "dir": "modules/M60-revision",
+      "name": "审稿修订",
+      "created_at": "2026-10-18"
+    }
+  ],
+  "branches": [
+    {
+      "id": "B10-01",
+      "module": "M10",
+      "dir": "modules/M10-research-question/branches/B10-01-protocol",
+      "name": "研究方案",
+      "created_at": "2026-09-18"
+    },
+    {
+      "id": "B10-02",
+      "module": "M10",
+      "dir": "modules/M10-research-question/branches/B10-02-estimand",
+      "name": "estimand 与时点",
+      "created_at": "2026-09-23"
+    },
+    {
+      "id": "B20-01",
+      "module": "M20",
+      "dir": "modules/M20-literature-search/branches/B20-01-search",
+      "name": "文献检索 v1",
+      "created_at": "2026-09-27"
+    },
+    {
+      "id": "B20-02",
+      "module": "M20",
+      "dir": "modules/M20-literature-search/branches/B20-02-search-v2",
+      "name": "文献检索 v2",
+      "created_at": "2026-10-01"
+    },
+    {
+      "id": "B30-01",
+      "module": "M30",
+      "dir": "modules/M30-cohort/branches/B30-01-cohort",
+      "name": "队列定义 v1",
+      "created_at": "2026-10-05"
+    },
+    {
+      "id": "B30-02",
+      "module": "M30",
+      "dir": "modules/M30-cohort/branches/B30-02-cohort-v2",
+      "name": "队列定义 v2",
+      "created_at": "2026-10-09"
+    },
+    {
+      "id": "B30-03",
+      "module": "M30",
+      "dir": "modules/M30-cohort/branches/B30-03-missing",
+      "name": "缺失审计",
+      "created_at": "2026-10-12"
+    },
+    {
+      "id": "B40-01",
+      "module": "M40",
+      "dir": "modules/M40-statistics/branches/B40-01-table1",
+      "name": "基线表",
+      "created_at": "2026-10-12"
+    },
+    {
+      "id": "B40-02",
+      "module": "M40",
+      "dir": "modules/M40-statistics/branches/B40-02-main",
+      "name": "主分析",
+      "created_at": "2026-10-12"
+    },
+    {
+      "id": "B40-03",
+      "module": "M40",
+      "dir": "modules/M40-statistics/branches/B40-03-iptw",
+      "name": "IPTW 诊断",
+      "created_at": "2026-10-13"
+    },
+    {
+      "id": "B50-01",
+      "module": "M50",
+      "dir": "modules/M50-writing/branches/B50-01-outline",
+      "name": "论文大纲",
+      "created_at": "2026-10-16"
+    },
+    {
+      "id": "B50-02",
+      "module": "M50",
+      "dir": "modules/M50-writing/branches/B50-02-methods",
+      "name": "方法学章节",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "B60-01",
+      "module": "M60",
+      "dir": "modules/M60-revision/branches/B60-01-revision-plan",
+      "name": "审稿修订计划",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "23",
+      "module": "M20",
+      "dir": "modules/M20-literature-search/branches/23",
+      "name": "23",
+      "created_at": "2026-10-27",
+      "mode": "spike"
+    },
+    {
+      "id": "B40-test-sprout",
+      "module": "M40",
+      "dir": "modules/M40-statistics/branches/B40-test-sprout",
+      "name": "测试分叉",
+      "created_at": "2026-10-28",
+      "mode": "standard",
+      "parent": "B40-02"
+    },
+    {
+      "id": "B40-04",
+      "module": "M40",
+      "dir": "modules/M40-statistics/branches/B40-04",
+      "name": "基于队列 v2 生成按暴露分组的基线表，核对两组",
+      "created_at": "2026-10-28",
+      "mode": "spike",
+      "parent": "B40-01"
+    },
+    {
+      "id": "2",
+      "module": "M30",
+      "dir": "modules/M30-cohort/branches/2",
+      "name": "前阿飞",
+      "created_at": "2026-10-29",
+      "mode": "spike"
+    },
+    {
+      "id": "123",
+      "module": "M10",
+      "dir": "modules/M10-research-question/branches/123",
+      "name": "123",
+      "created_at": "2026-11-03",
+      "mode": "spike"
+    },
+    {
+      "id": "B20-03",
+      "module": "M20",
+      "dir": "modules/M20-literature-search/branches/B20-03",
+      "name": "系统检索 2018-01 至 2024-06 关",
+      "created_at": "2026-11-04",
+      "mode": "spike",
+      "order": 1,
+      "parent": "B20-01"
+    },
+    {
+      "id": "22",
+      "module": "M20",
+      "dir": "modules/M20-literature-search/branches/22",
+      "name": "22",
+      "created_at": "2026-11-04",
+      "mode": "standard",
+      "order": 2
+    }
+  ]
+}

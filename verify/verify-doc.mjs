@@ -16,6 +16,8 @@ const fontFiles = [
   'src/core/constants.js',
   'src/core/theme.js',
   'src/views/FishboneView.js',
+  'src/components/GoalCardView.js',
+  'src/core/goal-skills.js',
   'src/WorkbenchPanel.js',
 ]
 let tiny = 0

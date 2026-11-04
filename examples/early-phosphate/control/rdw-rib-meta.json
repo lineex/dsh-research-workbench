@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "ribs": {
+    "B40-04": {
+      "origin": {
+        "kind": "message",
+        "anchor": {
+          "messageExcerpt": "基于队列 v2 生成按暴露分组的基线表，核对两组可比性与加权前 SMD，为 IPTW 模型提供协变量清单。",
+          "createdAt": "2026-10-28T00:37:46.332Z"
+        }
+      }
+    },
+    "B10-01": {
+      "itemKeys": [
+        "8JX6IA4T"
+      ],
+      "collectionKey": "3XTNE5IV"
+    },
+    "B50-02": {
+      "itemKeys": [
+        "WK64JDP6",
+        "5DUGIQHM",
+        "ZZM4Y3UV",
+        "FZWG28DZ",
+        "637ZFMDE",
+        "RAB5IKKG",
+        "NAXPR79H",
+        "6SKCTURX",
+        "GD3MGAZK",
+        "3AFXCX95",
+        "6FQSC9NL",
+        "DZGERKEZ",
+        "GHV7WEBT",
+        "DY545R9Q",
+        "26IQL4QQ",
+        "SXQXCUEJ"
+      ],
+      "collectionKey": "NCYENM6Q"
+    },
+    "B20-03": {
+      "origin": {
+        "kind": "message",
+        "anchor": {
+          "messageExcerpt": "系统检索 2018-01 至 2024-06 关于 ICU 低磷血症与补磷/结局的已发表证据，为引言与讨论提供文献基础。",
+          "createdAt": "2026-11-04T07:27:59.454Z"
+        }
+      }
+    }
+  },
+  "recycleBin": [
+    {
+      "rib": {
+        "id": "123",
+        "module": "M10",
+        "name": "123",
+        "dir": "modules/M10-research-question/branches/123",
+        "parent": null
+      },
+      "meta": null,
+      "deletedAt": "2026-11-02T18:00:05.414Z",
+      "reason": ""
+    },
+    {
+      "rib": {
+        "id": "23",
+        "module": "M20",
+        "name": "23",
+        "dir": "modules/M20-literature-search/branches/23",
+        "parent": null
+      },
+      "meta": null,
+      "deletedAt": "2026-11-04T14:20:39.009Z",
+      "reason": ""
+    }
+  ],
+  "moduleOrder": [
+    "M10",
+    "M20",
+    "M30",
+    "M40",
+    "M50",
+    "M60"
+  ],
+  "ribOrder": {},
+  "sessionOf": {
+    "branch:M20/22": "session-6359a22e-0e97-4622-a3f2-82b0e02d932c",
+    "module:M20": "session-c8c1992d-6427-424d-8ed1-c980eb8f519c",
+    "module:M30": "session-507f9c4f-0f75-4cd5-9184-39e32fcf1407",
+    "goal": "session-fd60179e-b2e5-4bd9-981d-3818d2602fea",
+    "module:M40": "session-6359a22e-0e97-4622-a3f2-82b0e02d932c",
+    "module:M50": "session-c6343fc1-ea3c-4ce5-b1d9-000e0b9290ba",
+    "module:M60": "session-4aa24112-7727-40d8-8933-d5b7e985b18e",
+    "branch:M10/B10-02": "session-768e5a95-2710-4461-b997-f7261616d46c",
+    "branch:M20/B20-02": "session-ff5a9ad4-72d7-4489-962c-76f4ebc5c22a",
+    "branch:M20/B20-03": "session-e1f271fc-6892-4f06-a5e2-e945ad5cf256",
+    "branch:M30/B30-01": "session-8ea633c4-ed7d-462e-b969-4f303cf6aea8",
+    "branch:M30/2": "session-aed61543-03f7-4541-b3ef-e57197de2d21",
+    "branch:M30/B30-02": "session-8a4636e2-20e8-4edd-be10-e032c94306b0",
+    "branch:M20/B20-01": "session-d80bc277-857b-4567-9e5a-3df2afa85967",
+    "branch:M10/B10-01": "session-c8cd6edb-f2c5-41a5-b456-0086bf065e0f",
+    "branch:M40/B40-02": "session-828692ef-fd7c-4d7c-adec-c64426ab9395"
+  }
+}

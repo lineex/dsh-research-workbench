@@ -1,0 +1,19 @@
+variable,missing_n,missing_pct,subgroup_2018_2024h1_missing_pct,subgroup_2024h2_missing_pct,mechanism_note
+age,0,0.0,0.0,0.0,完整
+sex,3,0.1,0.1,0.0,个别记录为空
+apache_ii,35,0.9,0.8,1.5,缺评分时段
+sofa,22,0.6,0.5,1.0,缺评分时段
+baseline_phosphate,0,0.0,0.0,0.0,入选条件变量
+calcium,41,1.1,1.0,1.4,检验缺失
+magnesium,58,1.5,1.4,2.0,检验缺失
+creatinine,12,0.3,0.3,0.2,检验缺失
+albumin,208,5.4,5.3,5.8,检验缺失
+lactate,239,6.2,6.0,7.2,检验缺失
+ph,410,10.7,10.4,11.6,血气缺失
+mechanical_ventilation,0,0.0,0.0,0.0,完整
+vasopressors,0,0.0,0.0,0.0,完整
+crrt,0,0.0,0.0,0.0,完整
+comorbidities,0,0.0,0.0,0.0,ICD 编码完整
+early_enteral_nutrition,0,0.0,0.0,0.0,完整
+fluid_6h,0,0.0,0.0,0.0,完整
+exposed_phosphate_start_time,96,6.6,1.1,39.8,仅日期精度；队列 v2 按 08:00 纳入

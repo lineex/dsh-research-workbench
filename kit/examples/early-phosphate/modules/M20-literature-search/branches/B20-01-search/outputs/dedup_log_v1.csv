@@ -1,0 +1,14 @@
+step,records,note
+database_hits_pubmed,486,PubMed 2018-01-01..2024-06-30
+database_hits_embase,512,Embase 同日
+database_hits_central,208,CENTRAL 同日
+hand_search,78,参考文献追溯与其他来源
+records_before_dedup,1284,合计
+duplicates_marked,312,v1 脚本标记删除
+records_after_dedup,968,1284-312=972 与 968 不一致
+screened_title_abstract,968,导入 Rayyan（模拟）
+excluded_title_abstract,921,题录排除
+fulltext_screened,47,全文获取 45/47（2 篇仅摘要）
+fulltext_excluded,24,人群 14；无结局 5；仅方案 3；重复队列 2
+included,23,RCT 3；队列 18；病例对照 2
+duplicate_gap,59,去重日志缺口：报告删除 312，可识别重复 371

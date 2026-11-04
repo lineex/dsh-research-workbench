@@ -120,8 +120,9 @@ export function renderCreateDialog(h, props) {
       onChange: (event) => setField(spec.name, event && event.target ? event.target.value : ''),
       style: spec.multiline
         ? { ...STYLES.textarea, minHeight: 64, width: '100%', boxSizing: 'border-box' }
-        : { ...STYLES.input, flex: '1 1 100%', minWidth: 0, width: '100%', boxSizing: 'border-box' },
+        : { ...STYLES.input, flex: '1 1 auto', minWidth: 0, width: '100%', boxSizing: 'border-box' },
     }
+    const isRootField = spec.name === 'root'
     return h(
       'label',
       { key: spec.name, style: { display: 'block', marginBottom: 8 } },
@@ -130,7 +131,54 @@ export function renderCreateDialog(h, props) {
         { style: { ...muted, opacity: 0.9, marginBottom: 3, fontWeight: 600 } },
         `${spec.label}${spec.required ? ' *' : ''}${spec.readonly ? '（自动带入）' : ''}`,
       ),
-      spec.multiline ? h('textarea', inputProps) : h('input', inputProps),
+      spec.multiline
+        ? h('textarea', inputProps)
+        : isRootField
+          ? h(
+              'div',
+              { style: { display: 'flex', gap: 6, alignItems: 'center', width: '100%' } },
+              h('input', inputProps),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'rdw-browse-folder-btn',
+                  title: '点击选择路径文件夹',
+                  'aria-label': '选择路径文件夹',
+                  disabled: Boolean(busy) || Boolean(spec.readonly),
+                  style: {
+                    ...STYLES.button,
+                    height: 32,
+                    padding: '0 12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    flex: '0 0 auto',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    background: 'var(--rdw-organic-surface, #f7fafc)',
+                    border: '1px solid var(--rdw-border, #cbd5e0)',
+                    borderRadius: 'var(--rdw-r-pebble-sm, 6px)',
+                    color: 'var(--rdw-organic-ink, #2d3748)',
+                  },
+                  onClick: async (event) => {
+                    if (event && event.preventDefault) event.preventDefault()
+                    if (event && event.stopPropagation) event.stopPropagation()
+                    if (typeof options.onPickFolder === 'function') {
+                      const picked = await options.onPickFolder()
+                      if (picked && typeof picked === 'string' && picked.trim()) {
+                        setField(spec.name, picked.trim())
+                      }
+                    }
+                  },
+                },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 13 } }, '📁'),
+                '选择文件夹',
+              ),
+            )
+          : h('input', inputProps),
       spec.hint ? h('div', { style: { ...muted, marginTop: 2, opacity: 0.66 } }, spec.hint) : null,
     )
   })

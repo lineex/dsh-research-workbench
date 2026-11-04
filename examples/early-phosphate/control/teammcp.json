@@ -1,0 +1,28 @@
+{
+  "server": "http://127.0.0.1:3100",
+  "projectId": "early-phosphate",
+  "agent": "dag-early-phosphate",
+  "channel": "dag-early-phosphate",
+  "busChannel": "research-dag",
+  "lastSeen": {
+    "research-dag": "2026-10-18T17:30:26.419Z",
+    "dm:dag-early-phosphate:dag-free-form": "2026-10-18T17:19:10.730Z"
+  },
+  "lastPush": {
+    "at": "2026-10-18T17:19:10.087Z",
+    "phase": "analysis",
+    "verify": "ok",
+    "messageId": "msg_5e96c70be03c",
+    "channel": "research-dag",
+    "lastRouteAt": "2026-10-18T17:19:10.291Z"
+  },
+  "schema": 1,
+  "lastPublish": {
+    "at": "2026-10-18T17:30:26.395Z",
+    "percent": 80,
+    "accepted": 8,
+    "pending": 0,
+    "messageId": "msg_a495ecd17a48",
+    "channel": "research-dag"
+  }
+}

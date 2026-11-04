@@ -1,0 +1,9 @@
+stage,n,detail
+icu_admissions,42318,2018-01-01 至 2024-06-30（模拟）
+adults_ge18,40915,排除 1,403 例 <18 岁
+first_icu_stay_ge6h,36204,排除 4,711 例非首次入住或停留 <6h
+phosphate_measured_24h,12536,排除 23,668 例 24h 内无血磷检测
+hypophosphatemia_lt_0_65,4126,排除 8,410 例首次血磷 ≥0.65 mmol/L
+final_cohort,4126,队列 v1 最终纳入
+exposed_early_repletion,2038,入 ICU 24h 内开始静脉补磷
+control_no_early_repletion,2088,24h 内无补磷医嘱

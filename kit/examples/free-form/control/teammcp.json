@@ -1,0 +1,28 @@
+{
+  "server": "http://127.0.0.1:3100",
+  "projectId": "free-form",
+  "agent": "dag-free-form",
+  "channel": "dag-free-form",
+  "busChannel": "research-dag",
+  "lastSeen": {
+    "research-dag": "2026-10-18T17:19:10.287Z",
+    "dm:dag-early-phosphate:dag-free-form": "2026-10-18T17:19:10.290Z",
+    "dag-free-form": "2026-10-18T17:03:33.338Z"
+  },
+  "lastPush": {
+    "at": "2026-10-18T16:54:54.447Z",
+    "phase": "analysis",
+    "verify": "ok",
+    "messageId": "msg_18459c20f578",
+    "channel": "research-dag"
+  },
+  "schema": 1,
+  "lastPublish": {
+    "at": "2026-10-18T17:19:09.117Z",
+    "percent": 33,
+    "accepted": 1,
+    "pending": 1,
+    "messageId": "msg_0190d3bc0db0",
+    "channel": "research-dag"
+  }
+}

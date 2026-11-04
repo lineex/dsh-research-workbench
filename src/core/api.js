@@ -241,3 +241,58 @@ export async function settleRun(id, onTick, budgetMs = 600000) {
     await new Promise((done) => setTimeout(done, 600))
   }
 }
+
+/* ------------------------------------------------- v2.1 主支成稿（spine） */
+
+/**
+ * GET /spine?project=...[&stage=<id>] —— 主支成稿清单 + 续贯结论 + 统计语言 + 终稿状态。
+ *
+ * 传 stage 时额外带 `detail`（该主支成稿正文 draftRaw / 备份 / 小节预览）。
+ * 旧项目没有 SPINE.json 时宿主返回 `{ok:true, exists:false, stages:[]}`，
+ * 面板据此显示「建链引导」，而不是当成错误。
+ */
+export async function fetchSpine(project, stage) {
+  const target = typeof project === 'string' ? project.trim() : ''
+  const params = [`project=${encodeURIComponent(target)}`]
+  if (typeof stage === 'string' && stage.trim()) params.push(`stage=${encodeURIComponent(stage.trim())}`)
+  return requestJson(`${ROUTE}/spine?${params.join('&')}`)
+}
+
+/**
+ * POST /spine-op —— 主支成稿动作，返回 {ok, run}，需用 settleRun 轮询。
+ * body: { project, op: 'rebuild'|'backup'|'lock'|'unlock'|'write'|'dispatch'|'paper'|'chain', stage?, reason? }
+ */
+export async function postSpineOp(body) {
+  const payload = body && typeof body === 'object' ? body : {}
+  return requestJson(`${ROUTE}/spine-op`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+
+
+/**
+ * GET /goal-card?project=... —— 读好问题卡 + 八层审计 + 缺项自检。
+ * 旧宿主没有该路由 → 返回 {ok:false}，由面板降级（不显示目标卡编辑器）。
+ */
+export async function fetchGoalCard(project) {
+  const target = typeof project === 'string' ? project.trim() : ''
+  const query = target ? `?project=${encodeURIComponent(target)}` : ''
+  return requestJson(`${ROUTE}/goal-card${query}`)
+}
+
+/**
+ * POST /goal-card —— 写卡（只合并传入字段，未传的保持原值）。
+ * body: { project, card, layers, syncGoal }
+ */
+export async function postGoalCard(body) {
+  const payload = body && typeof body === 'object' ? body : {}
+  return requestJson(`${ROUTE}/goal-card`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+

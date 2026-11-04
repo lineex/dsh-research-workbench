@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "project": {
+    "id": "free-form",
+    "title": "自由结构演示：无固定模块清单",
+    "goal": "演示任意命名的模块/分支如何按同一门控协议协作",
+    "created_at": "2026-10-18"
+  },
+  "phase": "analysis",
+  "next_steps": [
+    "按拒绝意见重做证据检索（search-round-2）",
+    "决定先导暴露窗口与截尾规则"
+  ],
+  "blockers": [],
+  "modules": [
+    {
+      "id": "question",
+      "dir": "modules/question",
+      "name": "研究问题",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "evidence",
+      "dir": "modules/evidence",
+      "name": "已有证据梳理",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "pilot",
+      "dir": "modules/pilot",
+      "name": "先导分析",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "explore",
+      "dir": "modules/explore",
+      "name": "探索性分析",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "archive",
+      "dir": "modules/archive",
+      "name": "归档与复用",
+      "created_at": "2026-10-18"
+    }
+  ],
+  "branches": [
+    {
+      "id": "protocol-draft",
+      "module": "question",
+      "dir": "modules/question/branches/protocol-draft",
+      "name": "研究问题草案",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "search-round-1",
+      "module": "evidence",
+      "dir": "modules/evidence/branches/search-round-1",
+      "name": "证据检索第一轮",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "search-round-2",
+      "module": "evidence",
+      "dir": "modules/evidence/branches/search-round-2",
+      "name": "证据检索第二轮",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "pilot-iptw",
+      "module": "pilot",
+      "dir": "modules/pilot/branches/pilot-iptw",
+      "name": "先导 IPTW",
+      "created_at": "2026-10-18"
+    },
+    {
+      "id": "quick-check",
+      "module": "explore",
+      "dir": "modules/explore/branches/quick-check",
+      "name": "快速核查",
+      "created_at": "2026-10-18"
+    }
+  ]
+}

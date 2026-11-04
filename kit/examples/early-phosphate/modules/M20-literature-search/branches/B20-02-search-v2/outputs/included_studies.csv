@@ -1,0 +1,24 @@
+study_id,first_author_year,design,population,n,exposure,primary_outcome,doi_simulated
+S01,Chen 2018,retrospective cohort,ICU adults with hypophosphatemia,842,early phosphate repletion,30-day mortality,10.1000/sim.2018.001
+S02,Garcia 2019,retrospective cohort,mixed ICU,1560,phosphate supplementation,ICU mortality,10.1000/sim.2019.002
+S03,Kim 2019,case-control,septic ICU,410,no early repletion,hospital mortality,10.1000/sim.2019.003
+S04,Ahmed 2020,retrospective cohort,medical ICU,735,early phosphate,30-day mortality,10.1000/sim.2020.004
+S05,Novak 2020,retrospective cohort,surgical ICU,689,phosphate repletion,ventilation duration,10.1000/sim.2020.005
+S06,Silva 2020,cohort,ICU with refeeding syndrome,312,early phosphate,electrolyte recovery,10.1000/sim.2020.006
+S07,Wang 2021,retrospective cohort,ICU adults,2044,early repletion,28-day mortality,10.1000/sim.2021.007
+S08,Muller 2021,retrospective cohort,cardiac ICU,518,phosphate supplementation,arrhythmia,10.1000/sim.2021.008
+S09,Rossi 2021,cohort,general ICU,987,early phosphate,ICU length of stay,10.1000/sim.2021.009
+S10,Andersson 2022,retrospective cohort,ICU with AKI,604,phosphate repletion,30-day mortality,10.1000/sim.2022.010
+S11,Zhang 2022,retrospective cohort,neuro ICU,449,early phosphate,ventilation duration,10.1000/sim.2022.011
+S12,Martins 2022,cohort,medical-surgical ICU,1332,phosphate repletion,hospital mortality,10.1000/sim.2022.012
+S13,Haddad 2022,case-control,ICU adults,356,no early repletion,30-day mortality,10.1000/sim.2022.013
+S14,Lee 2023,retrospective cohort,ICU sepsis,1108,early phosphate,30-day mortality,10.1000/sim.2023.014
+S15,Petrov 2023,retrospective cohort,general ICU,876,phosphate repletion,arrhythmia,10.1000/sim.2023.015
+S16,Olsen 2023,cohort,ICU with hypophosphatemia,1521,early repletion,90-day mortality,10.1000/sim.2023.016
+S17,Singh 2023,retrospective cohort,ICU trauma,482,early phosphate,ICU mortality,10.1000/sim.2023.017
+S18,Fischer 2023,cohort,medical ICU,733,phosphate supplementation,ventilation duration,10.1000/sim.2023.018
+S19,Ivanov 2024,retrospective cohort,ICU adults,1890,early repletion,30-day mortality,10.1000/sim.2024.019
+S20,Tanaka 2024,randomized trial,ICU hypophosphatemia,240,phosphate repletion,serum phosphate recovery,10.1000/sim.2024.020
+S21,Yusuf 2024,randomized trial,ICU hypophosphatemia,186,early phosphate,arrhythmia,10.1000/sim.2024.021
+S22,Brown 2024,randomized trial,septic ICU,320,phosphate repletion,28-day mortality,10.1000/sim.2024.022
+S23,Dubois 2024,retrospective cohort,ICU adults,967,early phosphate,30-day mortality,10.1000/sim.2024.023
