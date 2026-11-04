@@ -2125,8 +2125,8 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
       miniBtn('↻', options.onZoteroRefresh, { background: 'transparent', border: 'none', color: 'var(--rdw-organic-ink-3)' }),
     ),
 
-    // 未连接：说明 + 重试，绝不假装读到数据
-    !zoteroAvailable
+    // 未连接：探活明确失败时才显示提示
+    zotero && !zoteroAvailable
       ? h(
           'div',
           {

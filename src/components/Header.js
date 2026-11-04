@@ -65,21 +65,7 @@ export function renderHeader(h, props) {
       : toneChip('旧宿主', 'var(--rdw-warn)')
   const busyChip = busy ? toneChip(`执行中：${busyLabel}`, 'var(--rdw-warn)') : null
 
-  const chatButton = options.canStartChat === false && !chatOpen
-    ? null
-    : h(
-        'button',
-        {
-          type: 'button',
-          'data-dsh-no-drag': '',
-          'aria-pressed': chatOpen ? 'true' : 'false',
-          style: chatOpen ? { ...tab, ...tabActive } : tab,
-          onClick: () => {
-            if (typeof options.onToggleChat === 'function') options.onToggleChat()
-          },
-        },
-        chatOpen ? WELCOME_COPY.chatClose : `💬 ${WELCOME_COPY.chatOpen}`,
-      )
+  const chatButton = null
 
   const scopeText = typeof options.scope === 'string' ? options.scope : ''
 

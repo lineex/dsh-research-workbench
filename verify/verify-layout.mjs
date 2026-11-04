@@ -541,7 +541,7 @@ async function main() {
   const idleMarkup = textOf(bootD.tree)
   check(!idleMarkup.includes('新建工作区并开始对话'), '不引导用户先去建工作区')
   check(!idleMarkup.includes('还没有关联的对话'), '对话区收起时不显示空会话提示（不干扰业务页）')
-  check(idleMarkup.includes('💬 打开对话'), '工具栏提供「打开对话」入口（按需开启）')
+  check(!idleMarkup.includes('💬 打开对话'), '工具栏已彻底去除「打开对话」按钮（对话已内嵌中栏，避免冗余按键）')
 
   /* -------- E. v3.24：右侧空壳对话侧栏已移除，会话只在工作区中栏 -------- */
   console.log('')
@@ -554,15 +554,7 @@ async function main() {
   check(chatAsides(treeE).length === 0, '右侧对话侧栏已彻底移除（不再渲染 rdw-chat aside）')
   check(!textOf(treeE).includes('本侧栏仅作分屏对照入口'), '不再出现「本侧栏仅作分屏对照入口」空态文案')
   check(!textOf(treeE).includes('收起对话'), '不再出现「收起对话」按钮')
-
-  const openButton = findButton(treeE, '💬 打开对话')
-  check(Boolean(openButton), '仍保留「打开对话」入口（改为一句话定位提示）')
-  if (openButton) {
-    openButton.props.onClick({ stopPropagation() {}, preventDefault() {} })
-    treeE = await conversationBoot.rerender()
-    check(chatAsides(treeE).length === 0, '点「打开对话」也不会弹出右侧侧栏')
-    check(serviceBootE.calls.newSession === 0 && serviceBootE.calls.newWorkspaceSession === 0, '只提示定位，不建会话、不索要工作区目录')
-  }
+  check(!textOf(treeE).includes('💬 打开对话'), '右上角已去除「打开对话」冗余按键')
 
   /* -------- F. 无项目时的首用引导 -------- */
   console.log('')

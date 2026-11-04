@@ -176,21 +176,6 @@ export function renderCommandBar(h, props) {
         },
         '🧠 主智能体',
       ),
-      /* 对话入口：仅在宿主提供会话能力（或对话已打开）时显示——
-       * 否则点了也只会看到「宿主没有提供会话能力」，属于无效入口。 */
-      o.chatAvailable === false && !o.chatOpen
-        ? null
-        : h(
-            'button',
-            {
-              type: 'button',
-              className: o.chatOpen ? 'rdw-pill ok' : 'rdw-pill ghost',
-              'aria-pressed': o.chatOpen ? 'true' : 'false',
-              title: o.chatOpen ? '收起右侧原生会话栏' : '按需打开 AI 对话（不会自动新建会话）',
-              onClick: () => call(o.onToggleChat),
-            },
-            o.chatOpen ? '💬 收起对话' : '💬 打开对话',
-          ),
       h('span', { className: 'rdw-avatar-me', title: '你是这个项目的主研究者（PI）' }, 'PI'),
     ),
   )

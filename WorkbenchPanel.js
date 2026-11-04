@@ -617,11 +617,9 @@ export function createWorkbenchPanel(React) {
         (ribList[0] && ribList[0].id) ||
         (spineList[0] && spineList[0].id) ||
         ''
-      if (!ribId) {
-        setZoteroData(null)
-        return
-      }
-      loadZotero(rootPath, ribId, zoteroSearch)
+      // 只要有项目就探活并加载 Zotero 库状态，即使新项目暂时还没有分支，
+      // 也能正确连接并显示合集列表，绝不因未选分支而误报「未连接 Zotero」。
+      loadZotero(rootPath, ribId || '', zoteroSearch)
       // 只跟随「当前该看哪根分支」变化；搜索词由 submit 自己触发，避免打字即请求。
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rootPath, selectedRib, selectedModule, sessionView, fishbone, loadZotero])
@@ -655,8 +653,7 @@ export function createWorkbenchPanel(React) {
         if (cancelled) return
         if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
         const ribId = pickRib()
-        if (!ribId) return
-        loadZotero(rootPath, ribId, zoteroSearch, true)
+        loadZotero(rootPath, ribId || '', zoteroSearch, true)
       }
       const timer = setInterval(tick, 20000)
       // 从后台切回前台时立刻补一次，避免用户盯着旧的「未连接」等待下一个周期。
