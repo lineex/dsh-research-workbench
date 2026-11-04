@@ -218,7 +218,17 @@ export function renderCommandBar(h, props) {
         {
           type: 'button',
           className: 'rdw-pill ghost',
-          title: '打开管理面板（主智能体 / 内容 / 网络 / 工程 / 概览）',
+          title: '回到所有项目总览面板（查看全部课题看板）',
+          onClick: () => call(o.onBackToHub),
+        },
+        '📁 项目总览',
+      ),
+      h(
+        'button',
+        {
+          type: 'button',
+          className: 'rdw-pill ghost',
+          title: '打开管理面板（主智能体 / 内容 / 工程 / 概览）',
           onClick: () => call(o.onOpenSlide, 'agent'),
         },
         '🧠 主智能体',

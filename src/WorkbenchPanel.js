@@ -2842,7 +2842,62 @@ export function createWorkbenchPanel(React) {
       }
     }
 
-    /** 主支上移 / 下移：只改显示顺序。 */
+    /**
+     * 根据研究目标一键生成标准主支流水线与初始探索分支：
+     * 1. M10 方案与协议设计 (B10-01 协议制定与因果图)
+     * 2. M20 文献检索与证据 (B20-01 检索式构建与筛选)
+     * 3. M30 队列定义与清洗 (B30-01 入排标准与变量审计)
+     * 4. M40 统计建模与分析 (B40-01 主模型分析与诊断)
+     * 5. M50 论文撰写与汇编 (B50-01 稿件大纲与成果汇编)
+     * 创建后研究者享有所有的修改权限（自由增删、上下重排、重命名、成果回连）。
+     */
+    const scaffoldRecommendedModules = React.useCallback(async () => {
+      if (!rootPath) {
+        setToast('请先打开或创建一个课题项目')
+        return
+      }
+      const existingSpine = fishbone && Array.isArray(fishbone.spine) ? fishbone.spine : []
+      if (existingSpine.length > 0) {
+        const confirmMsg =
+          `当前项目已有 ${existingSpine.length} 个主支阶段。\n\n是否继续追加创建推荐的标准科研流水线？（现有主支与分支均会保留，不会被覆盖）`
+        if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(confirmMsg)) {
+          return
+        }
+      }
+      setBusy('scaffold')
+      setToast('正在根据研究目标生成并建构总体主支与分支...')
+      try {
+        const pipeline = [
+          { modId: 'M10', modName: '方案与协议设计', ribId: 'B10-01', ribName: '协议制定与因果图', prompt: '明确核心研究假设、PICO、时间零点与目标试验模拟协议' },
+          { modId: 'M20', modName: '文献检索与证据', ribId: 'B20-01', ribName: '检索式构建与筛选', prompt: '检索相关临床指南、前人系统评价与基准文献证据' },
+          { modId: 'M30', modName: '队列定义与清洗', ribId: 'B30-01', ribName: '入排标准与变量审计', prompt: '提取分析人群、核对暴露与结局变量、审计缺失数据' },
+          { modId: 'M40', modName: '统计建模与分析', ribId: 'B40-01', ribName: '主模型分析与诊断', prompt: '构建倾向评分加权或回归模型、评估协变量平衡度' },
+          { modId: 'M50', modName: '论文撰写与汇编', ribId: 'B50-01', ribName: '稿件大纲与成果汇编', prompt: '整合各主支成稿与核心图表、起草论文核心章节' },
+        ]
+        for (const item of pipeline) {
+          const hasMod = existingSpine.some((m) => m && m.id === item.modId)
+          if (!hasMod) {
+            await execute({ action: 'module-add', id: item.modId, name: item.modName }, { skipRefresh: true })
+          }
+          await postAction({
+            action: 'sprout',
+            project: rootPath,
+            module: item.modId,
+            id: item.ribId,
+            name: item.ribName,
+            prompt: item.prompt,
+            mode: 'standard',
+          })
+        }
+        await refreshStateAndData(rootPath)
+        await loadFishbone(rootPath)
+        setToast('已成功生成 5 个总体主支与初始分支！您享有所有修改权限，各节点已就绪独立会话。')
+      } catch (err) {
+        setToast(`生成主支失败：${networkMessage(err)}`)
+      } finally {
+        if (alive.current) setBusy('')
+      }
+    }, [rootPath, fishbone, execute, postAction, refreshStateAndData, loadFishbone])
     const moveModule = async (moduleId, offset) => {
       if (!moduleId) return null
       return moduleOp('module-move', { moduleId, offset })
@@ -3919,6 +3974,7 @@ export function createWorkbenchPanel(React) {
         })
         openSessionForNode('goal', { label: '研究目标', contextText: prompt, alwaysInject: true })
       },
+      onScaffoldRecommended: scaffoldRecommendedModules,
     }
 
     /* v4：三栏舞台只渲染三栏（外壳 .rdw-stage 承载网格）。 */
@@ -4068,7 +4124,7 @@ export function createWorkbenchPanel(React) {
             : view === 'content'
               ? contentNode
               : view === 'network'
-                ? networkNode
+                ? fishboneNode
                 : renderEngineeringView(h, {
                     tab: engTab,
                     setTab: setEngTab,
@@ -4247,7 +4303,7 @@ export function createWorkbenchPanel(React) {
           const tabs = [
             ['agent', '🧠 主智能体'],
             ['content', '📄 内容'],
-            ['network', '🌐 网络'],
+            // 先隐藏网络 TeamMCP 功能（避免连接报错干扰）
             ['engineering', '⚙️ 工程'],
             ['overview', '📊 概览'],
           ]

@@ -1542,7 +1542,7 @@ async function main() {
   tree = tree || null
   const panelTabs = collectButtons(tree)
   assert(panelTabs.filter((item) => item.text === '📄 内容').length === 1, '侧滑面板有「内容」页签')
-  assert(panelTabs.filter((item) => item.text === '🌐 网络').length === 1, '侧滑面板有「网络」页签')
+  assert(panelTabs.filter((item) => item.text === '🌐 网络').length === 0, '侧滑面板已按要求隐藏「网络」页签（先隐藏 teammcp 功能）')
   assert(panelTabs.filter((item) => item.text === '⚙️ 工程').length === 1, '侧滑面板有「工程」页签')
 
   console.log('')
@@ -1597,8 +1597,8 @@ async function main() {
   }
 
   console.log('')
-  console.log('D) 网络页（TeamMCP digest）)')
-  if (await openPanelTab('🌐 网络')) {
+  console.log('D) 网络页（已按用户要求先隐藏 TeamMCP 功能，跳过渲染测试）')
+  if (false && (await openPanelTab('🌐 网络'))) {
     const networkMarkup = textOf(tree)
   const networkWanted = [
     ['项目网络', '页面标题'],
@@ -1795,7 +1795,7 @@ assert(oldMarkup.includes('项目流程') && oldMarkup.includes('内容'), '旧�
         assert(oldContent.includes('需要你关注') || oldContent.includes('已接受结果') || oldContent.includes('结果'), '旧结果页内容渲染')
         assert(!oldContent.includes('undefined'), '旧宿主内容页回退后无 undefined')
       }
-      if (await oldOpenPanelTab('🌐 网络')) {
+      if (false && (await oldOpenPanelTab('🌐 网络'))) {
         const oldNet = textOf(oldTree)
         assert(oldNet.includes('重启 DSH 后启用项目网络页') || oldNet.includes('网络'), '旧宿主网络页显示需重启提示')
         assert(!oldNet.includes('undefined'), '旧宿主网络页无 undefined')

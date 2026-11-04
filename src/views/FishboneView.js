@@ -1416,51 +1416,102 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
           h(
             'span',
             { style: { color: 'var(--rdw-organic-ink-2)', fontSize: 11 } },
-            contextText ? '📄 已挂载主支上下文档案快照 (CONTEXT.md)' : '📄 分支任务上下文',
+            isGoalSelected
+              ? '📄 🎯 研究总目标探索与好问题推演'
+              : (contextText ? '📄 已挂载主支上下文档案快照 (CONTEXT.md)' : '📄 分支任务上下文'),
           ),
           h(
             'div',
             { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-            h(
-              'button',
-              {
-                type: 'button',
-                className: 'rdw-organic-btn',
-                style: {
-                  padding: '2px 8px',
-                  borderRadius: 'var(--rdw-r-pebble-sm)',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: '#faf6f1',
-                  background: 'var(--rdw-sage)',
-                  border: 'none',
-                  cursor: 'pointer',
-                },
-                title: '将当前分支的研究目标、所属阶段与上下文档案注入会话框，让 AI 智能体掌握当前上下文',
-                onClick: () => call(options.onMountContext, { module: activeModule.id, branch: activeRib.id }),
-              },
-              '⚡ 注入上下文到对话',
-            ),
-            h(
-              'button',
-              {
-                type: 'button',
-                className: 'rdw-organic-btn',
-                style: {
-                  padding: '2px 8px',
-                  borderRadius: 'var(--rdw-r-pebble-sm)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: 'var(--rdw-teal-ink)',
-                  background: 'color-mix(in srgb,var(--rdw-teal) 14%,transparent)',
-                  border: '1px solid color-mix(in srgb,var(--rdw-teal) 32%,transparent)',
-                  cursor: 'pointer',
-                },
-                title: '从当前对话自动分叉创建新分支',
-                onClick: () => call(options.onAutoSprout, activeRib.brief || activeRib.name),
-              },
-              '🌱 自动分新分支',
-            ),
+            isGoalSelected
+              ? [
+                  h(
+                    'button',
+                    {
+                      key: 'act-goal-inject',
+                      type: 'button',
+                      className: 'rdw-organic-btn',
+                      style: {
+                        padding: '2px 8px',
+                        borderRadius: 'var(--rdw-r-pebble-sm)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: '#faf6f1',
+                        background: 'var(--rdw-sage)',
+                        border: 'none',
+                        cursor: 'pointer',
+                      },
+                      title: '将八层假设审计（G-R-E-D-M-O-T-W）与 good-question 讨论脚手架填入会话框',
+                      onClick: () => call(options.onSelectGoalSession),
+                    },
+                    '⚡ 注入八层审计提示词',
+                  ),
+                  h(
+                    'button',
+                    {
+                      key: 'act-goal-scaffold',
+                      type: 'button',
+                      className: 'rdw-organic-btn',
+                      style: {
+                        padding: '2px 8px',
+                        borderRadius: 'var(--rdw-r-pebble-sm)',
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: 'var(--rdw-teal-ink)',
+                        background: 'color-mix(in srgb,var(--rdw-teal) 14%,transparent)',
+                        border: '1px solid color-mix(in srgb,var(--rdw-teal) 32%,transparent)',
+                        cursor: 'pointer',
+                      },
+                      title: '根据研究目标一键生成标准主支流水线与初始分支；创建后您享有所有的修改权限',
+                      onClick: () => call(options.onScaffoldRecommended || options.onAddModule),
+                    },
+                    '🌱 一键生成主支与分支规划',
+                  ),
+                ]
+              : [
+                  h(
+                    'button',
+                    {
+                      key: 'act-mount-context',
+                      type: 'button',
+                      className: 'rdw-organic-btn',
+                      style: {
+                        padding: '2px 8px',
+                        borderRadius: 'var(--rdw-r-pebble-sm)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: '#faf6f1',
+                        background: 'var(--rdw-sage)',
+                        border: 'none',
+                        cursor: 'pointer',
+                      },
+                      title: '将当前分支的研究目标、所属阶段与上下文档案注入会话框，让 AI 智能体掌握当前上下文',
+                      onClick: () => call(options.onMountContext, { module: activeModule.id, branch: activeRib.id }),
+                    },
+                    '⚡ 注入上下文到对话',
+                  ),
+                  h(
+                    'button',
+                    {
+                      key: 'act-auto-sprout',
+                      type: 'button',
+                      className: 'rdw-organic-btn',
+                      style: {
+                        padding: '2px 8px',
+                        borderRadius: 'var(--rdw-r-pebble-sm)',
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: 'var(--rdw-teal-ink)',
+                        background: 'color-mix(in srgb,var(--rdw-teal) 14%,transparent)',
+                        border: '1px solid color-mix(in srgb,var(--rdw-teal) 32%,transparent)',
+                        cursor: 'pointer',
+                      },
+                      title: '从当前对话自动分叉创建新分支',
+                      onClick: () => call(options.onAutoSprout, activeRib.brief || activeRib.name),
+                    },
+                    '🌱 自动分新分支',
+                  ),
+                ],
           ),
         ),
       )
