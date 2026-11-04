@@ -840,13 +840,13 @@ function renderEvoThreePaneWorkbench(h, { head, spine, ribs, totals, options, ne
         className: 'rdw-goal-card',
         role: 'button',
         tabIndex: 0,
-        title: '点击打开研究目标编辑器（八层假设审计 + 好问题卡）；右键更多操作',
-        onClick: () => call(options.onOpenGoalCard),
+        title: '点击切到研究目标专属对话（含八层假设审计技能）；右键更多操作',
+        onClick: () => call(options.onSelectGoalSession || options.onOpenGoalCard),
         onKeyDown: (event) => {
           if (!event) return
           if (event.key === 'Enter' || event.key === ' ') {
             if (event.preventDefault) event.preventDefault()
-            call(options.onOpenGoalCard)
+            call(options.onSelectGoalSession || options.onOpenGoalCard)
           }
         },
         onContextMenu: (event) => emitContextMenu(options, event, { kind: 'head', head }),

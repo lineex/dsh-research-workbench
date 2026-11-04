@@ -1058,6 +1058,9 @@ export function createWorkbenchPanel(React) {
      * 旧宿主没有该路由时降级：只显示「当前 goal」，不显示编辑器，并明确提示。
      */
     const openGoalCard = async () => {
+      setGoalOpen(false)
+      onSelectGoalSession()
+      return
       setGoalOpen(true)
       if (!rootPath) {
         setGoalMeta({ goal: '', missing: [], falsifiable: false, loaded: true })
@@ -4450,7 +4453,7 @@ export function createWorkbenchPanel(React) {
                 h(
                   'div',
                   { className: 'rdw-stage', 'data-dsh-no-drag': '' },
-                  goalCardNode || fishboneStageNode,
+                  fishboneStageNode,
                 ),
                 drawerNode,
               )
