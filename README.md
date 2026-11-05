@@ -58,7 +58,7 @@
 
 ## 📁 多项目总控看板 (Projects Hub)
 
-多课题并行研发控制台：大号科研 KPI 统计卡片、智能分类视图与全项目卡片墙。
+多课题并行研发控制台：大号科研 KPI 统计卡片、智能分类视图与全项目卡片墙
 
 <p align="center">
   <img src="docs/images/projects-hub.png" alt="多项目总控看板 Projects Hub 真实快照" width="100%" />
