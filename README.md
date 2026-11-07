@@ -12,7 +12,7 @@
 [![Version](https://img.shields.io/badge/version-3.10.0-blue.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DeepSeek%20Harness-Plugin-green.svg)](https://github.com/lineex/research-dag-workbench)
 [![Protocol](https://img.shields.io/badge/protocol-research--dag%20v1.3-orange.svg)](CONTRACT.md)
-[![License](https://img.shields.io/badge/license-UNLICENSED-lightgrey.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ---
 

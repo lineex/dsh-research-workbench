@@ -1,10 +1,9 @@
 {
   "name": "dsh-research-dag-workbench",
   "version": "3.10.0",
-  "private": true,
   "type": "module",
   "description": "项目流程式研究项目工作台：项目目标=研究目标，主支=研究阶段，分支=从任意位置长出的探索/修正智能体；成果满意后一键回连主支。",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": "lineex (https://github.com/lineex)",
   "icon": "./icon.svg",
   "repository": {
