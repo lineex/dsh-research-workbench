@@ -404,20 +404,24 @@ const Panel = (await import('../src/WorkbenchPanel.js')).createWorkbenchPanel(Re
 
 /* 播种关键 state：跳过真实网络拉取，直接给出"已加载完成"的画面。
  * 索引严格对照 WorkbenchPanel.js 里 React.useState 的出现顺序：
- *   #26 fishbone          ← 初始 null（关键：不播种就永远显示"还没有项目数据"）
- *   #27 fishboneLoading   ← false
- *   #28 fishboneError     ← ''
- *   #33 selectedModule    ← 选中「统计分析」
- *   #34 selectedRib       ← 选中「IPTW 诊断」
- *   #60 drawerOpen        ← 展开底部抽屉，便于一屏看清全景 */
+ *   #0  width             ← 1680
+ *   #1  projectInput      ← 项目路径
+ *   #31 fishbone          ← 鱼骨主干与分支数据
+ *   #32 fishboneLoading   ← false
+ *   #33 fishboneError     ← ''
+ *   #38 selectedModule    ← 选中「统计分析」
+ *   #39 selectedRib       ← 选中「IPTW 诊断」
+ *   #73 drawerOpen        ← 展开底部抽屉，便于一屏看清全景 */
 seedStates = {
   0: projectSnapshot.root,
-  26: props.fishbone,
-  27: false,
-  28: '',
-  33: 'M30',
-  34: 'B40-03',
-  60: true,
+  4: 'fishbone',
+  30: props.fishbone,
+  31: false,
+  32: '',
+  37: 'M30',
+  38: 'B40-03',
+  39: null,
+  72: false,
 }
 
 /* 关键：Panel 内部有 40+ 个 useState，它们**都在这一次调用里**按顺序执行。
