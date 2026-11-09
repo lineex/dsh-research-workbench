@@ -17,12 +17,14 @@ export function renderProjectsHubView(h, props) {
   const options = props && typeof props === 'object' ? props : {}
   const { card, row, chip, muted, button, primaryButton, dangerButton, input, sectionTitle } = STYLES
   const projects = Array.isArray(options.projects) ? options.projects : []
+  const trashProjects = Array.isArray(options.trashProjects) ? options.trashProjects : []
   const activeRoot = typeof options.activeProjectRoot === 'string' ? options.activeProjectRoot : ''
   const busy = Boolean(options.busy)
   const searchQuery = typeof options.searchQuery === 'string' ? options.searchQuery : ''
   const phaseFilter = typeof options.phaseFilter === 'string' ? options.phaseFilter : 'all'
   const sharedItems = Array.isArray(options.sharedItems) ? options.sharedItems : []
   const categoryFilter = typeof options.categoryFilter === 'string' ? options.categoryFilter : 'all'
+  const isTrashView = categoryFilter === 'trash'
 
   const call = (handler, ...args) => {
     if (typeof handler === 'function') handler(...args)
@@ -33,14 +35,16 @@ export function renderProjectsHubView(h, props) {
   const attentionCount = projects.filter((p) => (Number(p.attentionCount) || 0) > 0).length
   const completedCount = projects.filter((p) => (Number(p.completion) || 0) === 100).length
 
-  // 过滤项目列表
-  const filteredProjects = projects.filter((p) => {
+  // 过滤项目列表（若当前在回收站视图，则源为 trashProjects）
+  const sourceProjects = isTrashView ? trashProjects : projects
+  const filteredProjects = sourceProjects.filter((p) => {
     const q = searchQuery.trim().toLowerCase()
     const matchesSearch = !q ||
       String(p.title || '').toLowerCase().includes(q) ||
       String(p.id || '').toLowerCase().includes(q) ||
       String(p.root || '').toLowerCase().includes(q) ||
       String(p.goal || '').toLowerCase().includes(q)
+    if (isTrashView) return matchesSearch
     const matchesPhase = phaseFilter === 'all' || p.phase === phaseFilter
     let matchesCategory = true
     if (categoryFilter === 'progress') matchesCategory = (Number(p.completion) || 0) > 0 && (Number(p.completion) || 0) < 100
@@ -71,6 +75,7 @@ export function renderProjectsHubView(h, props) {
     { id: 'progress', label: '推进中', count: inProgressCount, icon: '🟢', color: 'var(--rdw-st-accepted)' },
     { id: 'attention', label: '需拍板 / 关注', count: attentionCount, icon: '⚡', color: 'var(--rdw-warn)' },
     { id: 'completed', label: '已完成收束', count: completedCount, icon: '🏁', color: 'var(--rdw-st-superseded)' },
+    { id: 'trash', label: '回收站', count: trashProjects.length, icon: '🗑️', color: 'var(--rdw-text-3)' },
   ]
 
   /* ------------------------------------------------ 左侧导航轨（Left Rail） */
@@ -476,28 +481,50 @@ export function renderProjectsHubView(h, props) {
                     },
                     phaseLabel(p.phase),
                   ),
-                  isCurrent ? h('span', { style: { ...chip, fontSize: 11.5, color: 'var(--rdw-ok)', background: 'var(--rdw-ok-soft)' } }, '当前在编') : null,
+                  !isTrashView && isCurrent ? h('span', { style: { ...chip, fontSize: 11.5, color: 'var(--rdw-ok)', background: 'var(--rdw-ok-soft)' } }, '当前在编') : null,
+                  isTrashView ? h('span', { style: { ...chip, fontSize: 11.5, color: 'var(--rdw-text-3)', background: 'var(--rdw-sunken)' } }, '已在回收站') : null,
                 ),
-                h(
-                  'button',
-                  {
-                    type: 'button',
-                    title: '从总控台移除该课题（本地文件完整保留）',
-                    style: {
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--rdw-text-4)',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      padding: '2px 4px',
-                    },
-                    onClick: (e) => {
-                      if (e && e.stopPropagation) e.stopPropagation()
-                      call(options.onRemoveProject, p)
-                    },
-                  },
-                  '✕',
-                ),
+                !isTrashView
+                  ? h(
+                      'button',
+                      {
+                        type: 'button',
+                        title: '移入总控台回收站（本地文件完整保留，可随时还原）',
+                        style: {
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--rdw-text-4)',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          padding: '2px 4px',
+                        },
+                        onClick: (e) => {
+                          if (e && e.stopPropagation) e.stopPropagation()
+                          call(options.onRequestRemoveProject || options.onRemoveProject, p)
+                        },
+                      },
+                      '✕',
+                    )
+                  : h(
+                      'button',
+                      {
+                        type: 'button',
+                        title: '从总控台彻底清除该记录（本地文件完整保留）',
+                        style: {
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--rdw-st-rejected)',
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          padding: '2px 4px',
+                        },
+                        onClick: (e) => {
+                          if (e && e.stopPropagation) e.stopPropagation()
+                          call(options.onPurgeProject, p)
+                        },
+                      },
+                      '🗑️',
+                    ),
               ),
               // 课题标题
               h(
@@ -509,9 +536,11 @@ export function renderProjectsHubView(h, props) {
                     color: 'var(--rdw-text)',
                     lineHeight: 1.4,
                     marginBottom: 5,
-                    cursor: 'pointer',
+                    cursor: isTrashView ? 'default' : 'pointer',
                   },
-                  onClick: () => call(options.onOpenProject, p.root),
+                  onClick: () => {
+                    if (!isTrashView) call(options.onOpenProject, p.root)
+                  },
                 },
                 p.title || p.id || '未命名研究项目',
               ),
@@ -553,21 +582,58 @@ export function renderProjectsHubView(h, props) {
                   'div',
                   { style: { ...row, justifyContent: 'space-between', alignItems: 'center' } },
                   h('span', { style: { ...muted, fontSize: 12, maxWidth: 170, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, title: p.root }, p.root),
-                  h(
-                    'button',
-                    {
-                      type: 'button',
-                      style: isCurrent ? button : primaryButton,
-                      onClick: () => call(options.onOpenProject, p.root),
-                    },
-                    isCurrent ? '⚡ 正在编辑' : '🚀 进入项目',
-                  ),
+                  isTrashView
+                    ? h(
+                        'div',
+                        { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                        h(
+                          'button',
+                          {
+                            type: 'button',
+                            style: { ...primaryButton, padding: '4px 10px', fontSize: 11.5, fontWeight: 600 },
+                            title: '从回收站还原该课题回总控看板',
+                            onClick: (e) => {
+                              if (e && e.stopPropagation) e.stopPropagation()
+                              call(options.onRestoreProject, p)
+                            },
+                          },
+                          '↩ 还原',
+                        ),
+                        h(
+                          'button',
+                          {
+                            type: 'button',
+                            style: { ...button, padding: '4px 8px', fontSize: 11.5, color: 'var(--rdw-st-rejected)' },
+                            title: '从总控台彻底清除该记录（本地文件完整保留）',
+                            onClick: (e) => {
+                              if (e && e.stopPropagation) e.stopPropagation()
+                              call(options.onPurgeProject, p)
+                            },
+                          },
+                          '彻底清除',
+                        ),
+                      )
+                    : h(
+                        'button',
+                        {
+                          type: 'button',
+                          style: isCurrent ? button : primaryButton,
+                          onClick: () => call(options.onOpenProject, p.root),
+                        },
+                        isCurrent ? '⚡ 正在编辑' : '🚀 进入项目',
+                      ),
                 ),
               ),
             )
           }),
         )
-      : h('div', { style: { ...card, textAlign: 'center', padding: '24px 0', color: 'var(--rdw-text-3)' } }, '未找到匹配的课题。请尝试更换搜索词或点击「➕ 新建课题」。'),
+      : h(
+          'div',
+          { style: { ...card, textAlign: 'center', padding: '28px 0', color: 'var(--rdw-text-3)' } },
+          isTrashView
+            ? '🗑️ 回收站是空的。被移入回收站的课题会存放在这里，可随时一键还原。'
+            : '未找到匹配的课题。请尝试更换搜索词或点击「➕ 新建课题」。',
+        ),
 
     // 5. 数据洞察看板（OliverLiy 风格手绘图表）
     h(
