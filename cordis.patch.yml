@@ -13,5 +13,5 @@
 #     config:
 #       kitRoot: !!js dshHomePath('research-dag')
 - insert:
-    - id: research-dag-workbench
-      name: 'dsh-research-dag-workbench'
+    - id: research-workbench
+      name: 'dsh-research-workbench'

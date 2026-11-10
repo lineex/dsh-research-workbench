@@ -162,7 +162,7 @@ const bundle = `/**
  *   - src/index.js: Cordis 客户端槽位注册
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-research-dag-workbench',
+  id: 'dsh-research-workbench',
 
   factory(require) {
     const React = require('react')

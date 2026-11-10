@@ -34,7 +34,7 @@ async function main() {
   const ctx = {
     webServer: {
       register(route) {
-        if (route && route.path === '/research-dag-workbench') handler = route.handler
+        if (route && (route.path === '/research-workbench' || route.path === '/research-dag-workbench')) handler = route.handler
       },
     },
     effect(fn) {
@@ -110,7 +110,7 @@ async function main() {
   try {
     // 1. 初始化新项目
     console.log('1. 初始化全新项目...')
-    const initRes = await call('POST', '/research-dag-workbench/run', {
+    const initRes = await call('POST', '/research-workbench/run', {
       action: 'init',
       root: tmpRoot,
       id: 'universal-test',
@@ -152,7 +152,7 @@ async function main() {
 
     // 3. 在新项目下新增第一个主支
     console.log('3. 在全新项目下新增第一个主支 (literature / 文献)...')
-    const addModRes = await call('POST', '/research-dag-workbench/run', {
+    const addModRes = await call('POST', '/research-workbench/run', {
       action: 'module-add',
       project: tmpRoot,
       id: 'literature',
@@ -192,7 +192,7 @@ async function main() {
 
     // 5. 在新主支下长出分支 (sprout)
     console.log('5. 在新主支下长出分支 (B01)...')
-    const sproutRes = await call('POST', '/research-dag-workbench/run', {
+    const sproutRes = await call('POST', '/research-workbench/run', {
       action: 'sprout',
       project: tmpRoot,
       module: 'literature',
@@ -221,7 +221,7 @@ async function main() {
 
     // 6. 验证独立会话绑定与读取
     console.log('6. 验证主支与分支独立会话绑定...')
-    const bindMod = await call('POST', '/research-dag-workbench/rib-op', {
+    const bindMod = await call('POST', '/research-workbench/rib-op', {
       project: tmpRoot,
       op: 'session-bind',
       key: 'module:literature',
@@ -230,7 +230,7 @@ async function main() {
     if (bindMod.payload && bindMod.payload.ok) ok('主支 module:literature 绑定会话成功')
     else bad('主支绑定失败')
 
-    const bindBranch = await call('POST', '/research-dag-workbench/rib-op', {
+    const bindBranch = await call('POST', '/research-workbench/rib-op', {
       project: tmpRoot,
       op: 'session-bind',
       key: 'branch:literature/B01',
@@ -239,7 +239,7 @@ async function main() {
     if (bindBranch.payload && bindBranch.payload.ok) ok('复合 key branch:literature/B01 绑定会话成功')
     else bad('分支绑定失败')
 
-    const getBranch = await call('POST', '/research-dag-workbench/rib-op', {
+    const getBranch = await call('POST', '/research-workbench/rib-op', {
       project: tmpRoot,
       op: 'session-get',
       key: 'branch:literature/B01',

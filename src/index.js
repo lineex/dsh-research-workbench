@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 研究项目 DAG 工作台 — 客户端入口（DSH Desktop 工作台协议 + 旧槽位兼容）。
  *
  * 规范：https://dshdesktop.com/workbench/docs/development.md 第 3.5 节
@@ -43,10 +43,10 @@ export function WorkbenchIcon(React) {
 }
 
 /** 旧槽位协议用的面板 id（保持与历史一致，避免宿主侧引用断裂）。 */
-const PANEL_KEY = 'research-dag-workbench'
+const PANEL_KEY = 'research-workbench'
 
 /** 工作台身份：规范 GitHub URL（小写 owner/repo）。 */
-const REPOSITORY = 'https://github.com/zhuanz/research-dag-workbench'
+const REPOSITORY = 'https://github.com/lineex/dsh-research-workbench'
 
 const TITLE = '研究项目 DAG 工作台'
 const DESCRIPTION =
@@ -188,7 +188,7 @@ export function createClientPlugin(React) {
   const RegisteredPanel = isRealReact && PanelErrorBoundary ? GuardedPanel : BusinessPanel
 
   return {
-    name: 'dsh-research-dag-workbench',
+    name: 'dsh-research-workbench',
 
     /**
      * 按宿主能力选择注册路径。

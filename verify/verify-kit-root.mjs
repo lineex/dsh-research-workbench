@@ -40,7 +40,7 @@ else bad('package.json files 未包含 kit/（npm pack 会漏掉自带 CLI）')
 
 // 构造安装后的真实布局
 const sim = mkdtempSync(join(os.tmpdir(), 'kitroot-'))
-const pkgDir = join(sim, 'node_modules', 'dsh-research-dag-workbench')
+const pkgDir = join(sim, 'node_modules', 'dsh-research-workbench')
 try {
   mkdirSync(join(pkgDir, 'lib'), { recursive: true })
   copyFileSync(join(ROOT, 'lib', 'host.js'), join(pkgDir, 'lib', 'host.js'))

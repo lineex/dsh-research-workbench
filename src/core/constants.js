@@ -5,8 +5,8 @@
  * 本文件在构建产物中与其余模块处于同一作用域；共享的小工具函数集中放在这里。
  */
 
-export const PANEL_ID = 'research-dag-workbench'
-export const ROUTE = '/research-dag-workbench'
+export const PANEL_ID = 'research-workbench'
+export const ROUTE = '/research-workbench'
 
 /** v3.6 顶级页签：总控看板放在最前面！ */
 export const VIEWS = [

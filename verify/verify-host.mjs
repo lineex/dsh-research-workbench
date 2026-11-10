@@ -22,7 +22,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url))
 const BUNDLE = path.resolve(HERE, '..')
 const KIT_ROOT = fs.existsSync(path.join(BUNDLE, 'examples', 'early-phosphate')) ? BUNDLE : path.resolve(BUNDLE, '..')
 const EXAMPLE = path.join(KIT_ROOT, 'examples', 'early-phosphate')
-const ROUTE = '/research-dag-workbench'
+const ROUTE = '/research-workbench'
 
 /** 隔离 DSH_HOME，避免读写真与~/.dsh与*/
 const ORIGINAL_DSH_HOME = process.env.DSH_HOME
@@ -191,7 +191,7 @@ async function main() {
   /* ------------------------------------------------------ A 模块外形与路由 */
   console.log('')
   console.log('A) 模块外形与路由注册')
-  check(mod.name === 'dsh-research-dag-workbench', `export name = ${mod.name}`, `name 错误：${mod.name}`)
+  check(mod.name === 'dsh-research-workbench', `export name = ${mod.name}`, `name 错误：${mod.name}`)
   check(Array.isArray(mod.inject) && mod.inject.includes('webServer'), `export inject = ${JSON.stringify(mod.inject)}`, 'inject 未声明 webServer')
   // 规范 3.4：Config 必须是 Schemastery schema（Standard Schema），不能是普通对象。
   check(mod.Config !== undefined, '导出 Config（规范 3.4 要求 Schemastery schema）', '缺少 Config 导出')
@@ -247,7 +247,7 @@ async function main() {
   let response = await call(handler, 'GET', `${ROUTE}/health`)
   let payload = response.payload || {}
   check(response.status === 200 && payload.ok === true, '/health -> 200 ok', `/health 失败：${JSON.stringify(response).slice(0, 300)}`)
-  check(payload.name === 'dsh-research-dag-workbench', 'health.name 正确', `health.name 错误：${payload.name}`)
+  check(payload.name === 'dsh-research-workbench', 'health.name 正确', `health.name 错误：${payload.name}`)
   check(payload.version === EXPECTED_VERSION, `health.version = ${EXPECTED_VERSION}（读 package.json）`, `health.version 错误：${payload.version}`)
   check(payload.route === ROUTE, 'health.route 正确', `health.route 错误：${payload.route}`)
   check(

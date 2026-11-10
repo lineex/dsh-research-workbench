@@ -200,7 +200,7 @@ function collectByAttr(tree, name) {
 
 /* -------------------------------------------------------------- 数据桩 */
 const SAMPLE = 'D:\\ZhuanZ\\Documents\\research-dag\\examples\\early-phosphate'
-const ROUTE = '/research-dag-workbench'
+const ROUTE = '/research-workbench'
 const PATHS = {
   health: `${ROUTE}/health`,
   state: `${ROUTE}/state`,
@@ -213,7 +213,7 @@ const PATHS = {
 
 const healthNew = {
   ok: true,
-  name: 'dsh-research-dag-workbench',
+  name: 'dsh-research-workbench',
   version: '3.3.0',
   route: ROUTE,
   actions: ['status', 'verify', 'list', 'check', 'submit', 'accept', 'reject', 'block', 'unblock', 'report', 'state-set', 'results', 'auto', 'init', 'module-add', 'branch-add', 'handoff-new', 'content'],
@@ -457,7 +457,7 @@ async function main() {
   const { source, plugin } = boot.loaded
   const options = boot.options || {}
   check(Boolean(plugin), '客户端插件可加载')
-  check(plugin.name === 'dsh-research-dag-workbench', `plugin.name = ${plugin.name}`)
+  check(plugin.name === 'dsh-research-workbench', `plugin.name = ${plugin.name}`)
   check(typeof options.title === 'string' && options.title.length > 0, `工作台标题非空（${options.title}）`)
   check(typeof options.description === 'string' && options.description.length > 0, '提供业务描述')
   check(typeof options.icon === 'function', '提供侧栏图标')

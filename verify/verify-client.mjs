@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = resolve(HERE, '..')
 const BUNDLE = resolve(PACKAGE_ROOT, 'lib', 'client.js')
-const ROUTE = '/research-dag-workbench'
+const ROUTE = '/research-workbench'
 const SAMPLE_ROOT = 'D:\\ZhuanZ\\Documents\\research-dag\\examples\\early-phosphate'
 
 const failures = []
@@ -412,7 +412,7 @@ const runsFixture = {
 
 const healthNew = {
   ok: true,
-  name: 'dsh-research-dag-workbench',
+  name: 'dsh-research-workbench',
   version: '2.4.0',
   route: ROUTE,
   actions: [
@@ -443,7 +443,7 @@ const healthNew = {
 
 const healthOld = {
   ok: true,
-  name: 'dsh-research-dag-workbench',
+  name: 'dsh-research-workbench',
   version: '1.2.0',
   route: ROUTE,
   actions: [
@@ -1022,7 +1022,7 @@ async function bootClient(fetchMock, options = {}) {
     console,
   )
   assert(Boolean(entry), 'window.__ModuleLoader__.load 被调）)')
-  assert(entry && entry.id === 'dsh-research-dag-workbench', `module id = ${entry && entry.id}`)
+  assert(entry && entry.id === 'dsh-research-workbench', `module id = ${entry && entry.id}`)
 
   const harness = createHarness()
   const requested = []
@@ -1038,7 +1038,7 @@ async function bootClient(fetchMock, options = {}) {
     return null
   }
   assert(requested.length === 1 && requested[0] === 'react', `factory ）require react（实）${JSON.stringify(requested)}）`)
-  assert(plugin && plugin.name === 'dsh-research-dag-workbench', `plugin.name = ${plugin && plugin.name}`)
+  assert(plugin && plugin.name === 'dsh-research-workbench', `plugin.name = ${plugin && plugin.name}`)
   assert(
     Boolean(plugin && Array.isArray(plugin.inject) && plugin.inject.includes('desktopWorkbenches')),
     `plugin.inject 含 desktopWorkbenches（规范 3.5）= ${JSON.stringify(plugin && plugin.inject)}`,
@@ -1108,7 +1108,7 @@ async function main() {
     return
   }
   const { source, harness, injections, registrations, workbenchRegistrations, hasWorkbenchService, registrationMode } = boot
-  assert(source.includes("id: 'dsh-research-dag-workbench'"), 'bundle 内声明 loader id')
+  assert(source.includes("id: 'dsh-research-workbench'"), 'bundle 内声明 loader id')
   assert(source.includes('desktopWorkbenches'), 'bundle 含 Desktop 工作台注册路径（规范 3.5）')
 
   // 规范 3.5：register() 必须提供 title、业务组件与规范 GitHub repository URL；
@@ -1153,7 +1153,7 @@ async function main() {
     assert(Boolean(mainRegistration), '旧宿主：注册 main 槽位')
     assert(Boolean(paneRegistration), '旧宿主：注册 sidebar.panellist 槽位')
     assert(
-      Boolean(paneRegistration && paneRegistration.options.id === 'research-dag-workbench'),
+      Boolean(paneRegistration && (paneRegistration.options.id === 'research-workbench' || paneRegistration.options.id === 'research-dag-workbench')),
       `旧宿主：panellist id = ${paneRegistration && paneRegistration.options.id}`,
     )
     const legacyLabel = paneRegistration && paneRegistration.options.label
@@ -1718,7 +1718,7 @@ async function main() {
       const legacyPane = legacyBoot.registrations.find((item) => item.options && item.options.name === 'sidebar.panellist')
       assert(Boolean(legacyMain), '回退：注册 main 面板')
       assert(Boolean(legacyPane), '回退：注册左侧入口图标')
-      assert(legacyPane.options.id === 'research-dag-workbench', `回退：入口 id = ${legacyPane.options.id}`)
+      assert(legacyPane.options.id === 'research-workbench' || legacyPane.options.id === 'research-dag-workbench', `回退：入口 id = ${legacyPane.options.id}`)
       assert(typeof legacyPane.options.label === 'function' && legacyPane.options.label() === '研究项目 DAG 工作台', '回退：入口标签正确')
       assert(typeof legacyMain.component === 'function', '回退：业务组件是函数')
       let legacyTree = null

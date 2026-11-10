@@ -2,7 +2,7 @@
   <img src="icon.svg" width="68" height="68" alt="Research DAG Workbench Logo" />
 </p>
 
-<h1 align="center">研究项目 DAG 工作台 (Research DAG Workbench)</h1>
+<h1 align="center">研究项目工作台 (dsh-research-workbench)</h1>
 
 <p align="center">
   <strong>面向科学研究与复杂课题的「项目流程式」探索智能体协同工作台</strong><br>
@@ -10,7 +10,7 @@
 </p>
 
 [![Version](https://img.shields.io/badge/version-3.10.0-blue.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DeepSeek%20Harness-Plugin-green.svg)](https://github.com/lineex/research-dag-workbench)
+[![DSH](https://img.shields.io/badge/DeepSeek%20Harness-Plugin-green.svg)](https://github.com/lineex/dsh-research-workbench)
 [![Protocol](https://img.shields.io/badge/protocol-research--dag%20v1.3-orange.svg)](CONTRACT.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -173,18 +173,18 @@ npm run verify
 # 打包生成安装包
 npm pack
 
-# 输出: dsh-research-dag-workbench-3.10.0.tgz
+# 输出: dsh-research-workbench-3.10.0.tgz
 ```
 
 1. 在 DSH Desktop 的插件管理页面中，选择该 `.tgz` 包导入安装；
 2. **完全退出并重启 DSH Desktop**；
-3. 左侧工作台列表中点击「研究项目 DAG 工作台」，即刻开启沉浸式科研探索！
+3. 左侧工作台列表中点击「研究项目工作台」，即刻开启沉浸式科研探索！
 
 ---
 
 ## 📖 接口文档速查
 
-工作台所有接口统一挂载在 `/research-dag-workbench` 前缀下：
+工作台所有接口统一挂载在 `/research-workbench` 前缀下（同时兼容 `/research-dag-workbench`）：
 
 | 接口 | 方法 | 功能说明 |
 |---|---|---|
@@ -202,6 +202,6 @@ npm pack
 
 ## 🤝 贡献与许可
 
-- **代码仓库**: [https://github.com/lineex/research-dag-workbench](https://github.com/lineex/research-dag-workbench)
+- **代码仓库**: [https://github.com/lineex/dsh-research-workbench](https://github.com/lineex/dsh-research-workbench)
 - **设计理念与思考白皮书**: 深入了解设计哲学请参阅 [`DESIGN-workbench.md`](DESIGN-workbench.md)
 - **协议契约**: 详见 [`CONTRACT.md`](CONTRACT.md)

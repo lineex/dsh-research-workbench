@@ -20,7 +20,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const WORKBENCH = path.resolve(HERE, '..')
 const EXAMPLE = path.resolve(WORKBENCH, '..', 'examples', 'early-phosphate')
-const ROUTE = '/research-dag-workbench'
+const ROUTE = '/research-workbench'
 
 const failures = []
 const ok = (msg) => console.log(`  OK   ${msg}`)
