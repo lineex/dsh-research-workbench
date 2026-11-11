@@ -21,7 +21,6 @@
 
 [中文文档 (Chinese Documentation)](README.md)
 
-[中文文档 (Chinese Documentation)](README.md)
 
 ## 💡 Vision & Design Philosophy
 
