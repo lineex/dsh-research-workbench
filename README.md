@@ -19,6 +19,8 @@
 
 ---
 
+[English Documentation (README_EN.md)](README_EN.md)
+
 ## 📖 目录 (Table of Contents)
 
 - [💡 项目愿景与设计哲学](#-项目愿景与设计哲学)

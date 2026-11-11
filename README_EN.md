@@ -21,6 +21,8 @@
 
 [中文文档 (Chinese Documentation)](README.md)
 
+[中文文档 (Chinese Documentation)](README.md)
+
 ## 💡 Vision & Design Philosophy
 
 In modern biomedical, clinical epidemiological, causal inference, and complex scientific research, researchers often face a dilemma: **AI models have powerful inference capabilities, but traditional "single-window" chat interfaces collapse under the weight of long-term, multi-stage research projects.**
